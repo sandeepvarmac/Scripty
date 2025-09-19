@@ -1,10 +1,41 @@
+"use client"
+
 import { AppShell, AppHeader, AppContent } from "@/components/app-shell"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScriptyBoyLogo } from "@/components/ui/logo"
 import { BrandHeader } from "@/components/ui/brand-header"
+import { useRouter } from "next/navigation"
 
 export default function HomePage() {
+  const router = useRouter()
+
+  const handleSignIn = () => {
+    console.log('Sign In button clicked')
+    router.push('/auth')
+  }
+
+  const handleGetStarted = () => {
+    console.log('Get Started button clicked')
+    router.push('/auth')
+  }
+
+  const handleStartAnalysis = () => {
+    console.log('Start Analysis button clicked')
+    router.push('/auth')
+  }
+
+  const handleViewSample = () => {
+    console.log('View Sample button clicked')
+    // TODO: Navigate to sample report when available
+    alert('Sample report coming soon!')
+  }
+
+  const handleChooseFile = () => {
+    console.log('Choose File button clicked')
+    router.push('/auth')
+  }
+
   return (
     <AppShell>
       <AppHeader>
@@ -12,8 +43,8 @@ export default function HomePage() {
           <BrandHeader size="md" />
         </div>
         <div className="flex items-center space-x-2">
-          <Button variant="outline">Sign In</Button>
-          <Button variant="brand">Get Started</Button>
+          <Button variant="outline" onClick={handleSignIn}>Sign In</Button>
+          <Button variant="brand" onClick={handleGetStarted}>Get Started</Button>
         </div>
       </AppHeader>
 
@@ -34,10 +65,10 @@ export default function HomePage() {
               Professional screenplay coverage and analysis powered by AI. Upload your script and receive detailed feedback in minutes, not weeks.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" variant="brand" className="min-w-[160px]">
+              <Button size="lg" variant="brand" className="min-w-[160px]" onClick={handleStartAnalysis}>
                 Start Free Analysis
               </Button>
-              <Button size="lg" variant="outline" className="min-w-[160px]">
+              <Button size="lg" variant="outline" className="min-w-[160px]" onClick={handleViewSample}>
                 View Sample Report
               </Button>
             </div>
@@ -105,7 +136,7 @@ export default function HomePage() {
                 <div className="text-4xl">📄</div>
                 <h3 className="text-lg font-semibold">Drop your screenplay here</h3>
                 <p className="text-muted-foreground">Supports .fdx, .fountain, and .pdf files up to 10MB</p>
-                <Button variant="brand">
+                <Button variant="brand" onClick={handleChooseFile}>
                   Choose File
                 </Button>
               </div>

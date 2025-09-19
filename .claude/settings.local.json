@@ -12,7 +12,8 @@
       "Bash(npm install:*)",
       "Bash(npx prisma:*)",
       "Bash(npm run:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(set DATABASE_URL=file:./dev.db)"
     ],
     "deny": [],
     "ask": []

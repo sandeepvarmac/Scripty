@@ -14,9 +14,27 @@ export default function AuthPage() {
   const handleSignIn = async (data: { email: string; password: string }) => {
     setIsLoading(true)
     try {
-      // TODO: Implement actual sign-in logic
-      console.log("Sign in:", data)
-      await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
+      const response = await fetch('/api/auth/test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        // Successful sign in - redirect to dashboard
+        console.log('Sign in successful:', result.user)
+        window.location.href = '/dashboard'
+      } else {
+        // Show error message
+        alert(result.error || 'Sign in failed')
+      }
+    } catch (error) {
+      console.error('Sign in error:', error)
+      alert('Network error. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -31,12 +49,31 @@ export default function AuthPage() {
   }) => {
     setIsLoading(true)
     try {
-      // TODO: Implement actual sign-up logic
-      console.log("Sign up:", data)
-      await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
+      const response = await fetch('/api/auth/test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+          privacyDoNotTrain: data.privacyOptOut,
+        }),
+      })
 
-      // After successful signup, show onboarding
-      setShowOnboarding(true)
+      const result = await response.json()
+
+      if (response.ok) {
+        // Successful sign up - show onboarding
+        console.log('Sign up successful:', result.user)
+        setShowOnboarding(true)
+      } else {
+        // Show error message
+        alert(result.error || 'Sign up failed')
+      }
+    } catch (error) {
+      console.error('Sign up error:', error)
+      alert('Network error. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -48,8 +85,8 @@ export default function AuthPage() {
       console.log("Onboarding complete:", onboardingData)
       await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
 
-      // TODO: Redirect to dashboard
-      window.location.href = "/"
+      // Redirect to dashboard
+      window.location.href = "/dashboard"
     } catch (error) {
       console.error("Failed to complete onboarding:", error)
     }
