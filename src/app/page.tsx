@@ -1,14 +1,15 @@
 import { AppShell, AppHeader, AppContent } from "@/components/app-shell"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ScriptyBoyLogo, ScriptyBoyTextLogo } from "@/components/ui/logo"
+import { ScriptyBoyLogo } from "@/components/ui/logo"
+import { BrandHeader } from "@/components/ui/brand-header"
 
 export default function HomePage() {
   return (
     <AppShell>
       <AppHeader>
         <div className="flex items-center space-x-4">
-          <ScriptyBoyLogo size="md" showWordmark />
+          <BrandHeader size="md" />
         </div>
         <div className="flex items-center space-x-2">
           <Button variant="outline">Sign In</Button>

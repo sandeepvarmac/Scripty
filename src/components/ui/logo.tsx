@@ -17,23 +17,13 @@ const sizeClasses = {
 export function ScriptyBoyLogo({ size = "md", showWordmark = false, className }: LogoProps) {
   if (showWordmark) {
     return (
-      <div className={cn("flex items-center space-x-3", className)}>
-        <div className={cn(sizeClasses[size], "relative")}>
-          <Image
-            src="/logo.png"
-            alt="ScriptyBoy"
-            fill
-            className="object-contain"
-          />
-        </div>
-        <div className="relative h-6 w-24">
-          <Image
-            src="/wordmark.png"
-            alt="ScriptyBoy"
-            fill
-            className="object-contain"
-          />
-        </div>
+      <div className={cn("relative h-8 w-32", className)}>
+        <Image
+          src="/wordmark.png"
+          alt="ScriptyBoy"
+          fill
+          className="object-contain"
+        />
       </div>
     )
   }
