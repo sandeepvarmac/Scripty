@@ -8,10 +8,17 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { ErrorAlert } from "@/components/ui/error-alert"
+import { PasswordStrengthIndicator, validatePassword } from "@/components/ui/password-strength"
 
 const signUpSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  password: z.string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/\d/, "Password must contain at least one number")
+    .regex(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/, "Password must contain at least one special character"),
   confirmPassword: z.string(),
   privacyOptOut: z.boolean().default(true),
   terms: z.boolean().refine(val => val === true, {
@@ -33,11 +40,15 @@ interface SignUpFormProps {
 export function SignUpForm({ onSubmit, onToggleForm, isLoading }: SignUpFormProps) {
   const [privacyOptOut, setPrivacyOptOut] = React.useState(true)
   const [acceptTerms, setAcceptTerms] = React.useState(false)
+  const [password, setPassword] = React.useState("")
+  const [error, setError] = React.useState<string | null>(null)
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    watch,
+    setValue
   } = useForm<SignUpFormData>({
     defaultValues: {
       privacyOptOut: true,
@@ -45,12 +56,31 @@ export function SignUpForm({ onSubmit, onToggleForm, isLoading }: SignUpFormProp
     }
   })
 
-  const onFormSubmit = (data: SignUpFormData) => {
-    onSubmit({
-      ...data,
-      privacyOptOut,
-      terms: acceptTerms
-    })
+  const watchedPassword = watch("password", "")
+
+  React.useEffect(() => {
+    setPassword(watchedPassword)
+  }, [watchedPassword])
+
+  const onFormSubmit = async (data: SignUpFormData) => {
+    try {
+      setError(null)
+
+      // Validate password strength
+      const passwordStrength = validatePassword(data.password)
+      if (passwordStrength.score < 4) {
+        setError("Please choose a stronger password to secure your account")
+        return
+      }
+
+      await onSubmit({
+        ...data,
+        privacyOptOut,
+        terms: acceptTerms
+      })
+    } catch (err) {
+      setError("Failed to create account. Please try again.")
+    }
   }
 
   return (
@@ -62,6 +92,13 @@ export function SignUpForm({ onSubmit, onToggleForm, isLoading }: SignUpFormProp
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {error && (
+          <ErrorAlert
+            message={error}
+            onDismiss={() => setError(null)}
+          />
+        )}
+
         <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
@@ -86,6 +123,9 @@ export function SignUpForm({ onSubmit, onToggleForm, isLoading }: SignUpFormProp
             {errors.password && (
               <p className="text-sm text-destructive">{errors.password.message}</p>
             )}
+
+            {/* Password Strength Indicator */}
+            <PasswordStrengthIndicator password={password} />
           </div>
 
           <div className="space-y-2">

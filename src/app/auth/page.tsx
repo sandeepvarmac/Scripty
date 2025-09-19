@@ -29,12 +29,13 @@ export default function AuthPage() {
         console.log('Sign in successful:', result.user)
         window.location.href = '/dashboard'
       } else {
-        // Show error message
-        alert(result.error || 'Sign in failed')
+        // Throw error to be caught by form
+        throw new Error(result.error || 'Sign in failed')
       }
     } catch (error) {
       console.error('Sign in error:', error)
-      alert('Network error. Please try again.')
+      // Re-throw to let form handle the error display
+      throw error
     } finally {
       setIsLoading(false)
     }
@@ -68,12 +69,13 @@ export default function AuthPage() {
         console.log('Sign up successful:', result.user)
         setShowOnboarding(true)
       } else {
-        // Show error message
-        alert(result.error || 'Sign up failed')
+        // Throw error to be caught by form
+        throw new Error(result.error || 'Sign up failed')
       }
     } catch (error) {
       console.error('Sign up error:', error)
-      alert('Network error. Please try again.')
+      // Re-throw to let form handle the error display
+      throw error
     } finally {
       setIsLoading(false)
     }

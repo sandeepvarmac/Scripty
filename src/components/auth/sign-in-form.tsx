@@ -7,10 +7,11 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { ErrorAlert } from "@/components/ui/error-alert"
 
 const signInSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  password: z.string().min(1, "Password is required"),
 })
 
 type SignInFormData = z.infer<typeof signInSchema>
@@ -22,11 +23,22 @@ interface SignInFormProps {
 }
 
 export function SignInForm({ onSubmit, onToggleForm, isLoading }: SignInFormProps) {
+  const [error, setError] = React.useState<string | null>(null)
+
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<SignInFormData>()
+
+  const onFormSubmit = async (data: SignInFormData) => {
+    try {
+      setError(null)
+      await onSubmit(data)
+    } catch (err) {
+      setError("Failed to sign in. Please check your credentials and try again.")
+    }
+  }
 
   return (
     <Card className="w-full max-w-md">
@@ -37,7 +49,14 @@ export function SignInForm({ onSubmit, onToggleForm, isLoading }: SignInFormProp
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        {error && (
+          <ErrorAlert
+            message={error}
+            onDismiss={() => setError(null)}
+          />
+        )}
+
+        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
