@@ -17,7 +17,8 @@
       "Bash(npx shadcn@latest add:*)",
       "Bash(printf:*)",
       "Bash(set PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=yes)",
-      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=yes npx prisma db push --force-reset)"
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=yes npx prisma db push --force-reset)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []
