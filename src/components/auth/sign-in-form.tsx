@@ -36,7 +36,7 @@ export function SignInForm({ onSubmit, onToggleForm, isLoading }: SignInFormProp
       setError(null)
       await onSubmit(data)
     } catch (err) {
-      setError("Failed to sign in. Please check your credentials and try again.")
+      setError(err instanceof Error ? err.message : "Failed to sign in. Please check your credentials and try again.")
     }
   }
 

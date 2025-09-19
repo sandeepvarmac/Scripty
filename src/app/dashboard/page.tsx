@@ -137,15 +137,20 @@ export default function DashboardPage() {
           <BrandHeader size="md" />
         </div>
         <div className="flex items-center space-x-4">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src="/avatars/user.png" alt={displayName} />
-                  <AvatarFallback>{initials}</AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
+          <div className="flex items-center space-x-3">
+            <div className="text-right">
+              <p className="text-sm font-medium leading-none">{user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : displayName}</p>
+              <p className="text-xs text-muted-foreground">{user.plan} Plan</p>
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src="/avatars/user.png" alt={displayName} />
+                    <AvatarFallback>{initials}</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
@@ -174,7 +179,8 @@ export default function DashboardPage() {
                 <span>Sign out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
-          </DropdownMenu>
+            </DropdownMenu>
+          </div>
         </div>
       </AppHeader>
 

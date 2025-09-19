@@ -12,6 +12,8 @@ import { ErrorAlert } from "@/components/ui/error-alert"
 import { PasswordStrengthIndicator, validatePassword } from "@/components/ui/password-strength"
 
 const signUpSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
   email: z.string().email("Please enter a valid email address"),
   password: z.string()
     .min(8, "Password must be at least 8 characters")
@@ -79,7 +81,7 @@ export function SignUpForm({ onSubmit, onToggleForm, isLoading }: SignUpFormProp
         terms: acceptTerms
       })
     } catch (err) {
-      setError("Failed to create account. Please try again.")
+      setError(err instanceof Error ? err.message : "Failed to create account. Please try again.")
     }
   }
 
@@ -100,6 +102,31 @@ export function SignUpForm({ onSubmit, onToggleForm, isLoading }: SignUpFormProp
         )}
 
         <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="firstName">First Name</Label>
+              <Input
+                id="firstName"
+                placeholder="John"
+                {...register("firstName", { required: true })}
+              />
+              {errors.firstName && (
+                <p className="text-sm text-destructive">{errors.firstName.message}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="lastName">Last Name</Label>
+              <Input
+                id="lastName"
+                placeholder="Doe"
+                {...register("lastName", { required: true })}
+              />
+              {errors.lastName && (
+                <p className="text-sm text-destructive">{errors.lastName.message}</p>
+              )}
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input

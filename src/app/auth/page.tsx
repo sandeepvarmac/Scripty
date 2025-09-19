@@ -42,6 +42,8 @@ export default function AuthPage() {
   }
 
   const handleSignUp = async (data: {
+    firstName: string
+    lastName: string
     email: string
     password: string
     confirmPassword: string
@@ -56,6 +58,8 @@ export default function AuthPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          firstName: data.firstName,
+          lastName: data.lastName,
           email: data.email,
           password: data.password,
           privacyDoNotTrain: data.privacyOptOut,

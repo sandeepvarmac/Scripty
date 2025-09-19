@@ -47,7 +47,7 @@ export class RealAuthService {
         await this.logAuthEvent('SIGN_UP', data.email, false, ipAddress, userAgent, {
           error: 'Email already exists'
         })
-        return { success: false, error: 'Email already exists' }
+        return { success: false, error: 'An account with this email already exists. Please sign in instead or use a different email address.' }
       }
 
       // Hash password
@@ -117,9 +117,9 @@ export class RealAuthService {
 
       if (!user || !user.passwordHash) {
         await this.logAuthEvent('FAILED_LOGIN', data.email, false, ipAddress, userAgent, {
-          error: 'Invalid credentials'
+          error: 'User not found'
         })
-        return { success: false, error: 'Invalid email or password' }
+        return { success: false, error: 'No account found with this email address. Please check your email or sign up for a new account.' }
       }
 
       // Verify password
@@ -129,7 +129,7 @@ export class RealAuthService {
         await this.logAuthEvent('FAILED_LOGIN', data.email, false, ipAddress, userAgent, {
           error: 'Invalid password'
         })
-        return { success: false, error: 'Invalid email or password' }
+        return { success: false, error: 'Incorrect password. Please check your password and try again.' }
       }
 
       // Update last login
