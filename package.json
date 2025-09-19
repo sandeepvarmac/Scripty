@@ -5,9 +5,15 @@
   "scripts": {
     "dev": "next dev -p 3006",
     "build": "next build",
-    "start": "next start -p 3006",
+    "start": "next start",
+    "start:dev": "next start -p 3006",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "lint:fix": "next lint --fix",
+    "type-check": "tsc --noEmit",
+    "test": "echo \"No tests specified yet\" && exit 0",
+    "test:watch": "echo \"No tests specified yet\" && exit 0",
+    "docker:build": "docker build -t scriptyboy .",
+    "docker:run": "docker run -p 3000:3000 scriptyboy"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.2",

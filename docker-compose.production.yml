@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  app:
+    image: ghcr.io/your-username/scripty:latest
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_ENV=production
+    deploy:
+      replicas: 3
+      update_config:
+        parallelism: 1
+        delay: 30s
+        order: start-first
+        failure_action: rollback
+        max_failure_ratio: 0.1
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  # Blue-green deployment setup
+  app-blue:
+    extends: app
+    environment:
+      - DEPLOYMENT_SLOT=blue
+
+  app-green:
+    extends: app
+    environment:
+      - DEPLOYMENT_SLOT=green
+
+  # Production load balancer
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/production.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - app
