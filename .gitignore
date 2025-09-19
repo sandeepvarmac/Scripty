@@ -83,3 +83,4 @@ prisma/migrations/*
 
 # Uploads
 uploads/
+/generated/prisma
