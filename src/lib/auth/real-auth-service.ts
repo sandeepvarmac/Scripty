@@ -28,9 +28,8 @@ export interface AuthResult {
     id: string
     email: string
     name: string
-    plan: PlanType
-    analysesUsed: number
-    analysesLimit: number
+    firstName: string
+    lastName: string
   }
   token?: string
   error?: string
@@ -95,9 +94,8 @@ export class RealAuthService {
           id: user.id,
           email: user.email,
           name: user.name || user.email,
-          plan: user.plan,
-          analysesUsed: user.analysesUsed,
-          analysesLimit: user.analysesLimit
+          firstName: user.firstName || '',
+          lastName: user.lastName || ''
         },
         token
       }
@@ -158,9 +156,8 @@ export class RealAuthService {
           id: user.id,
           email: user.email,
           name: user.name || user.email,
-          plan: user.plan,
-          analysesUsed: user.analysesUsed,
-          analysesLimit: user.analysesLimit
+          firstName: user.firstName || '',
+          lastName: user.lastName || ''
         },
         token
       }
