@@ -15,8 +15,12 @@ export const metadata: Metadata = {
   authors: [{ name: "ScriptyBoy" }],
   creator: "ScriptyBoy",
   publisher: "ScriptyBoy",
-  viewport: "width=device-width, initial-scale=1",
   robots: "index, follow",
+}
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
 }
 
 export default function RootLayout({

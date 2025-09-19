@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { RealAuthService } from '@/lib/auth/real-auth-service'
+import { ProjectType } from '@prisma/client'
 
 const signUpSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -17,17 +19,41 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedData = signUpSchema.parse(body)
 
-    // Mock successful signup for now
-    console.log('Signup endpoint called with:', validatedData)
+    // Get client info for audit logging
+    const ipAddress = request.ip || request.headers.get('x-forwarded-for') || undefined
+    const userAgent = request.headers.get('user-agent') || undefined
 
+    // Call real auth service
+    const result = await RealAuthService.signUp({
+      email: validatedData.email,
+      password: validatedData.password,
+      firstName: validatedData.firstName,
+      lastName: validatedData.lastName,
+      projectType: validatedData.projectType as ProjectType,
+      privacyDoNotTrain: validatedData.privacyDoNotTrain,
+      retentionDays: validatedData.retentionDays,
+      emailNotifications: validatedData.emailNotifications
+    }, ipAddress, userAgent)
+
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error },
+        { status: 400 }
+      )
+    }
+
+    // Set HTTP-only cookie with JWT token
     const response = NextResponse.json({
       success: true,
-      message: 'Signup endpoint working!',
-      user: {
-        id: 'mock-user-id',
-        email: validatedData.email,
-        name: 'Test User',
-      },
+      message: 'Account created successfully',
+      user: result.user,
+    })
+
+    response.cookies.set('auth-token', result.token!, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60 // 24 hours
     })
 
     return response

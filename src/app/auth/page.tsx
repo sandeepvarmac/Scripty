@@ -14,7 +14,7 @@ export default function AuthPage() {
   const handleSignIn = async (data: { email: string; password: string }) => {
     setIsLoading(true)
     try {
-      const response = await fetch('/api/auth/test', {
+      const response = await fetch('/api/auth/signin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -49,7 +49,7 @@ export default function AuthPage() {
   }) => {
     setIsLoading(true)
     try {
-      const response = await fetch('/api/auth/test', {
+      const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -102,7 +102,7 @@ export default function AuthPage() {
       {/* Left side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 gradient-brand items-center justify-center p-12">
         <div className="text-center text-white space-y-6">
-          <ScriptyBoyLogo size="lg" className="mx-auto filter brightness-0 invert" />
+          <ScriptyBoyLogo size="lg" className="mx-auto" />
           <div className="space-y-4">
             <h1 className="text-4xl font-bold">Welcome to ScriptyBoy</h1>
             <p className="text-xl text-white/90">

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { AuthService } from '@/lib/auth/auth-service'
 import { z } from 'zod'
+import { RealAuthService } from '@/lib/auth/real-auth-service'
 
 const signInSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -12,53 +12,35 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedData = signInSchema.parse(body)
 
-    const ipAddress = request.ip || request.headers.get('x-forwarded-for')?.split(',')[0]
-    const userAgent = request.headers.get('user-agent')
+    // Get client info for audit logging
+    const ipAddress = request.ip || request.headers.get('x-forwarded-for') || undefined
+    const userAgent = request.headers.get('user-agent') || undefined
 
-    const result = await AuthService.signIn(
-      validatedData,
-      ipAddress || undefined,
-      userAgent || undefined
-    )
+    // Call real auth service
+    const result = await RealAuthService.signIn({
+      email: validatedData.email,
+      password: validatedData.password
+    }, ipAddress, userAgent)
 
     if (!result.success) {
       return NextResponse.json(
-        {
-          error: result.error,
-          remainingAttempts: result.remainingAttempts,
-        },
+        { error: result.error },
         { status: 401 }
       )
     }
 
-    // Set HTTP-only cookies for tokens
+    // Set HTTP-only cookie with JWT token
     const response = NextResponse.json({
       success: true,
-      user: {
-        id: result.user!.id,
-        email: result.user!.email,
-        name: result.user!.name,
-        firstName: result.user!.firstName,
-        lastName: result.user!.lastName,
-        projectType: result.user!.projectType,
-        role: result.user!.role?.name,
-        lastLoginAt: result.user!.lastLoginAt,
-      },
+      message: 'Signed in successfully',
+      user: result.user,
     })
 
-    // Set secure cookies
-    response.cookies.set('accessToken', result.tokens!.accessToken, {
+    response.cookies.set('auth-token', result.token!, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 15 * 60, // 15 minutes
-    })
-
-    response.cookies.set('refreshToken', result.tokens!.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60, // 7 days
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60 // 24 hours
     })
 
     return response

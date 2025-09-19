@@ -13,7 +13,9 @@
       "Bash(npx prisma:*)",
       "Bash(npm run:*)",
       "Bash(npm uninstall:*)",
-      "Bash(set DATABASE_URL=file:./dev.db)"
+      "Bash(set DATABASE_URL=file:./dev.db)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(printf:*)"
     ],
     "deny": [],
     "ask": []

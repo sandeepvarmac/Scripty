@@ -5,16 +5,24 @@ import { AppShell, AppHeader, AppContent } from "@/components/app-shell"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { BrandHeader } from "@/components/ui/brand-header"
-import { Plus, Upload, FileText, BarChart3, Clock, Settings, LogOut } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Plus, Upload, FileText, BarChart3, Clock, Settings, LogOut, User, CreditCard } from "lucide-react"
 import { useRouter } from "next/navigation"
 
-// Mock user data - will be replaced with real auth context
-const mockUser = {
-  name: "John Doe",
-  email: "john@example.com",
-  plan: "Solo",
-  analysesUsed: 2,
-  analysesLimit: 10,
+interface UserData {
+  id: string
+  email: string
+  name: string | null
+  firstName: string | null
+  lastName: string | null
+  plan: string
+  analysesUsed: number
+  analysesLimit: number
+  projectType: string
+  privacyDoNotTrain: boolean
+  createdAt: string
+  lastLoginAt: string | null
 }
 
 // Mock recent analyses
@@ -39,10 +47,46 @@ const mockAnalyses = [
 
 export default function DashboardPage() {
   const router = useRouter()
+  const [user, setUser] = React.useState<UserData | null>(null)
+  const [loading, setLoading] = React.useState(true)
+  const [error, setError] = React.useState<string | null>(null)
 
-  const handleSignOut = () => {
-    // TODO: Implement actual sign out
-    router.push('/')
+  React.useEffect(() => {
+    fetchUserData()
+  }, [])
+
+  const fetchUserData = async () => {
+    try {
+      const response = await fetch('/api/user/me')
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          // User not authenticated, redirect to auth
+          router.push('/auth')
+          return
+        }
+        throw new Error('Failed to fetch user data')
+      }
+
+      const data = await response.json()
+      setUser(data.user)
+    } catch (err) {
+      console.error('Error fetching user data:', err)
+      setError('Failed to load user data')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSignOut = async () => {
+    try {
+      // Clear auth cookie and redirect
+      document.cookie = 'auth-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+      router.push('/')
+    } catch (error) {
+      console.error('Sign out error:', error)
+      router.push('/')
+    }
   }
 
   const handleNewAnalysis = () => {
@@ -55,7 +99,36 @@ export default function DashboardPage() {
     alert(`View analysis ${id} - coming soon!`)
   }
 
-  const usagePercentage = (mockUser.analysesUsed / mockUser.analysesLimit) * 100
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error || 'User data not found'}</p>
+          <Button onClick={() => router.push('/auth')}>
+            Sign In
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  const displayName = user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email
+  const initials = user.firstName && user.lastName
+    ? `${user.firstName[0]}${user.lastName[0]}`
+    : user.name?.split(' ').map(n => n[0]).join('') || user.email[0].toUpperCase()
+
+  const usagePercentage = (user.analysesUsed / user.analysesLimit) * 100
 
   return (
     <AppShell>
@@ -64,15 +137,44 @@ export default function DashboardPage() {
           <BrandHeader size="md" />
         </div>
         <div className="flex items-center space-x-4">
-          <div className="hidden md:flex items-center space-x-2 text-sm text-muted-foreground">
-            <span>{mockUser.name}</span>
-            <span>•</span>
-            <span>{mockUser.plan} Plan</span>
-          </div>
-          <Button variant="outline" size="sm" onClick={handleSignOut}>
-            <LogOut className="h-4 w-4 mr-2" />
-            Sign Out
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src="/avatars/user.png" alt={displayName} />
+                  <AvatarFallback>{initials}</AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">{displayName}</p>
+                  <p className="text-xs leading-none text-muted-foreground">
+                    {user.email}
+                  </p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <User className="mr-2 h-4 w-4" />
+                <span>Profile</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <CreditCard className="mr-2 h-4 w-4" />
+                <span>Billing</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Settings</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleSignOut}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Sign out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </AppHeader>
 
@@ -80,7 +182,7 @@ export default function DashboardPage() {
         <div className="max-w-7xl mx-auto space-y-8">
           {/* Welcome Section */}
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold">Welcome back, {mockUser.name.split(' ')[0]}!</h1>
+            <h1 className="text-3xl font-bold">Welcome back, {user.firstName || displayName.split(' ')[0]}!</h1>
             <p className="text-muted-foreground">
               Ready to analyze your next screenplay? Upload a script to get started.
             </p>
@@ -94,7 +196,7 @@ export default function DashboardPage() {
                 <BarChart3 className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{mockUser.analysesUsed}</div>
+                <div className="text-2xl font-bold">{user.analysesUsed}</div>
                 <div className="flex items-center space-x-2 text-xs text-muted-foreground">
                   <div className="flex-1 bg-muted rounded-full h-2">
                     <div
@@ -102,7 +204,7 @@ export default function DashboardPage() {
                       style={{ width: `${usagePercentage}%` }}
                     />
                   </div>
-                  <span>{mockUser.analysesLimit - mockUser.analysesUsed} remaining</span>
+                  <span>{user.analysesLimit - user.analysesUsed} remaining</span>
                 </div>
               </CardContent>
             </Card>
@@ -113,9 +215,9 @@ export default function DashboardPage() {
                 <Settings className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{mockUser.plan}</div>
+                <div className="text-2xl font-bold">{user.plan}</div>
                 <p className="text-xs text-muted-foreground">
-                  {mockUser.analysesLimit} analyses per month
+                  {user.analysesLimit} analyses per month
                 </p>
               </CardContent>
             </Card>
