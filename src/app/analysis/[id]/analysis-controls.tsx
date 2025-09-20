@@ -101,6 +101,7 @@ export function AnalysisControls({ scriptId }: AnalysisControlsProps) {
       <Button
         onClick={() => runAnalysis(['COMPREHENSIVE'])}
         disabled={isAnalyzing}
+        variant="brand"
         className="flex items-center space-x-2"
       >
         {isAnalyzing ? (

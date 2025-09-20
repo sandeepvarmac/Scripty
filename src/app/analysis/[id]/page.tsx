@@ -7,8 +7,25 @@ import { BrandHeader } from '@/components/ui/brand-header'
 import { RealAuthService } from '@/lib/auth/real-auth-service'
 import { getScriptWithScenes } from '@/lib/evidence-store'
 import { format } from 'date-fns'
-import { AlertCircle, Film, MapPin, MessageSquare, User, FileText, Play, RefreshCw, CheckCircle, XCircle, Clock } from 'lucide-react'
+import { AlertCircle, Film, MapPin, MessageSquare, User, FileText, Play, RefreshCw, CheckCircle, XCircle, Clock, ArrowLeft } from 'lucide-react'
 import { AnalysisControls } from './analysis-controls'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import Link from 'next/link'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb'
 
 type SceneWithEvidence = Scene & { evidences: Evidence[] }
 type ScriptAnalysis = Script & {
@@ -47,30 +64,89 @@ export default async function AnalysisPage({ params }: AnalysisPageProps) {
 
   const issuesByType = groupEvidenceByType(sceneIssues)
 
+  const fullName = user.name ?? user.email
+
   return (
     <AppShell
       footer={
         <AppFooter>
-          <span>Analysis generated {format(script.processedAt ?? script.uploadedAt, 'MMM d, yyyy')}</span>
-          <span>{user.email}</span>
+          <div className="flex items-center space-x-6">
+            <span>© {new Date().getFullYear()} ScriptyBoy. All rights reserved.</span>
+            <div className="flex items-center space-x-4">
+              <button className="hover:text-foreground transition-colors">Privacy Policy</button>
+              <button className="hover:text-foreground transition-colors">Terms of Service</button>
+              <button className="hover:text-foreground transition-colors">Support</button>
+            </div>
+          </div>
+          <div className="flex items-center space-x-4">
+            <span className="text-xs">Status: All systems operational</span>
+            <div className="flex items-center space-x-1">
+              <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+              <span className="text-xs">Online</span>
+            </div>
+          </div>
         </AppFooter>
       }
     >
       <AppHeader>
         <div className="flex items-center space-x-4">
+          <Link href="/dashboard">
+            <Button variant="ghost">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
+          </Link>
           <BrandHeader size="md" />
           <div>
             <p className="font-semibold text-lg">{script.title ?? script.originalFilename}</p>
             <p className="text-sm text-muted-foreground">Analysis overview</p>
           </div>
         </div>
-        <div className="text-right">
-          <p className="text-sm text-muted-foreground">Logged in as</p>
-          <p className="font-medium">{user.name ?? user.email}</p>
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
+            <div className="text-right">
+              <p className="text-sm font-medium leading-none">{fullName}</p>
+              <p className="text-xs text-muted-foreground">Analysis View</p>
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src="/avatars/user.png" alt={fullName} />
+                    <AvatarFallback>{fullName.slice(0, 2).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard">Dashboard</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/upload">Upload Script</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/auth">Sign Out</Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </AppHeader>
 
       <AppContent className="space-y-8 pb-16">
+        {/* Breadcrumb Navigation */}
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{script.title ?? script.originalFilename}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+
         <section className="grid gap-6 lg:grid-cols-3">
           <Card>
             <CardHeader>

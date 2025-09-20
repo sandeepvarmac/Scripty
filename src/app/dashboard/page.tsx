@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Plus, Upload, FileText, BarChart3, Clock, Settings, LogOut, User, CreditCard, Bell, Search, HelpCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { ScriptsDashboard } from './scripts-dashboard'
 
 interface UserData {
   id: string
@@ -374,67 +375,8 @@ export default function DashboardPage() {
             </Card>
           </div>
 
-          {/* Recent Analyses */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Analyses</CardTitle>
-              <CardDescription>
-                Your latest screenplay analysis results
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {mockAnalyses.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <FileText className="h-12 w-12 mx-auto mb-4" />
-                  <p>No analyses yet. Upload your first script to get started!</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {mockAnalyses.map((analysis) => (
-                    <div
-                      key={analysis.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 cursor-pointer"
-                      onClick={() => handleViewAnalysis(analysis.id)}
-                    >
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 rounded-lg bg-brand/10 flex items-center justify-center">
-                          <FileText className="h-5 w-5 text-brand" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold">{analysis.title}</h3>
-                          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                            <span>{analysis.type}</span>
-                            <span>•</span>
-                            <span>{analysis.createdAt}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-4">
-                        <div className="text-right">
-                          <div className="flex items-center space-x-2">
-                            {analysis.status === "Processing" ? (
-                              <>
-                                <Clock className="h-4 w-4 text-yellow-500" />
-                                <span className="text-sm text-yellow-600">Processing</span>
-                              </>
-                            ) : (
-                              <>
-                                <span className="text-lg font-bold">{analysis.score}</span>
-                                <span className="text-sm text-muted-foreground">/10</span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                        <Button variant="outline" size="sm">
-                          View Report
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          {/* Scripts Dashboard */}
+          <ScriptsDashboard />
         </div>
       </AppContent>
     </AppShell>
