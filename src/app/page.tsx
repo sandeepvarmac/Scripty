@@ -1,6 +1,6 @@
 "use client"
 
-import { AppShell, AppHeader, AppContent } from "@/components/app-shell"
+import { AppShell, AppHeader, AppContent, AppFooter } from "@/components/app-shell"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScriptyBoyLogo } from "@/components/ui/logo"
@@ -36,8 +36,29 @@ export default function HomePage() {
     router.push('/auth')
   }
 
+  const currentYear = new Date().getFullYear()
+
   return (
-    <AppShell>
+    <AppShell
+      footer={
+        <AppFooter>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <span>© {currentYear} ScriptyBoy. All rights reserved.</span>
+              <div className="flex items-center gap-4 text-sm">
+                <button className="hover:text-foreground transition-colors">Privacy Policy</button>
+                <button className="hover:text-foreground transition-colors">Terms of Service</button>
+                <button className="hover:text-foreground transition-colors">Support</button>
+                <button className="hover:text-foreground transition-colors">Contact</button>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 text-sm">
+              <span>Professional AI-powered screenplay analysis</span>
+            </div>
+          </div>
+        </AppFooter>
+      }
+    >
       <AppHeader>
         <div className="flex items-center space-x-4">
           <BrandHeader size="md" />

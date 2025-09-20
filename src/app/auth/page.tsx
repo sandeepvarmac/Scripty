@@ -12,6 +12,7 @@ export default function AuthPage() {
   const [isSignUp, setIsSignUp] = React.useState(false)
   const [isLoading, setIsLoading] = React.useState(false)
   const [showOnboarding, setShowOnboarding] = React.useState(false)
+  const [signUpData, setSignUpData] = React.useState<{firstName: string, lastName: string, email: string} | null>(null)
 
   const handleSignIn = async (data: { email: string; password: string }) => {
     setIsLoading(true)
@@ -71,8 +72,13 @@ export default function AuthPage() {
       const result = await response.json()
 
       if (response.ok) {
-        // Successful sign up - show onboarding
+        // Successful sign up - store data and show onboarding
         console.log('Sign up successful:', result.user)
+        setSignUpData({
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email
+        })
         setShowOnboarding(true)
       } else {
         // Throw error to be caught by form
@@ -102,7 +108,12 @@ export default function AuthPage() {
 
   // Show onboarding wizard after successful signup
   if (showOnboarding) {
-    return <OnboardingWizard onComplete={handleOnboardingComplete} />
+    return (
+      <OnboardingWizard
+        onComplete={handleOnboardingComplete}
+        initialData={signUpData || undefined}
+      />
+    )
   }
 
   return (

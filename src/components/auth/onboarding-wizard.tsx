@@ -19,14 +19,22 @@ interface OnboardingData {
 
 interface OnboardingWizardProps {
   onComplete: (data: OnboardingData) => Promise<void>
+  initialData?: {
+    firstName?: string
+    lastName?: string
+    email?: string
+  }
 }
 
-export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
-  const [step, setStep] = React.useState(1)
+export function OnboardingWizard({ onComplete, initialData }: OnboardingWizardProps) {
+  // Skip name step if we already have the data
+  const skipNameStep = !!(initialData?.firstName && initialData?.lastName)
+
+  const [step, setStep] = React.useState(skipNameStep ? 2 : 1)
   const [isLoading, setIsLoading] = React.useState(false)
   const [formData, setFormData] = React.useState<OnboardingData>({
-    firstName: "",
-    lastName: "",
+    firstName: initialData?.firstName || "",
+    lastName: initialData?.lastName || "",
     projectType: "feature",
     privacyDoNotTrain: true, // Default ON as per requirements
     retentionDays: 90,
@@ -46,7 +54,8 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
     }
   }
 
-  const totalSteps = 3
+  const totalSteps = skipNameStep ? 2 : 3
+  const startStep = skipNameStep ? 2 : 1
 
   return (
     <div className="min-h-screen flex items-center justify-center p-8 bg-gradient-to-br from-background to-muted">
@@ -65,12 +74,12 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
           <div className="w-full bg-muted rounded-full h-2">
             <div
               className="gradient-brand h-2 rounded-full transition-all duration-300"
-              style={{ width: `${(step / totalSteps) * 100}%` }}
+              style={{ width: `${((step - startStep + 1) / totalSteps) * 100}%` }}
             />
           </div>
 
-          {/* Step 1: Personal Info */}
-          {step === 1 && (
+          {/* Step 1: Personal Info (only if name not provided) */}
+          {step === 1 && !skipNameStep && (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Tell us about yourself</h3>
               <div className="grid grid-cols-2 gap-4">
@@ -110,8 +119,30 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
             </div>
           )}
 
-          {/* Step 2: Privacy Settings */}
-          {step === 2 && (
+          {/* Project Type (when skipping name step) */}
+          {step === 2 && skipNameStep && (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">What do you primarily write?</h3>
+              <p className="text-muted-foreground">This helps us tailor the analysis to your needs.</p>
+              <div className="space-y-2">
+                <Label htmlFor="projectType">Project Type</Label>
+                <select
+                  id="projectType"
+                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+                  value={formData.projectType}
+                  onChange={(e) => updateFormData({ projectType: e.target.value as any })}
+                >
+                  <option value="short">Short Films</option>
+                  <option value="feature">Feature Films</option>
+                  <option value="tv">TV/Streaming Series</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+          )}
+
+          {/* Privacy Settings */}
+          {((step === 2 && !skipNameStep) || (step === 3 && skipNameStep)) && (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Privacy & Data Settings</h3>
               <div className="space-y-4 p-4 bg-muted/30 rounded-lg">
@@ -152,8 +183,8 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
             </div>
           )}
 
-          {/* Step 3: Preferences */}
-          {step === 3 && (
+          {/* Preferences */}
+          {((step === 3 && !skipNameStep) || (step === 2 && skipNameStep)) && (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Notification Preferences</h3>
               <div className="space-y-4">
@@ -194,16 +225,16 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
             <Button
               variant="outline"
               onClick={() => setStep(step - 1)}
-              disabled={step === 1}
+              disabled={step === startStep}
             >
               Previous
             </Button>
 
-            {step < totalSteps ? (
+            {step < (startStep + totalSteps - 1) ? (
               <Button
                 variant="brand"
                 onClick={() => setStep(step + 1)}
-                disabled={step === 1 && (!formData.firstName || !formData.lastName)}
+                disabled={!skipNameStep && step === 1 && (!formData.firstName || !formData.lastName)}
               >
                 Continue
               </Button>
