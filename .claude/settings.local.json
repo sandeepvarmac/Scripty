@@ -26,7 +26,10 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(git check-ignore:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(dir:*)",
+      "Bash(powershell:*)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=yes npx prisma migrate reset --force)"
     ],
     "deny": [],
     "ask": []

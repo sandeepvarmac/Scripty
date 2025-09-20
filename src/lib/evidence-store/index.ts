@@ -12,7 +12,7 @@ export interface SaveScriptOptions {
 
 export interface SavedScript {
   id: string
-  title?: string
+  title?: string | null
   format: string
   pageCount: number
   totalScenes: number
@@ -139,21 +139,26 @@ export async function getScriptWithScenes(scriptId: string, userId: string) {
   return await prisma.script.findFirst({
     where: {
       id: scriptId,
-      userId
+      userId,
+      deletedAt: null
     },
     include: {
       scenes: {
+        where: { deletedAt: null },
         orderBy: { orderIndex: 'asc' },
         include: {
           evidences: {
+            where: { deletedAt: null },
             orderBy: [{ confidence: 'desc' }, { createdAt: 'desc' }]
           }
         }
       },
       characters: {
+        where: { deletedAt: null },
         orderBy: { dialogueCount: 'desc' }
       },
       analyses: {
+        where: { deletedAt: null },
         orderBy: { startedAt: 'desc' }
       }
     }
@@ -169,8 +174,10 @@ export async function searchEvidence(
 ) {
   const where: any = {
     scene: {
-      scriptId
-    }
+      scriptId,
+      deletedAt: null
+    },
+    deletedAt: null
   }
 
   if (type) {

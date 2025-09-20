@@ -38,11 +38,12 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     const scriptId = params.id
 
-    // Verify script ownership
+    // Verify script ownership (check only non-deleted scripts)
     const script = await prisma.script.findFirst({
       where: {
         id: scriptId,
-        userId: user.id
+        userId: user.id,
+        deletedAt: null
       }
     })
 
@@ -62,8 +63,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       await tx.script.update({
         where: { id: scriptId },
         data: {
-          deletedAt,
-          status: 'DELETED'
+          deletedAt
         }
       })
 
@@ -80,7 +80,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       })
 
       // Soft delete related analyses
-      await tx.analyse.updateMany({
+      await tx.analysis.updateMany({
         where: { scriptId },
         data: { deletedAt }
       })

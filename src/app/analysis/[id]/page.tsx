@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers'
 import { redirect, notFound } from 'next/navigation'
-import type { Analyse, Character, Evidence, Scene, Script } from '@prisma/client'
+import type { Analysis, Character, Evidence, Scene, Script } from '@prisma/client'
 import { AppShell, AppHeader, AppContent, AppFooter } from '@/components/app-shell'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { BrandHeader } from '@/components/ui/brand-header'
@@ -31,7 +31,7 @@ type SceneWithEvidence = Scene & { evidences: Evidence[] }
 type ScriptAnalysis = Script & {
   scenes: SceneWithEvidence[]
   characters: Character[]
-  analyses: Analyse[]
+  analyses: Analysis[]
 }
 
 interface AnalysisPageProps {

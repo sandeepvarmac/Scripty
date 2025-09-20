@@ -86,7 +86,7 @@ export async function analyzeScript(options: AnalysisOptions): Promise<AnalysisR
 
 // Get analysis history for a script
 export async function getAnalysisHistory(scriptId: string, userId: string) {
-  return await prisma.analyse.findMany({
+  return await prisma.analysis.findMany({
     where: {
       script: {
         id: scriptId,
@@ -99,7 +99,7 @@ export async function getAnalysisHistory(scriptId: string, userId: string) {
 
 // Get specific analysis result
 export async function getAnalysisResult(analysisId: string, userId: string) {
-  return await prisma.analyse.findFirst({
+  return await prisma.analysis.findFirst({
     where: {
       id: analysisId,
       script: {

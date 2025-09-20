@@ -34,8 +34,8 @@ export async function GET(request: NextRequest) {
     // Get user's scripts with analysis data
     const scripts = await prisma.script.findMany({
       where: {
-        userId: user.id
-        // Note: deletedAt filtering temporarily removed until schema is updated
+        userId: user.id,
+        deletedAt: null // Only show non-deleted scripts
       },
       include: {
         analyses: {

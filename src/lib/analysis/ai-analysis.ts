@@ -61,15 +61,19 @@ export async function analyzeScriptWithAI(options: AIAnalysisOptions): Promise<A
 
   // Get script with full data
   const script = await prisma.script.findFirst({
-    where: { id: scriptId, userId },
+    where: { id: scriptId, userId, deletedAt: null },
     include: {
       scenes: {
+        where: { deletedAt: null },
         orderBy: { orderIndex: 'asc' },
         include: {
-          evidences: true
+          evidences: {
+            where: { deletedAt: null }
+          }
         }
       },
       characters: {
+        where: { deletedAt: null },
         orderBy: { dialogueCount: 'desc' }
       }
     }
@@ -84,7 +88,7 @@ export async function analyzeScriptWithAI(options: AIAnalysisOptions): Promise<A
   for (const type of analysisTypes) {
     try {
       // Create analysis record
-      const analysis = await prisma.analyse.create({
+      const analysis = await prisma.analysis.create({
         data: {
           scriptId,
           type,
@@ -130,7 +134,7 @@ export async function analyzeScriptWithAI(options: AIAnalysisOptions): Promise<A
       await generateEvidenceFromAIInsights(scriptId, insights)
 
       // Update analysis record
-      const completedAnalysis = await prisma.analyse.update({
+      const completedAnalysis = await prisma.analysis.update({
         where: { id: analysis.id },
         data: {
           status: 'COMPLETED',

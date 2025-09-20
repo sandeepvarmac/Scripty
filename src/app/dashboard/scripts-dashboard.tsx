@@ -148,19 +148,11 @@ export function ScriptsDashboard() {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Your Scripts</CardTitle>
-            <CardDescription>
-              Manage and analyze your uploaded screenplays
-            </CardDescription>
-          </div>
-          <Link href="/upload">
-            <Button variant="brand">
-              <Plus className="h-4 w-4 mr-2" />
-              Upload Script
-            </Button>
-          </Link>
+        <div>
+          <CardTitle>Your Scripts</CardTitle>
+          <CardDescription>
+            Manage and analyze your uploaded screenplays
+          </CardDescription>
         </div>
       </CardHeader>
       <CardContent>
@@ -228,12 +220,12 @@ export function ScriptsDashboard() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => alert('Delete functionality will be available after database schema update')}
-                        disabled={true}
-                        className="text-gray-400 cursor-not-allowed"
+                        onClick={() => handleDeleteScript(script.id, script.title || script.originalFilename)}
+                        disabled={deletingScript === script.id}
+                        className={deletingScript === script.id ? "text-gray-400 cursor-not-allowed" : ""}
                       >
                         <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
+                        {deletingScript === script.id ? 'Deleting...' : 'Delete'}
                       </Button>
                     </div>
                   </div>

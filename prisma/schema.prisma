@@ -268,6 +268,9 @@ model Script {
   // File storage
   fileUrl          String?  // S3/storage URL for original file
 
+  // Soft delete
+  deletedAt        DateTime?
+
   // Relations
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   scenes           Scene[]
@@ -295,6 +298,7 @@ model Scene {
   analysisData Json?     // Flexible storage for AI analysis results
 
   createdAt    DateTime  @default(now())
+  deletedAt    DateTime?
 
   // Relations
   script       Script    @relation(fields: [scriptId], references: [id], onDelete: Cascade)
@@ -317,6 +321,7 @@ model Character {
   analysisData Json?   // AI-generated character insights
 
   createdAt    DateTime @default(now())
+  deletedAt    DateTime?
 
   // Relations
   script       Script   @relation(fields: [scriptId], references: [id], onDelete: Cascade)
@@ -339,6 +344,7 @@ model Evidence {
   tags         String[]    // Searchable tags
 
   createdAt    DateTime    @default(now())
+  deletedAt    DateTime?
 
   // Relations
   scene        Scene       @relation(fields: [sceneId], references: [id], onDelete: Cascade)
@@ -364,6 +370,7 @@ model Analysis {
   startedAt    DateTime      @default(now())
   completedAt  DateTime?
   errorMessage String?       @db.Text
+  deletedAt    DateTime?
 
   // Relations
   script       Script        @relation(fields: [scriptId], references: [id], onDelete: Cascade)
@@ -404,6 +411,7 @@ enum EvidenceType {
   STRUCTURE_ELEMENT
   GENRE_CONVENTION
   TECHNICAL_ISSUE
+  AI_INSIGHT
 }
 
 enum AnalysisType {
@@ -413,6 +421,13 @@ enum AnalysisType {
   DIALOGUE_REVIEW
   FORMATTING_CHECK
   GENRE_ANALYSIS
+  QUICK_OVERVIEW
+  COMPREHENSIVE
+  STORY_STRUCTURE
+  CHARACTER_DEVELOPMENT
+  DIALOGUE_QUALITY
+  PACING_FLOW
+  THEME_ANALYSIS
 }
 
 enum AnalysisStatus {
