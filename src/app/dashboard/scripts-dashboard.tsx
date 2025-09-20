@@ -228,16 +228,12 @@ export function ScriptsDashboard() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleDeleteScript(script.id, script.title || script.originalFilename)}
-                        disabled={deletingScript === script.id}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => alert('Delete functionality will be available after database schema update')}
+                        disabled={true}
+                        className="text-gray-400 cursor-not-allowed"
                       >
-                        {deletingScript === script.id ? (
-                          <Clock className="h-4 w-4 mr-2 animate-spin" />
-                        ) : (
-                          <Trash2 className="h-4 w-4 mr-2" />
-                        )}
-                        {deletingScript === script.id ? 'Deleting...' : 'Delete'}
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
                       </Button>
                     </div>
                   </div>
