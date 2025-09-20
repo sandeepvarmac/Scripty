@@ -1,12 +1,14 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { SignInForm } from "@/components/auth/sign-in-form"
 import { SignUpForm } from "@/components/auth/sign-up-form"
 import { OnboardingWizard } from "@/components/auth/onboarding-wizard"
 import { ScriptyBoyLogo } from "@/components/ui/logo"
 
 export default function AuthPage() {
+  const router = useRouter()
   const [isSignUp, setIsSignUp] = React.useState(false)
   const [isLoading, setIsLoading] = React.useState(false)
   const [showOnboarding, setShowOnboarding] = React.useState(false)
@@ -27,7 +29,7 @@ export default function AuthPage() {
       if (response.ok) {
         // Successful sign in - redirect to dashboard
         console.log('Sign in successful:', result.user)
-        window.location.href = '/dashboard'
+        router.push('/dashboard')
       } else {
         // Throw error to be caught by form
         throw new Error(result.error || 'Sign in failed')
@@ -92,7 +94,7 @@ export default function AuthPage() {
       await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
 
       // Redirect to dashboard
-      window.location.href = "/dashboard"
+      router.push("/dashboard")
     } catch (error) {
       console.error("Failed to complete onboarding:", error)
     }
