@@ -50,7 +50,6 @@ export default function AuthPage() {
     email: string
     password: string
     confirmPassword: string
-    privacyOptOut: boolean
     terms: boolean
   }) => {
     setIsLoading(true)
@@ -65,7 +64,7 @@ export default function AuthPage() {
           lastName: data.lastName,
           email: data.email,
           password: data.password,
-          privacyDoNotTrain: data.privacyOptOut,
+          privacyDoNotTrain: true, // Will be set properly in onboarding
         }),
       })
 

@@ -22,7 +22,6 @@ const signUpSchema = z.object({
     .regex(/\d/, "Password must contain at least one number")
     .regex(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/, "Password must contain at least one special character"),
   confirmPassword: z.string(),
-  privacyOptOut: z.boolean().default(true),
   terms: z.boolean().refine(val => val === true, {
     message: "You must accept the terms and conditions"
   })
@@ -40,7 +39,6 @@ interface SignUpFormProps {
 }
 
 export function SignUpForm({ onSubmit, onToggleForm, isLoading }: SignUpFormProps) {
-  const [privacyOptOut, setPrivacyOptOut] = React.useState(true)
   const [acceptTerms, setAcceptTerms] = React.useState(false)
   const [password, setPassword] = React.useState("")
   const [error, setError] = React.useState<string | null>(null)
@@ -53,7 +51,6 @@ export function SignUpForm({ onSubmit, onToggleForm, isLoading }: SignUpFormProp
     setValue
   } = useForm<SignUpFormData>({
     defaultValues: {
-      privacyOptOut: true,
       terms: false
     }
   })
@@ -77,7 +74,6 @@ export function SignUpForm({ onSubmit, onToggleForm, isLoading }: SignUpFormProp
 
       await onSubmit({
         ...data,
-        privacyOptOut,
         terms: acceptTerms
       })
     } catch (err) {
@@ -167,26 +163,6 @@ export function SignUpForm({ onSubmit, onToggleForm, isLoading }: SignUpFormProp
             )}
           </div>
 
-          {/* Privacy Settings */}
-          <div className="space-y-3 p-4 bg-muted/30 rounded-lg">
-            <h4 className="font-medium text-sm">Privacy Settings</h4>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="privacy-opt-out"
-                checked={privacyOptOut}
-                onCheckedChange={(checked) => setPrivacyOptOut(checked as boolean)}
-              />
-              <label
-                htmlFor="privacy-opt-out"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Do not use my scripts for AI training
-              </label>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Your scripts will never be used to improve AI models when this is enabled (recommended).
-            </p>
-          </div>
 
           <div className="flex items-center space-x-2">
             <Checkbox
