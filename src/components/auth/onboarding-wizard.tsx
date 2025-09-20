@@ -90,6 +90,10 @@ export function OnboardingWizard({ onComplete, initialData }: OnboardingWizardPr
 
               <div className="space-y-3">
                 <Label className="text-base font-medium">What do you primarily write?</Label>
+                {/* Debug: Show current selection */}
+                <div className="text-xs text-gray-500 bg-gray-100 p-2 rounded">
+                  Debug: Current selection = "{formData.projectType}"
+                </div>
                 <div className="grid gap-3">
                   {[
                     { value: "short", label: "Short Films", desc: "Scripts under 40 pages" },
@@ -116,16 +120,17 @@ export function OnboardingWizard({ onComplete, initialData }: OnboardingWizardPr
                       }}
                     >
                       <div className="flex items-center space-x-3">
-                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
+                        {/* Radio Button */}
+                        <div className={`relative w-5 h-5 rounded-full border-2 transition-all duration-200 ${
                           formData.projectType === option.value
-                            ? "border-brand bg-brand scale-110"
-                            : "border-muted-foreground hover:border-brand/70"
+                            ? "border-indigo-600 bg-indigo-600"
+                            : "border-gray-300"
                         }`}>
-                          <div className={`w-2.5 h-2.5 rounded-full transition-all duration-200 ${
-                            formData.projectType === option.value
-                              ? "bg-white scale-100 opacity-100"
-                              : "bg-transparent scale-50 opacity-0"
-                          }`}></div>
+                          {formData.projectType === option.value && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="w-2 h-2 bg-white rounded-full"></div>
+                            </div>
+                          )}
                         </div>
                         <div className="flex-1">
                           <div className={`font-medium transition-colors ${
