@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import { AuthAction } from '@/generated/prisma'
+import { AuthAction } from '@prisma/client'
 
 export interface AuthLogData {
   userId?: string

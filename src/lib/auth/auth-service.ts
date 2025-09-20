@@ -3,7 +3,7 @@ import { PasswordService } from './password'
 import { JWTService } from './jwt'
 import { RateLimiterService } from './rate-limiter'
 import { AuthAuditLogger } from './audit-logger'
-import { User, ProjectType, AuthAction, Role, Organization } from '@/generated/prisma'
+import { User, ProjectType, AuthAction, Role, Organization } from '@prisma/client'
 
 type UserWithRelations = User & {
   role?: Role | null

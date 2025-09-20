@@ -22,13 +22,13 @@ export function AppShell({ sidebar, rightDrawer, footer, children, className }: 
       )}
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 overflow-auto">
           {children}
         </div>
         {/* Footer */}
         {footer && (
-          <footer className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <footer className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex-shrink-0">
             {footer}
           </footer>
         )}
@@ -67,7 +67,7 @@ interface AppContentProps {
 
 export function AppContent({ children, className }: AppContentProps) {
   return (
-    <div className={cn("flex-1 overflow-auto p-4 pb-6", className)}>
+    <div className={cn("p-4", className)}>
       {children}
     </div>
   )

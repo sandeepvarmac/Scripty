@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken'
-import { User, Role } from '@/generated/prisma'
+import { User, Role } from '@prisma/client'
 
 type UserWithRole = User & { role?: Role | null }
 
