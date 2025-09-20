@@ -121,9 +121,11 @@ export function OnboardingWizard({ onComplete, initialData }: OnboardingWizardPr
                             ? "border-brand bg-brand scale-110"
                             : "border-muted-foreground hover:border-brand/70"
                         }`}>
-                          {formData.projectType === option.value && (
-                            <div className="w-2.5 h-2.5 rounded-full bg-white animate-in zoom-in-50 duration-200"></div>
-                          )}
+                          <div className={`w-2.5 h-2.5 rounded-full transition-all duration-200 ${
+                            formData.projectType === option.value
+                              ? "bg-white scale-100 opacity-100"
+                              : "bg-transparent scale-50 opacity-0"
+                          }`}></div>
                         </div>
                         <div className="flex-1">
                           <div className={`font-medium transition-colors ${
