@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate analysis types
-    const validTypes: AnalysisType[] = ['STRUCTURE', 'PACING', 'CHARACTER', 'DIALOGUE', 'FORMAT', 'COMPREHENSIVE']
+    const validTypes: AnalysisType[] = ['QUICK_OVERVIEW', 'COMPREHENSIVE', 'STORY_STRUCTURE', 'CHARACTER_DEVELOPMENT', 'DIALOGUE_QUALITY', 'PACING_FLOW', 'THEME_ANALYSIS']
     const invalidTypes = analysisTypes.filter((type: string) => !validTypes.includes(type as AnalysisType))
 
     if (invalidTypes.length > 0) {

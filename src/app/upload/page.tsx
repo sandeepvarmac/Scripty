@@ -23,6 +23,7 @@ export default function UploadPage() {
   const [files, setFiles] = React.useState<File[]>([])
   const [uploading, setUploading] = React.useState(false)
   const [uploadProgress, setUploadProgress] = React.useState(0)
+  const [currentStage, setCurrentStage] = React.useState('')
   const [user, setUser] = React.useState<UserData | null>(null)
   const [loading, setLoading] = React.useState(true)
 
@@ -122,28 +123,60 @@ export default function UploadPage() {
     }
   }
 
-  // Real upload function with parser integration
+  // Real upload function with comprehensive progress tracking
   const handleUpload = async () => {
     if (files.length === 0) return
 
     setUploading(true)
     setUploadProgress(0)
+    setCurrentStage('Uploading screenplay...')
 
     try {
       for (let i = 0; i < files.length; i++) {
         const file = files[i]
 
-        // Update progress for current file
-        setUploadProgress((i / files.length) * 100)
+        // Stage 1: File Upload (0-25%)
+        setUploadProgress(0)
+        setCurrentStage(`Uploading "${file.name}"...`)
 
         // Create form data
         const formData = new FormData()
         formData.append('file', file)
 
-        // Upload and parse the file
-        const response = await fetch('/api/upload', {
+        // Simulate upload progress tracking
+        const uploadPromise = fetch('/api/upload', {
           method: 'POST',
           body: formData
+        })
+
+        // Simulate upload progress for visual feedback
+        const progressInterval = setInterval(() => {
+          setUploadProgress(prev => {
+            if (prev < 25) {
+              return Math.min(prev + 2, 25)
+            }
+            return prev
+          })
+        }, 100)
+
+        const response = await uploadPromise
+        clearInterval(progressInterval)
+
+        // Stage 2: Script Parsing (25-50%)
+        setUploadProgress(25)
+        setCurrentStage('Parsing screenplay format...')
+
+        // Simulate parsing progress
+        await new Promise(resolve => {
+          let progress = 25
+          const parseInterval = setInterval(() => {
+            progress += 5
+            setUploadProgress(Math.min(progress, 50))
+            if (progress >= 50) {
+              clearInterval(parseInterval)
+              resolve(undefined)
+            }
+          }, 200)
         })
 
         const result = await response.json()
@@ -152,24 +185,51 @@ export default function UploadPage() {
           throw new Error(result.error || 'Upload failed')
         }
 
+        // Stage 3: Saving to Database (50-75%)
+        setUploadProgress(50)
+        setCurrentStage('Saving to database...')
+
+        // Simulate save progress
+        await new Promise(resolve => {
+          let progress = 50
+          const saveInterval = setInterval(() => {
+            progress += 5
+            setUploadProgress(Math.min(progress, 75))
+            if (progress >= 75) {
+              clearInterval(saveInterval)
+              resolve(undefined)
+            }
+          }, 150)
+        })
+
+        // Stage 4: Finalizing (75-100%)
+        setUploadProgress(75)
+        setCurrentStage('Preparing analysis dashboard...')
+
         const {
           script: savedScript,
           parsed: parsedScript
         } = result.data
 
+        // Complete progress
+        setUploadProgress(100)
+        setCurrentStage('Complete! Redirecting to analysis...')
+
+        // Brief pause to show completion
+        await new Promise(resolve => setTimeout(resolve, 1000))
+
         alert(
-          `Upload successful!\n\n` +
+          `🎬 Upload Complete!\n\n` +
           `Title: ${parsedScript.title || savedScript.title || 'Unknown'}\n` +
           `Format: ${parsedScript.format.toUpperCase()}\n` +
           `Pages: ${parsedScript.pageCount}\n` +
           `Scenes: ${parsedScript.scenes.length}\n` +
-          `Characters: ${parsedScript.characters.length}`
+          `Characters: ${parsedScript.characters.length}\n\n` +
+          `Redirecting to AI analysis dashboard...`
         )
 
         router.push(`/analysis/${savedScript.id}`)
       }
-
-      setUploadProgress(100)
 
     } catch (error) {
       console.error('Upload error:', error)
@@ -412,16 +472,22 @@ export default function UploadPage() {
 
                   {/* Upload Progress */}
                   {uploading && (
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       <div className="flex justify-between text-sm">
-                        <span>Uploading...</span>
-                        <span>{uploadProgress}%</span>
+                        <span className="font-medium">{currentStage}</span>
+                        <span className="font-mono text-brand">{uploadProgress}%</span>
                       </div>
-                      <div className="w-full bg-muted rounded-full h-2">
+                      <div className="w-full bg-muted rounded-full h-3">
                         <div
-                          className="gradient-brand h-2 rounded-full transition-all"
+                          className="gradient-brand h-3 rounded-full transition-all duration-300 ease-out"
                           style={{ width: `${uploadProgress}%` }}
                         />
+                      </div>
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span className={uploadProgress >= 25 ? 'text-brand font-medium' : ''}>Upload</span>
+                        <span className={uploadProgress >= 50 ? 'text-brand font-medium' : ''}>Parse</span>
+                        <span className={uploadProgress >= 75 ? 'text-brand font-medium' : ''}>Save</span>
+                        <span className={uploadProgress >= 100 ? 'text-brand font-medium' : ''}>Complete</span>
                       </div>
                     </div>
                   )}
