@@ -89,7 +89,7 @@ export function OnboardingWizard({ onComplete, initialData }: OnboardingWizardPr
               </div>
 
               <div className="space-y-3">
-                <Label className="text-base font-medium">What do you primarily write? <span className="text-xs text-gray-400">({formData.projectType || 'none'})</span></Label>
+                <Label className="text-base font-medium">What do you primarily write?</Label>
                 <div className="grid gap-3">
                   {[
                     { value: "short", label: "Short Films", desc: "Scripts under 40 pages" },
