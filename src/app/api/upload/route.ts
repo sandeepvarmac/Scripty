@@ -1,9 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { parseScript } from '@/lib/parsers'
 import { saveScriptToEvidenceStore } from '@/lib/evidence-store'
+import { RealAuthService } from '@/lib/auth/real-auth-service'
 
 export async function POST(request: NextRequest) {
   try {
+    // Get token from cookie and authenticate user
+    const token = request.cookies.get('auth-token')?.value
+
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      )
+    }
+
+    // Verify token and get user
+    const payload = await RealAuthService.verifyToken(token)
+
+    if (!payload) {
+      return NextResponse.json(
+        { error: 'Invalid token' },
+        { status: 401 }
+      )
+    }
+
+    const user = await RealAuthService.getUserById(payload.userId)
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      )
+    }
+
     const formData = await request.formData()
     const file = formData.get('file') as File
 
@@ -48,9 +78,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // TODO: Get user ID from authentication
-    // For now, using a placeholder - this should be extracted from JWT token
-    const userId = 'user_placeholder'
+    // Use authenticated user ID
+    const userId = user.id
 
     // Save to evidence store
     const savedScript = await saveScriptToEvidenceStore({

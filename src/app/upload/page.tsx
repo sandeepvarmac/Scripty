@@ -179,7 +179,28 @@ export default function UploadPage() {
   }
 
   const getFileSize = (bytes: number) => {
-    return (bytes / 1024 / 1024).toFixed(1) + ' MB'
+    if (bytes < 1024) {
+      return bytes + ' B'
+    } else if (bytes < 1024 * 1024) {
+      return (bytes / 1024).toFixed(1) + ' KB'
+    } else {
+      return (bytes / 1024 / 1024).toFixed(1) + ' MB'
+    }
+  }
+
+  const getFileType = (fileName: string, mimeType: string) => {
+    const extension = fileName.split('.').pop()?.toLowerCase()
+
+    switch (extension) {
+      case 'fdx':
+        return 'Final Draft Script'
+      case 'fountain':
+        return 'Fountain Script'
+      case 'pdf':
+        return 'PDF Document'
+      default:
+        return mimeType || 'Unknown type'
+    }
   }
 
   const handleSignOut = async () => {
@@ -362,7 +383,7 @@ export default function UploadPage() {
                         <div>
                           <p className="font-medium">{file.name}</p>
                           <p className="text-sm text-muted-foreground">
-                            {getFileSize(file.size)} • {file.type || 'Unknown type'}
+                            {getFileSize(file.size)} • {getFileType(file.name, file.type)}
                           </p>
                         </div>
                       </div>
