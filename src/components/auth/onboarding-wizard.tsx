@@ -89,7 +89,7 @@ export function OnboardingWizard({ onComplete, initialData }: OnboardingWizardPr
               </div>
 
               <div className="space-y-3">
-                <Label className="text-base font-medium">What do you primarily write?</Label>
+                <Label className="text-base font-medium">What do you primarily write? <span className="text-xs text-gray-400">({formData.projectType || 'none'})</span></Label>
                 <div className="grid gap-3">
                   {[
                     { value: "short", label: "Short Films", desc: "Scripts under 40 pages" },
@@ -116,17 +116,25 @@ export function OnboardingWizard({ onComplete, initialData }: OnboardingWizardPr
                       }}
                     >
                       <div className="flex items-center space-x-3">
-                        {/* Radio Button */}
-                        <div className={`relative w-5 h-5 rounded-full border-2 transition-all duration-200 ${
-                          formData.projectType === option.value
-                            ? "border-brand bg-brand scale-110"
-                            : "border-muted-foreground hover:border-brand/70"
-                        }`}>
-                          {formData.projectType === option.value && (
-                            <div className="absolute inset-0 flex items-center justify-center">
+                        {/* Custom Radio Button */}
+                        <div className="relative">
+                          <input
+                            type="radio"
+                            name="projectType"
+                            value={option.value}
+                            checked={formData.projectType === option.value}
+                            onChange={() => updateFormData({ projectType: option.value as any })}
+                            className="sr-only"
+                          />
+                          <div className={`w-5 h-5 rounded-full border-2 transition-all duration-200 flex items-center justify-center ${
+                            formData.projectType === option.value
+                              ? "border-indigo-600 bg-indigo-600"
+                              : "border-gray-300"
+                          }`}>
+                            {formData.projectType === option.value && (
                               <div className="w-2 h-2 bg-white rounded-full"></div>
-                            </div>
-                          )}
+                            )}
+                          </div>
                         </div>
                         <div className="flex-1">
                           <div className={`font-medium transition-colors ${
