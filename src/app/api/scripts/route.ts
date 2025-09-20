@@ -31,10 +31,11 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Get user's scripts with analysis data
+    // Get user's scripts with analysis data (excluding soft-deleted)
     const scripts = await prisma.script.findMany({
       where: {
-        userId: user.id
+        userId: user.id,
+        deletedAt: null // Only show non-deleted scripts
       },
       include: {
         analyses: {

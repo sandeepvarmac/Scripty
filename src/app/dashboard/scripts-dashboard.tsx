@@ -18,6 +18,7 @@ interface Script {
     id: string
     status: string
     startedAt: string
+    score?: number
   }>
   _count: {
     scenes: number
@@ -29,6 +30,7 @@ interface Script {
 export function ScriptsDashboard() {
   const [scripts, setScripts] = useState<Script[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [deletingScript, setDeletingScript] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchScripts = async () => {
@@ -50,6 +52,46 @@ export function ScriptsDashboard() {
 
     fetchScripts()
   }, [])
+
+  const handleDeleteScript = async (scriptId: string, scriptTitle: string) => {
+    const confirmMessage = `⚠️ Delete Script: "${scriptTitle}"\n\n` +
+      `This will permanently delete:\n` +
+      `• The screenplay file\n` +
+      `• All AI analyses and coverage reports\n` +
+      `• All scene and character data\n` +
+      `• All associated evidence and insights\n\n` +
+      `This action cannot be undone.\n\n` +
+      `Are you sure you want to proceed?`
+
+    if (!window.confirm(confirmMessage)) {
+      return
+    }
+
+    setDeletingScript(scriptId)
+
+    try {
+      const response = await fetch(`/api/scripts/${scriptId}`, {
+        method: 'DELETE'
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to delete script')
+      }
+
+      // Remove script from local state
+      setScripts(scripts.filter(s => s.id !== scriptId))
+
+      alert(`✅ Script "${scriptTitle}" has been successfully deleted.`)
+
+    } catch (error) {
+      console.error('Delete script error:', error)
+      alert(`❌ Failed to delete script: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setDeletingScript(null)
+    }
+  }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -166,6 +208,12 @@ export function ScriptsDashboard() {
                         {script.analyses[0] && getStatusIcon(script.analyses[0].status)}
                         <span className={`text-sm ${status.color}`}>{status.text}</span>
                       </div>
+                      {script.analyses[0]?.score && (
+                        <div className="flex items-center justify-end space-x-1 mb-1">
+                          <span className="text-lg font-bold text-brand">{script.analyses[0].score.toFixed(1)}</span>
+                          <span className="text-xs text-muted-foreground">/10</span>
+                        </div>
+                      )}
                       <div className="text-xs text-muted-foreground">
                         {script._count.analyses} {script._count.analyses === 1 ? 'analysis' : 'analyses'}
                       </div>
@@ -177,14 +225,20 @@ export function ScriptsDashboard() {
                           View
                         </Button>
                       </Link>
-                      {script._count.analyses === 0 && (
-                        <Link href={`/analysis/${script.id}`}>
-                          <Button variant="brand" size="sm">
-                            <Play className="h-4 w-4 mr-2" />
-                            Analyze
-                          </Button>
-                        </Link>
-                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteScript(script.id, script.title || script.originalFilename)}
+                        disabled={deletingScript === script.id}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        {deletingScript === script.id ? (
+                          <Clock className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4 mr-2" />
+                        )}
+                        {deletingScript === script.id ? 'Deleting...' : 'Delete'}
+                      </Button>
                     </div>
                   </div>
                 </div>

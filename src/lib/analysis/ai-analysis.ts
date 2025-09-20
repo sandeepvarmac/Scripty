@@ -16,6 +16,7 @@ export interface AIAnalysisOptions {
 }
 
 export type AIAnalysisType =
+  | 'QUICK_OVERVIEW'
   | 'COMPREHENSIVE'
   | 'STORY_STRUCTURE'
   | 'CHARACTER_DEVELOPMENT'
@@ -30,6 +31,9 @@ export interface AIAnalysisResult {
   summary: string
   insights: AIInsight[]
   recommendations: string[]
+  strengths: string[]
+  genre: string
+  industryComparison: string
   overallScore: number
   completedAt: Date
 }
@@ -91,13 +95,19 @@ export async function analyzeScriptWithAI(options: AIAnalysisOptions): Promise<A
 
       let insights: AIInsight[] = []
       let recommendations: string[] = []
+      let strengths: string[] = []
+      let genre = ''
+      let industryComparison = ''
       let summary = ''
       let overallScore = 0
 
       // Run AI-powered analysis based on type
       switch (type) {
+        case 'QUICK_OVERVIEW':
+          ({ insights, recommendations, strengths, genre, industryComparison, summary, overallScore } = await runQuickOverview(script))
+          break
         case 'COMPREHENSIVE':
-          ({ insights, recommendations, summary, overallScore } = await runComprehensiveAnalysis(script))
+          ({ insights, recommendations, strengths, genre, industryComparison, summary, overallScore } = await runComprehensiveAnalysis(script))
           break
         case 'STORY_STRUCTURE':
           ({ insights, recommendations, summary, overallScore } = await analyzeStoryStructure(script))
@@ -128,6 +138,9 @@ export async function analyzeScriptWithAI(options: AIAnalysisOptions): Promise<A
           completedAt: new Date(),
           insights: insights as any,
           recommendations,
+          strengths,
+          genre,
+          industryComparison,
           score: overallScore
         }
       })
@@ -139,6 +152,9 @@ export async function analyzeScriptWithAI(options: AIAnalysisOptions): Promise<A
         summary,
         insights,
         recommendations,
+        strengths,
+        genre,
+        industryComparison,
         overallScore,
         completedAt: completedAnalysis.completedAt!
       })
@@ -153,6 +169,9 @@ export async function analyzeScriptWithAI(options: AIAnalysisOptions): Promise<A
         summary: `AI Analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         insights: [],
         recommendations: [],
+        strengths: [],
+        genre: 'Unknown',
+        industryComparison: '',
         overallScore: 0,
         completedAt: new Date()
       })
@@ -160,6 +179,68 @@ export async function analyzeScriptWithAI(options: AIAnalysisOptions): Promise<A
   }
 
   return results
+}
+
+// Quick Overview Analysis - Fast high-level insights
+async function runQuickOverview(script: ScriptWithData) {
+  const scriptText = formatScriptForAnalysis(script)
+
+  const prompt = `As a professional screenplay analyst, provide a QUICK OVERVIEW analysis of this screenplay. Focus on immediate, high-level insights that can be determined quickly.
+
+SCREENPLAY:
+${scriptText}
+
+Provide analysis in this JSON format:
+{
+  "genre": "Primary genre (e.g., Drama, Comedy, Thriller, Horror, Action, Romance, Sci-Fi, Fantasy, etc.)",
+  "overallScore": number (1-10),
+  "summary": "Brief 2-3 sentence overall assessment",
+  "insights": [
+    {
+      "category": "Story Structure|Character Development|Dialogue|Pacing|Theme",
+      "severity": "LOW|MEDIUM|HIGH",
+      "message": "One key insight per category - most important issue only",
+      "suggestions": ["1-2 actionable suggestions"],
+      "confidence": number (0.1-1.0)
+    }
+  ],
+  "recommendations": ["Top 3 most important recommendations"],
+  "strengths": ["Top 3 elements working well"],
+  "industryComparison": "Brief comparison to genre standards and professional expectations."
+}
+
+IMPORTANT: Keep this analysis quick and high-level. Limit to 1-2 insights per major category. Focus on the most obvious strengths and issues that would be apparent to any professional reader.`
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o",
+    messages: [{ role: "user", content: prompt }],
+    temperature: 0.3,
+    max_tokens: 1200 // Smaller token limit for quick analysis
+  })
+
+  try {
+    const analysisData = JSON.parse(response.choices[0].message.content || '{}')
+    return {
+      insights: analysisData.insights || [],
+      recommendations: analysisData.recommendations || [],
+      strengths: analysisData.strengths || [],
+      genre: analysisData.genre || 'Unknown',
+      industryComparison: analysisData.industryComparison || '',
+      summary: analysisData.summary || 'Quick overview completed',
+      overallScore: analysisData.overallScore || 5
+    }
+  } catch (error) {
+    console.error('Failed to parse AI response:', error)
+    return {
+      insights: [],
+      recommendations: ['Quick overview response could not be parsed'],
+      strengths: [],
+      genre: 'Unknown',
+      industryComparison: '',
+      summary: 'Quick overview completed with parsing errors',
+      overallScore: 5
+    }
+  }
 }
 
 // Comprehensive AI Analysis
@@ -173,21 +254,24 @@ ${scriptText}
 
 Provide analysis in this JSON format:
 {
+  "genre": "Primary genre (e.g., Drama, Comedy, Thriller, Horror, Action, Romance, Sci-Fi, Fantasy, etc.)",
   "overallScore": number (1-10),
   "summary": "Brief overall assessment",
   "insights": [
     {
       "category": "Story Structure|Character Development|Dialogue|Pacing|Theme",
       "severity": "LOW|MEDIUM|HIGH",
-      "message": "Specific insight",
+      "message": "Specific insight about problems/issues",
       "suggestions": ["actionable suggestion 1", "actionable suggestion 2"],
       "confidence": number (0.1-1.0)
     }
   ],
-  "recommendations": ["top 3-5 overall recommendations"]
+  "recommendations": ["top 3-5 overall recommendations for improvement"],
+  "strengths": ["top 3-5 elements that are working well in the screenplay"],
+  "industryComparison": "How this screenplay compares to professional standards and successful examples in its genre. Include specific genre conventions and expectations."
 }
 
-Focus on professional screenplay elements: three-act structure, character arcs, dialogue authenticity, pacing, visual storytelling, and commercial viability.`
+Focus on professional screenplay elements: three-act structure, character arcs, dialogue authenticity, pacing, visual storytelling, and commercial viability within the identified genre.`
 
   const response = await openai.chat.completions.create({
     model: "gpt-4o",
@@ -201,6 +285,9 @@ Focus on professional screenplay elements: three-act structure, character arcs, 
     return {
       insights: analysisData.insights || [],
       recommendations: analysisData.recommendations || [],
+      strengths: analysisData.strengths || [],
+      genre: analysisData.genre || 'Unknown',
+      industryComparison: analysisData.industryComparison || '',
       summary: analysisData.summary || 'Analysis completed',
       overallScore: analysisData.overallScore || 5
     }
@@ -209,6 +296,9 @@ Focus on professional screenplay elements: three-act structure, character arcs, 
     return {
       insights: [],
       recommendations: ['AI analysis response could not be parsed'],
+      strengths: [],
+      genre: 'Unknown',
+      industryComparison: '',
       summary: 'Analysis completed with parsing errors',
       overallScore: 5
     }
@@ -370,6 +460,9 @@ function parseAIResponse(content: string | null, defaultCategory: string) {
     return {
       insights: analysisData.insights || [],
       recommendations: analysisData.recommendations || [],
+      strengths: analysisData.strengths || [],
+      genre: analysisData.genre || 'Unknown',
+      industryComparison: analysisData.industryComparison || '',
       summary: analysisData.summary || `${defaultCategory} analysis completed`,
       overallScore: analysisData.overallScore || 5
     }
@@ -384,6 +477,9 @@ function parseAIResponse(content: string | null, defaultCategory: string) {
         confidence: 0.5
       }],
       recommendations: ['AI analysis response could not be parsed properly'],
+      strengths: [],
+      genre: 'Unknown',
+      industryComparison: '',
       summary: `${defaultCategory} analysis completed with parsing issues`,
       overallScore: 5
     }

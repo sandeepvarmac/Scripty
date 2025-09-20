@@ -12,6 +12,7 @@ export interface AnalysisOptions {
 }
 
 export type AnalysisType =
+  | 'QUICK_OVERVIEW'
   | 'COMPREHENSIVE'
   | 'STORY_STRUCTURE'
   | 'CHARACTER_DEVELOPMENT'
@@ -26,6 +27,10 @@ export interface AnalysisResult {
   summary: string
   insights: AnalysisInsight[]
   recommendations: string[]
+  strengths: string[]
+  genre: string
+  industryComparison: string
+  overallScore: number
   completedAt: Date
 }
 
@@ -70,6 +75,10 @@ export async function analyzeScript(options: AnalysisOptions): Promise<AnalysisR
       suggestions: insight.suggestions
     })),
     recommendations: result.recommendations,
+    strengths: result.strengths,
+    genre: result.genre,
+    industryComparison: result.industryComparison,
+    overallScore: result.overallScore,
     completedAt: result.completedAt
   }))
 }

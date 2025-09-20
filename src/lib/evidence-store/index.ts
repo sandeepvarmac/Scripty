@@ -63,24 +63,31 @@ export async function saveScriptToEvidenceStore(
         }
       })
 
-      // 2. Save all scenes with proper indexing
-      const scenes = await Promise.all(
-        parsedScript.scenes.map((scene, index) =>
-          tx.scene.create({
-            data: {
-              scriptId: script.id,
-              sceneNumber: scene.sceneNumber,
-              type: mapSceneTypeToEnum(scene.type),
-              content: scene.content,
-              pageNumber: scene.pageNumber,
-              lineNumber: scene.lineNumber,
-              character: scene.character,
-              orderIndex: index,
-              wordCount: scene.content ? scene.content.split(' ').length : 0
-            }
-          })
+      // 2. Save scenes in batches to avoid timeout
+      const scenes = []
+      const batchSize = 50 // Process 50 scenes at a time
+
+      for (let i = 0; i < parsedScript.scenes.length; i += batchSize) {
+        const batch = parsedScript.scenes.slice(i, i + batchSize)
+        const batchScenes = await Promise.all(
+          batch.map((scene, batchIndex) =>
+            tx.scene.create({
+              data: {
+                scriptId: script.id,
+                sceneNumber: scene.sceneNumber,
+                type: mapSceneTypeToEnum(scene.type),
+                content: scene.content,
+                pageNumber: scene.pageNumber,
+                lineNumber: scene.lineNumber,
+                character: scene.character,
+                orderIndex: i + batchIndex,
+                wordCount: scene.content ? scene.content.split(' ').length : 0
+              }
+            })
+          )
         )
-      )
+        scenes.push(...batchScenes)
+      }
 
       // 3. Save unique characters
       const characterMap = new Map<string, number>()
@@ -116,7 +123,7 @@ export async function saveScriptToEvidenceStore(
         status: script.status
       }
     }, {
-      timeout: 30000 // 30 seconds timeout for large scripts
+      timeout: 60000 // 60 seconds timeout for very large scripts
     })
 
     return result
