@@ -152,12 +152,21 @@ export default function UploadPage() {
           throw new Error(result.error || 'Upload failed')
         }
 
-        // Show success message with parsing details
-        const script = result.data
-        alert(`Upload successful!\n\nTitle: ${script.title || 'Unknown'}\nFormat: ${script.format}\nPages: ${script.pageCount}\nScenes: ${script.scenes.length}\nCharacters: ${script.characters.length}`)
+        const {
+          script: savedScript,
+          parsed: parsedScript
+        } = result.data
 
-        // TODO: Navigate to analysis results page
-        // router.push(`/analysis/${scriptId}`)
+        alert(
+          `Upload successful!\n\n` +
+          `Title: ${parsedScript.title || savedScript.title || 'Unknown'}\n` +
+          `Format: ${parsedScript.format.toUpperCase()}\n` +
+          `Pages: ${parsedScript.pageCount}\n` +
+          `Scenes: ${parsedScript.scenes.length}\n` +
+          `Characters: ${parsedScript.characters.length}`
+        )
+
+        router.push(`/analysis/${savedScript.id}`)
       }
 
       setUploadProgress(100)

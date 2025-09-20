@@ -34,8 +34,16 @@ export async function saveScriptToEvidenceStore(
 ): Promise<SavedScript> {
   const { userId, parsedScript, fileUrl } = options
 
+
+  if (!parsedScript.scenes) {
+    throw new Error('Parsed script missing scenes array')
+  }
+  if (!parsedScript.characters) {
+    throw new Error('Parsed script missing characters array')
+  }
+
   try {
-    // Start a transaction to ensure data consistency
+    // Start a transaction to ensure data consistency (increased timeout for large scripts)
     const result = await prisma.$transaction(async (tx) => {
       // 1. Create the script record
       const script = await tx.script.create({
@@ -68,7 +76,7 @@ export async function saveScriptToEvidenceStore(
               lineNumber: scene.lineNumber,
               character: scene.character,
               orderIndex: index,
-              wordCount: scene.content.split(' ').length
+              wordCount: scene.content ? scene.content.split(' ').length : 0
             }
           })
         )
@@ -107,6 +115,8 @@ export async function saveScriptToEvidenceStore(
         totalCharacters: script.totalCharacters,
         status: script.status
       }
+    }, {
+      timeout: 30000 // 30 seconds timeout for large scripts
     })
 
     return result
@@ -126,9 +136,16 @@ export async function getScriptWithScenes(scriptId: string, userId: string) {
     },
     include: {
       scenes: {
-        orderBy: { orderIndex: 'asc' }
+        orderBy: { orderIndex: 'asc' },
+        include: {
+          evidences: {
+            orderBy: [{ confidence: 'desc' }, { createdAt: 'desc' }]
+          }
+        }
       },
-      characters: true,
+      characters: {
+        orderBy: { dialogueCount: 'desc' }
+      },
       analyses: {
         orderBy: { startedAt: 'desc' }
       }
