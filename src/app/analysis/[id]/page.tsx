@@ -7,7 +7,8 @@ import { BrandHeader } from '@/components/ui/brand-header'
 import { RealAuthService } from '@/lib/auth/real-auth-service'
 import { getScriptWithScenes } from '@/lib/evidence-store'
 import { format } from 'date-fns'
-import { AlertCircle, Film, MapPin, MessageSquare, User, FileText } from 'lucide-react'
+import { AlertCircle, Film, MapPin, MessageSquare, User, FileText, Play, RefreshCw, CheckCircle, XCircle, Clock } from 'lucide-react'
+import { AnalysisControls } from './analysis-controls'
 
 type SceneWithEvidence = Scene & { evidences: Evidence[] }
 type ScriptAnalysis = Script & {
@@ -88,27 +89,63 @@ export default async function AnalysisPage({ params }: AnalysisPageProps) {
 
           <Card className="lg:col-span-2">
             <CardHeader>
-              <CardTitle>Latest Analyses</CardTitle>
-              <CardDescription>History of generated reports</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Analysis Dashboard</CardTitle>
+                  <CardDescription>Run new analyses or view previous results</CardDescription>
+                </div>
+                <AnalysisControls scriptId={script.id} />
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               {script.analyses.length === 0 ? (
-                <EmptyState message="No analyses recorded yet." />
+                <div className="rounded-md border border-dashed p-8 text-center">
+                  <Play className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                  <p className="text-sm text-muted-foreground mb-4">No analyses have been run yet.</p>
+                  <p className="text-xs text-muted-foreground">Click "Run Analysis" above to get detailed screenplay feedback.</p>
+                </div>
               ) : (
                 script.analyses.map((analysis) => (
                   <div key={analysis.id} className="rounded-md border p-4">
                     <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-semibold">{formatAnalysisType(analysis.type)}</p>
-                        <p className="text-xs text-muted-foreground">
-                          Started {format(analysis.startedAt, 'MMM d, yyyy h:mm a')}
-                          {analysis.completedAt ? ` • Completed ${format(analysis.completedAt, 'MMM d, yyyy h:mm a')}` : ''}
-                        </p>
+                      <div className="flex items-center space-x-3">
+                        {getAnalysisStatusIcon(analysis.status)}
+                        <div>
+                          <p className="font-semibold">{formatAnalysisType(analysis.type)}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Started {format(analysis.startedAt, 'MMM d, yyyy h:mm a')}
+                            {analysis.completedAt ? ` • Completed ${format(analysis.completedAt, 'MMM d, yyyy h:mm a')}` : ''}
+                          </p>
+                        </div>
                       </div>
-                      <span className="text-sm font-medium">{analysis.status}</span>
+                      <span className={`text-sm font-medium px-2 py-1 rounded ${getStatusBadgeClass(analysis.status)}`}>
+                        {analysis.status}
+                      </span>
                     </div>
                     {analysis.summary && (
                       <p className="mt-2 text-sm text-muted-foreground">{analysis.summary}</p>
+                    )}
+                    {analysis.insights && Array.isArray(analysis.insights) && analysis.insights.length > 0 && (
+                      <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                        <div className="text-center p-2 rounded bg-red-50 border border-red-200">
+                          <p className="text-xs text-red-600 font-medium">High Priority</p>
+                          <p className="text-lg font-bold text-red-700">
+                            {analysis.insights.filter((i: any) => i.severity === 'HIGH').length}
+                          </p>
+                        </div>
+                        <div className="text-center p-2 rounded bg-yellow-50 border border-yellow-200">
+                          <p className="text-xs text-yellow-600 font-medium">Medium Priority</p>
+                          <p className="text-lg font-bold text-yellow-700">
+                            {analysis.insights.filter((i: any) => i.severity === 'MEDIUM').length}
+                          </p>
+                        </div>
+                        <div className="text-center p-2 rounded bg-blue-50 border border-blue-200">
+                          <p className="text-xs text-blue-600 font-medium">Low Priority</p>
+                          <p className="text-lg font-bold text-blue-700">
+                            {analysis.insights.filter((i: any) => i.severity === 'LOW').length}
+                          </p>
+                        </div>
+                      </div>
                     )}
                   </div>
                 ))
@@ -246,6 +283,32 @@ function formatEvidenceType(type: Evidence['type']) {
 
 function formatAnalysisType(type: Analyse['type']) {
   return type.replace('_', ' ').toLowerCase()
+}
+
+function getAnalysisStatusIcon(status: Analyse['status']) {
+  switch (status) {
+    case 'COMPLETED':
+      return <CheckCircle className="h-5 w-5 text-green-600" />
+    case 'FAILED':
+      return <XCircle className="h-5 w-5 text-red-600" />
+    case 'IN_PROGRESS':
+      return <Clock className="h-5 w-5 text-blue-600 animate-pulse" />
+    default:
+      return <RefreshCw className="h-5 w-5 text-gray-600" />
+  }
+}
+
+function getStatusBadgeClass(status: Analyse['status']) {
+  switch (status) {
+    case 'COMPLETED':
+      return 'bg-green-100 text-green-800 border border-green-200'
+    case 'FAILED':
+      return 'bg-red-100 text-red-800 border border-red-200'
+    case 'IN_PROGRESS':
+      return 'bg-blue-100 text-blue-800 border border-blue-200'
+    default:
+      return 'bg-gray-100 text-gray-800 border border-gray-200'
+  }
 }
 
 function groupEvidenceByType(evidence: (Evidence & { sceneNumber: string })[]) {
