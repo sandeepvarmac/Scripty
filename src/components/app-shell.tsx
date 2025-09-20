@@ -6,11 +6,12 @@ import { cn } from "@/lib/utils"
 interface AppShellProps {
   sidebar?: React.ReactNode
   rightDrawer?: React.ReactNode
+  footer?: React.ReactNode
   children: React.ReactNode
   className?: string
 }
 
-export function AppShell({ sidebar, rightDrawer, children, className }: AppShellProps) {
+export function AppShell({ sidebar, rightDrawer, footer, children, className }: AppShellProps) {
   return (
     <div className={cn("flex h-screen overflow-hidden", className)}>
       {/* Sidebar */}
@@ -22,7 +23,15 @@ export function AppShell({ sidebar, rightDrawer, children, className }: AppShell
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        {children}
+        <div className="flex-1 flex flex-col">
+          {children}
+        </div>
+        {/* Footer */}
+        {footer && (
+          <footer className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            {footer}
+          </footer>
+        )}
       </main>
 
       {/* Right Drawer */}
@@ -58,7 +67,23 @@ interface AppContentProps {
 
 export function AppContent({ children, className }: AppContentProps) {
   return (
-    <div className={cn("flex-1 overflow-auto p-4", className)}>
+    <div className={cn("flex-1 overflow-auto p-4 pb-6", className)}>
+      {children}
+    </div>
+  )
+}
+
+interface AppFooterProps {
+  children: React.ReactNode
+  className?: string
+}
+
+export function AppFooter({ children, className }: AppFooterProps) {
+  return (
+    <div className={cn(
+      "flex items-center justify-between px-4 py-3 text-sm text-muted-foreground",
+      className
+    )}>
       {children}
     </div>
   )

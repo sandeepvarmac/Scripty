@@ -1,13 +1,13 @@
 "use client"
 
 import * as React from "react"
-import { AppShell, AppHeader, AppContent } from "@/components/app-shell"
+import { AppShell, AppHeader, AppContent, AppFooter } from "@/components/app-shell"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { BrandHeader } from "@/components/ui/brand-header"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Plus, Upload, FileText, BarChart3, Clock, Settings, LogOut, User, CreditCard } from "lucide-react"
+import { Plus, Upload, FileText, BarChart3, Clock, Settings, LogOut, User, CreditCard, Bell, Search, HelpCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 interface UserData {
@@ -80,11 +80,25 @@ export default function DashboardPage() {
 
   const handleSignOut = async () => {
     try {
-      // Clear auth cookie and redirect
-      document.cookie = 'auth-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
-      router.push('/')
+      // Call the sign out API endpoint
+      const response = await fetch('/api/auth/signout', {
+        method: 'POST',
+        credentials: 'include'
+      })
+
+      if (response.ok) {
+        // Successful sign out - redirect to home
+        router.push('/')
+      } else {
+        console.error('Sign out failed:', await response.text())
+        // Still redirect on failure
+        router.push('/')
+      }
     } catch (error) {
       console.error('Sign out error:', error)
+      // Clear cookies manually as fallback
+      document.cookie = 'accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+      document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
       router.push('/')
     }
   }
@@ -123,23 +137,71 @@ export default function DashboardPage() {
     )
   }
 
-  const displayName = user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email
+  // Create proper display name prioritizing firstName + lastName
+  const fullName = user.firstName && user.lastName
+    ? `${user.firstName} ${user.lastName}`
+    : user.name
+  const displayName = fullName || user.email
+
+  // Create initials from firstName + lastName or fallback
   const initials = user.firstName && user.lastName
     ? `${user.firstName[0]}${user.lastName[0]}`
-    : user.name?.split(' ').map(n => n[0]).join('') || user.email[0].toUpperCase()
+    : fullName?.split(' ').map(n => n[0]).join('').slice(0, 2) || user.email[0].toUpperCase()
+
+  // Get first name for welcome message
+  const firstName = user.firstName || fullName?.split(' ')[0] || user.email.split('@')[0]
 
   const usagePercentage = (user.analysesUsed / user.analysesLimit) * 100
 
+  const currentYear = new Date().getFullYear()
+
   return (
-    <AppShell>
+    <AppShell
+      footer={
+        <AppFooter>
+          <div className="flex items-center space-x-6">
+            <span>© {currentYear} ScriptyBoy. All rights reserved.</span>
+            <div className="flex items-center space-x-4">
+              <button className="hover:text-foreground transition-colors">Privacy Policy</button>
+              <button className="hover:text-foreground transition-colors">Terms of Service</button>
+              <button className="hover:text-foreground transition-colors">Support</button>
+            </div>
+          </div>
+          <div className="flex items-center space-x-4">
+            <span className="text-xs">Status: All systems operational</span>
+            <div className="flex items-center space-x-1">
+              <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+              <span className="text-xs">Online</span>
+            </div>
+          </div>
+        </AppFooter>
+      }
+    >
       <AppHeader>
         <div className="flex items-center space-x-4">
           <BrandHeader size="md" />
         </div>
         <div className="flex items-center space-x-4">
+          {/* Modern header elements */}
+          <div className="hidden md:flex items-center space-x-2">
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+              <Search className="h-4 w-4" />
+              <span className="sr-only">Search</span>
+            </Button>
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+              <HelpCircle className="h-4 w-4" />
+              <span className="sr-only">Help</span>
+            </Button>
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground relative">
+              <Bell className="h-4 w-4" />
+              <span className="sr-only">Notifications</span>
+              {/* Notification dot */}
+              <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full"></span>
+            </Button>
+          </div>
           <div className="flex items-center space-x-3">
             <div className="text-right">
-              <p className="text-sm font-medium leading-none">{user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : displayName}</p>
+              <p className="text-sm font-medium leading-none">{fullName || user.email}</p>
               <p className="text-xs text-muted-foreground">{user.plan} Plan</p>
             </div>
             <DropdownMenu>
@@ -188,7 +250,7 @@ export default function DashboardPage() {
         <div className="max-w-7xl mx-auto space-y-8">
           {/* Welcome Section */}
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold">Welcome back, {user.firstName || displayName.split(' ')[0]}!</h1>
+            <h1 className="text-3xl font-bold">Welcome back, {firstName}!</h1>
             <p className="text-muted-foreground">
               Ready to analyze your next screenplay? Upload a script to get started.
             </p>
