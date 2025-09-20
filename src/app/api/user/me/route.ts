@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { RealAuthService } from '@/lib/auth/real-auth-service'
+import { prisma } from '@/lib/prisma'
 
 export async function GET(request: NextRequest) {
   try {
@@ -32,6 +33,23 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Calculate average score from completed analyses
+    const completedAnalyses = await prisma.analysis.findMany({
+      where: {
+        userId: user.id,
+        status: 'COMPLETED',
+        score: { not: null },
+        deletedAt: null
+      },
+      select: {
+        score: true
+      }
+    })
+
+    const averageScore = completedAnalyses.length > 0
+      ? completedAnalyses.reduce((sum, analysis) => sum + (analysis.score || 0), 0) / completedAnalyses.length
+      : null
+
     // Return user data for dashboard
     return NextResponse.json({
       success: true,
@@ -47,7 +65,8 @@ export async function GET(request: NextRequest) {
         projectType: user.projectType,
         privacyDoNotTrain: user.privacyDoNotTrain,
         createdAt: user.createdAt,
-        lastLoginAt: user.lastLoginAt
+        lastLoginAt: user.lastLoginAt,
+        averageScore: averageScore
       }
     })
   } catch (error) {

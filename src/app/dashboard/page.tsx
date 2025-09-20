@@ -24,27 +24,9 @@ interface UserData {
   privacyDoNotTrain: boolean
   createdAt: string
   lastLoginAt: string | null
+  averageScore: number | null
 }
 
-// Mock recent analyses
-const mockAnalyses = [
-  {
-    id: "1",
-    title: "The Last Stand",
-    type: "Feature Film",
-    status: "Completed",
-    score: 7.8,
-    createdAt: "2024-01-15",
-  },
-  {
-    id: "2",
-    title: "Coffee Shop Chronicles",
-    type: "Short Film",
-    status: "Processing",
-    score: null,
-    createdAt: "2024-01-14",
-  },
-]
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -104,14 +86,6 @@ export default function DashboardPage() {
     }
   }
 
-  const handleNewAnalysis = () => {
-    router.push('/upload')
-  }
-
-  const handleViewAnalysis = (id: string) => {
-    // TODO: Navigate to analysis detail page
-    alert(`View analysis ${id} - coming soon!`)
-  }
 
   if (loading) {
     return (
@@ -296,84 +270,16 @@ export default function DashboardPage() {
                 <FileText className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">7.8</div>
+                <div className="text-2xl font-bold">
+                  {user.averageScore ? user.averageScore.toFixed(1) : '--'}
+                </div>
                 <p className="text-xs text-muted-foreground">
-                  Across all completed analyses
+                  {user.averageScore ? 'Across all completed analyses' : 'No completed analyses yet'}
                 </p>
               </CardContent>
             </Card>
           </div>
 
-          {/* Main Actions */}
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* New Analysis */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Start New Analysis</CardTitle>
-                <CardDescription>
-                  Upload your screenplay for AI-powered coverage and feedback
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="border-2 border-dashed border-border rounded-lg p-8 text-center bg-muted/30">
-                  <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="font-semibold mb-2">Drop your script here</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Supports .fdx, .fountain, and .pdf files up to 10MB
-                  </p>
-                  <Button onClick={handleNewAnalysis} variant="brand">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Choose File
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Quick Tips */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Getting Better Results</CardTitle>
-                <CardDescription>
-                  Tips to maximize your screenplay analysis
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 rounded-full bg-brand/10 flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-semibold text-brand">1</span>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">Use proper formatting</p>
-                    <p className="text-xs text-muted-foreground">
-                      Final Draft (.fdx) files provide the best analysis results
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 rounded-full bg-brand/10 flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-semibold text-brand">2</span>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">Complete first drafts work best</p>
-                    <p className="text-xs text-muted-foreground">
-                      Full scripts provide more comprehensive coverage
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-6 h-6 rounded-full bg-brand/10 flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-semibold text-brand">3</span>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">Review privacy settings</p>
-                    <p className="text-xs text-muted-foreground">
-                      Your script data is protected and never used for training
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
 
           {/* Scripts Dashboard */}
           <ScriptsDashboard />

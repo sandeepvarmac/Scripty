@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
-import { FileText, Clock, CheckCircle, XCircle, Play, Trash2, Eye, Plus } from 'lucide-react'
+import { FileText, Clock, CheckCircle, XCircle, Play, Trash2, Eye, Plus, Upload } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 interface Script {
   id: string
@@ -28,6 +29,7 @@ interface Script {
 }
 
 export function ScriptsDashboard() {
+  const router = useRouter()
   const [scripts, setScripts] = useState<Script[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [deletingScript, setDeletingScript] = useState<string | null>(null)
@@ -93,6 +95,10 @@ export function ScriptsDashboard() {
     }
   }
 
+  const handleUploadClick = () => {
+    router.push('/upload')
+  }
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'COMPLETED':
@@ -148,25 +154,67 @@ export function ScriptsDashboard() {
   return (
     <Card>
       <CardHeader>
-        <div>
-          <CardTitle>Your Scripts</CardTitle>
-          <CardDescription>
-            Manage and analyze your uploaded screenplays
-          </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Your Scripts</CardTitle>
+            <CardDescription>
+              Manage and analyze your uploaded screenplays
+            </CardDescription>
+          </div>
+          {scripts.length > 0 && (
+            <Button onClick={handleUploadClick} variant="brand">
+              <Plus className="h-4 w-4 mr-2" />
+              Upload Script
+            </Button>
+          )}
         </div>
       </CardHeader>
       <CardContent>
         {scripts.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground">
-            <FileText className="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" />
-            <h3 className="text-lg font-semibold mb-2">No scripts uploaded yet</h3>
-            <p className="mb-6">Upload your first screenplay to get started with AI-powered analysis</p>
-            <Link href="/upload">
-              <Button variant="brand">
-                <Plus className="h-4 w-4 mr-2" />
-                Upload Your First Script
+          <div className="space-y-6">
+            {/* Primary Upload Area */}
+            <div className="border-2 border-dashed border-border rounded-xl p-12 text-center bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer group" onClick={handleUploadClick}>
+              <Upload className="h-16 w-16 mx-auto text-muted-foreground mb-6 group-hover:text-brand transition-colors" />
+              <h3 className="text-xl font-semibold mb-3">Upload your first screenplay</h3>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                Drop your script here or click to browse. Supports .fdx, .fountain, and .pdf files up to 10MB
+              </p>
+              <Button variant="brand" size="lg">
+                <Plus className="h-5 w-5 mr-2" />
+                Choose File
               </Button>
-            </Link>
+            </div>
+
+            {/* Quick Tips for Empty State */}
+            <div className="grid md:grid-cols-3 gap-4 pt-6 border-t">
+              <div className="text-center p-4">
+                <div className="w-10 h-10 rounded-full bg-brand/10 flex items-center justify-center mx-auto mb-3">
+                  <span className="text-sm font-semibold text-brand">1</span>
+                </div>
+                <h4 className="font-medium mb-2">Upload your script</h4>
+                <p className="text-sm text-muted-foreground">
+                  Final Draft (.fdx) files provide the best results
+                </p>
+              </div>
+              <div className="text-center p-4">
+                <div className="w-10 h-10 rounded-full bg-brand/10 flex items-center justify-center mx-auto mb-3">
+                  <span className="text-sm font-semibold text-brand">2</span>
+                </div>
+                <h4 className="font-medium mb-2">AI analysis</h4>
+                <p className="text-sm text-muted-foreground">
+                  Get comprehensive coverage and feedback
+                </p>
+              </div>
+              <div className="text-center p-4">
+                <div className="w-10 h-10 rounded-full bg-brand/10 flex items-center justify-center mx-auto mb-3">
+                  <span className="text-sm font-semibold text-brand">3</span>
+                </div>
+                <h4 className="font-medium mb-2">Improve your script</h4>
+                <p className="text-sm text-muted-foreground">
+                  Review insights and enhance your story
+                </p>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="space-y-4">
