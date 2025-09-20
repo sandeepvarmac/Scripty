@@ -99,25 +99,36 @@ export function OnboardingWizard({ onComplete, initialData }: OnboardingWizardPr
                   ].map((option) => (
                     <div
                       key={option.value}
-                      className={`border rounded-lg p-4 cursor-pointer transition-all hover:bg-muted/50 ${
+                      className={`border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.01] ${
                         formData.projectType === option.value
-                          ? "border-brand bg-brand/5 ring-1 ring-brand/20"
-                          : "border-border"
+                          ? "border-brand bg-brand/10 ring-2 ring-brand/30 shadow-lg"
+                          : "border-border hover:border-brand/50 hover:bg-muted/50"
                       }`}
                       onClick={() => updateFormData({ projectType: option.value as any })}
+                      role="radio"
+                      aria-checked={formData.projectType === option.value}
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          updateFormData({ projectType: option.value as any })
+                        }
+                      }}
                     >
                       <div className="flex items-center space-x-3">
-                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
                           formData.projectType === option.value
-                            ? "border-brand bg-brand"
-                            : "border-muted-foreground"
+                            ? "border-brand bg-brand scale-110"
+                            : "border-muted-foreground hover:border-brand/70"
                         }`}>
                           {formData.projectType === option.value && (
-                            <div className="w-2 h-2 rounded-full bg-white"></div>
+                            <div className="w-2.5 h-2.5 rounded-full bg-white animate-in zoom-in-50 duration-200"></div>
                           )}
                         </div>
                         <div className="flex-1">
-                          <div className="font-medium">{option.label}</div>
+                          <div className={`font-medium transition-colors ${
+                            formData.projectType === option.value ? "text-brand" : ""
+                          }`}>{option.label}</div>
                           <div className="text-sm text-muted-foreground">{option.desc}</div>
                         </div>
                       </div>
