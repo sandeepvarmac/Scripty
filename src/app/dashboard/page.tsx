@@ -104,8 +104,7 @@ export default function DashboardPage() {
   }
 
   const handleNewAnalysis = () => {
-    // TODO: Navigate to upload page
-    alert('Upload functionality coming soon!')
+    router.push('/upload')
   }
 
   const handleViewAnalysis = (id: string) => {

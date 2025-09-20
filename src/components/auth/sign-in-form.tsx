@@ -134,7 +134,7 @@ export function SignInForm({ onSubmit, onToggleForm, isLoading }: SignInFormProp
         </div>
 
         <div className="text-center text-sm">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <button
             type="button"
             className="text-primary underline-offset-4 hover:underline"

@@ -80,6 +80,8 @@ model User {
   organizationMemberships OrganizationMember[]
   subscriptions     Subscription[]
   usageRecords      UsageRecord[]
+  scripts           Script[]
+  analyses          Analysis[]
 
   @@map("users")
 }
@@ -243,4 +245,179 @@ model UsageRecord {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("usage_records")
+}
+
+// Script Analysis & Evidence Store Models
+model Script {
+  id               String   @id @default(cuid())
+  userId           String
+  originalFilename String
+  title            String?
+  author           String?
+  format           ScriptFormat
+  fileSize         Int
+  pageCount        Int
+  totalScenes      Int      @default(0)
+  totalCharacters  Int      @default(0)
+
+  // Processing status
+  status           ProcessingStatus @default(PENDING)
+  uploadedAt       DateTime @default(now())
+  processedAt      DateTime?
+
+  // File storage
+  fileUrl          String?  // S3/storage URL for original file
+
+  // Relations
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scenes           Scene[]
+  characters       Character[]
+  analyses         Analysis[]
+
+  @@map("scripts")
+}
+
+model Scene {
+  id           String    @id @default(cuid())
+  scriptId     String
+  sceneNumber  String?
+  type         SceneType
+  content      String    @db.Text
+  pageNumber   Int
+  lineNumber   Int
+  character    String?   // For dialogue scenes
+
+  // Scene position and context
+  orderIndex   Int       // Sequential order in script
+  wordCount    Int       @default(0)
+
+  // Analysis data will be stored here
+  analysisData Json?     // Flexible storage for AI analysis results
+
+  createdAt    DateTime  @default(now())
+
+  // Relations
+  script       Script    @relation(fields: [scriptId], references: [id], onDelete: Cascade)
+  evidences    Evidence[]
+
+  @@index([scriptId, orderIndex])
+  @@index([scriptId, type])
+  @@index([scriptId, character])
+  @@map("scenes")
+}
+
+model Character {
+  id           String   @id @default(cuid())
+  scriptId     String
+  name         String
+  dialogueCount Int     @default(0)
+  firstAppearance Int?  // Line number of first appearance
+
+  // Character analysis
+  analysisData Json?   // AI-generated character insights
+
+  createdAt    DateTime @default(now())
+
+  // Relations
+  script       Script   @relation(fields: [scriptId], references: [id], onDelete: Cascade)
+
+  @@unique([scriptId, name])
+  @@map("characters")
+}
+
+model Evidence {
+  id           String      @id @default(cuid())
+  sceneId      String
+  type         EvidenceType
+  content      String      @db.Text
+  context      String?     @db.Text // Surrounding context for evidence
+  confidence   Float       // AI confidence score 0-1
+
+  // Evidence metadata
+  startLine    Int?        // Start line in original script
+  endLine      Int?        // End line in original script
+  tags         String[]    // Searchable tags
+
+  createdAt    DateTime    @default(now())
+
+  // Relations
+  scene        Scene       @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+
+  @@index([sceneId, type])
+  @@index([type, confidence])
+  @@map("evidence")
+}
+
+model Analysis {
+  id           String        @id @default(cuid())
+  scriptId     String
+  userId       String
+  type         AnalysisType
+  status       AnalysisStatus @default(PENDING)
+
+  // Analysis results
+  results      Json?         // Main analysis results
+  score        Float?        // Overall score if applicable
+  summary      String?       @db.Text
+
+  // Processing info
+  startedAt    DateTime      @default(now())
+  completedAt  DateTime?
+  errorMessage String?       @db.Text
+
+  // Relations
+  script       Script        @relation(fields: [scriptId], references: [id], onDelete: Cascade)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("analyses")
+}
+
+// Enums for Script Models
+enum ScriptFormat {
+  FDX
+  FOUNTAIN
+  PDF
+}
+
+enum ProcessingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum SceneType {
+  SCENE_HEADING
+  ACTION
+  CHARACTER
+  DIALOGUE
+  PARENTHETICAL
+  TRANSITION
+}
+
+enum EvidenceType {
+  CHARACTER_DEVELOPMENT
+  PLOT_POINT
+  DIALOGUE_ISSUE
+  FORMATTING_ERROR
+  PACING_CONCERN
+  STRUCTURE_ELEMENT
+  GENRE_CONVENTION
+  TECHNICAL_ISSUE
+}
+
+enum AnalysisType {
+  COVERAGE_REPORT
+  CHARACTER_ANALYSIS
+  STRUCTURE_ANALYSIS
+  DIALOGUE_REVIEW
+  FORMATTING_CHECK
+  GENRE_ANALYSIS
+}
+
+enum AnalysisStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
 }

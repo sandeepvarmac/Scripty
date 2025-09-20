@@ -66,7 +66,7 @@ export function OnboardingWizard({ onComplete, initialData }: OnboardingWizardPr
           </div>
           <CardTitle>Welcome to ScriptyBoy!</CardTitle>
           <CardDescription>
-            Let's set up your account (Step {step} of {totalSteps})
+            Let&apos;s set up your account (Step {step} of {totalSteps})
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -82,7 +82,7 @@ export function OnboardingWizard({ onComplete, initialData }: OnboardingWizardPr
           {step === 1 && (
             <div className="space-y-6">
               <div className="text-center space-y-2">
-                <h3 className="text-xl font-semibold">What's your focus?</h3>
+                <h3 className="text-xl font-semibold">What&apos;s your focus?</h3>
                 <p className="text-muted-foreground">
                   This helps us tailor the analysis and feedback to your specific writing needs.
                 </p>

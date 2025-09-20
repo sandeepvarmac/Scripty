@@ -15,31 +15,28 @@ async function checkDatabase() {
         select: {
           id: true,
           email: true,
-          first_name: true,
-          last_name: true,
-          subscription_tier: true,
-          created_at: true
+          firstName: true,
+          lastName: true,
+          plan: true,
+          createdAt: true
         },
         take: 5
       })
       console.log('   Sample users:')
       users.forEach(user => {
-        console.log(`   - ${user.email} (${user.first_name} ${user.last_name}) - ${user.subscription_tier}`)
+        console.log(`   - ${user.email} (${user.firstName} ${user.lastName}) - ${user.plan}`)
       })
     }
 
     // Check other main tables
-    const projectCount = await prisma.projects.count()
-    console.log(`\n📂 Projects table: ${projectCount} rows`)
+    const subscriptionCount = await prisma.subscription.count()
+    console.log(`\n💳 Subscriptions table: ${subscriptionCount} rows`)
 
-    const scriptCount = await prisma.scripts.count()
-    console.log(`📄 Scripts table: ${scriptCount} rows`)
+    const usageCount = await prisma.usageRecord.count()
+    console.log(`📈 Usage records table: ${usageCount} rows`)
 
-    const analysisCount = await prisma.analyses.count()
-    console.log(`📊 Analyses table: ${analysisCount} rows`)
-
-    const usageCount = await prisma.usage_logs.count()
-    console.log(`📈 Usage logs table: ${usageCount} rows`)
+    const sessionCount = await prisma.session.count()
+    console.log(`🔐 Sessions table: ${sessionCount} rows`)
 
     console.log('\n✅ Database check complete!')
 
