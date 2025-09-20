@@ -15,38 +15,38 @@ interface AnalysisControlsProps {
   scriptId: string
 }
 
-type AnalysisType = 'COMPREHENSIVE' | 'STRUCTURE' | 'PACING' | 'CHARACTER' | 'DIALOGUE' | 'FORMAT'
+type AnalysisType = 'COMPREHENSIVE' | 'STORY_STRUCTURE' | 'CHARACTER_DEVELOPMENT' | 'DIALOGUE_QUALITY' | 'PACING_FLOW' | 'THEME_ANALYSIS'
 
 const analysisOptions: { type: AnalysisType; label: string; description: string }[] = [
   {
     type: 'COMPREHENSIVE',
-    label: 'Comprehensive Analysis',
-    description: 'Complete screenplay analysis covering all areas'
+    label: 'Comprehensive Coverage',
+    description: 'Full AI-powered screenplay analysis and professional coverage'
   },
   {
-    type: 'STRUCTURE',
-    label: 'Structure Analysis',
-    description: 'Scene distribution and three-act structure'
+    type: 'STORY_STRUCTURE',
+    label: 'Story Structure',
+    description: 'Three-act structure, plot points, and story progression'
   },
   {
-    type: 'PACING',
-    label: 'Pacing Analysis',
-    description: 'Dialogue density and action flow'
+    type: 'CHARACTER_DEVELOPMENT',
+    label: 'Character Development',
+    description: 'Character arcs, dialogue authenticity, and relationships'
   },
   {
-    type: 'CHARACTER',
-    label: 'Character Analysis',
-    description: 'Character distribution and development'
+    type: 'DIALOGUE_QUALITY',
+    label: 'Dialogue Quality',
+    description: 'Dialogue authenticity, subtext, and voice differentiation'
   },
   {
-    type: 'DIALOGUE',
-    label: 'Dialogue Analysis',
-    description: 'Dialogue quality and exposition detection'
+    type: 'PACING_FLOW',
+    label: 'Pacing & Flow',
+    description: 'Scene transitions, rhythm, and momentum analysis'
   },
   {
-    type: 'FORMAT',
-    label: 'Format Analysis',
-    description: 'Screenplay formatting compliance'
+    type: 'THEME_ANALYSIS',
+    label: 'Theme Analysis',
+    description: 'Central themes, symbolic elements, and emotional resonance'
   }
 ]
 
@@ -80,9 +80,9 @@ export function AnalysisControls({ scriptId }: AnalysisControlsProps) {
       const successCount = result.data.analyses.filter((a: any) => a.status === 'COMPLETED').length
 
       alert(
-        `Analysis completed!\n\n` +
-        `${successCount}/${analysisCount} analyses completed successfully.\n` +
-        `Check the Analysis Dashboard below for detailed results.`
+        `🤖 AI Analysis Complete!\n\n` +
+        `${successCount}/${analysisCount} AI-powered analyses completed successfully.\n` +
+        `Professional screenplay coverage and insights are now available below.`
       )
 
       // Refresh the page to show new results
@@ -109,7 +109,7 @@ export function AnalysisControls({ scriptId }: AnalysisControlsProps) {
         ) : (
           <Play className="h-4 w-4" />
         )}
-        <span>{isAnalyzing ? 'Analyzing...' : 'Run Analysis'}</span>
+        <span>{isAnalyzing ? 'AI Analyzing...' : 'Run AI Analysis'}</span>
       </Button>
 
       <DropdownMenu>

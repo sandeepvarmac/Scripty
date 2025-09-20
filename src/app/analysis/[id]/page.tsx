@@ -167,8 +167,11 @@ export default async function AnalysisPage({ params }: AnalysisPageProps) {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>Analysis Dashboard</CardTitle>
-                  <CardDescription>Run new analyses or view previous results</CardDescription>
+                  <CardTitle className="flex items-center gap-2">
+                    <span>🤖</span>
+                    AI Analysis Dashboard
+                  </CardTitle>
+                  <CardDescription>Run new AI-powered analyses or view previous coverage results</CardDescription>
                 </div>
                 <AnalysisControls scriptId={script.id} />
               </div>
@@ -176,9 +179,12 @@ export default async function AnalysisPage({ params }: AnalysisPageProps) {
             <CardContent className="space-y-4">
               {script.analyses.length === 0 ? (
                 <div className="rounded-md border border-dashed p-8 text-center">
-                  <Play className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                  <p className="text-sm text-muted-foreground mb-4">No analyses have been run yet.</p>
-                  <p className="text-xs text-muted-foreground">Click "Run Analysis" above to get detailed screenplay feedback.</p>
+                  <div className="flex justify-center items-center mb-4">
+                    <Play className="h-8 w-8 text-muted-foreground mr-2" />
+                    <span className="text-2xl">🤖</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">No AI analyses have been run yet.</p>
+                  <p className="text-xs text-muted-foreground">Click "Run AI Analysis" above to get professional screenplay coverage powered by GPT-4.</p>
                 </div>
               ) : (
                 script.analyses.map((analysis) => (
@@ -200,6 +206,13 @@ export default async function AnalysisPage({ params }: AnalysisPageProps) {
                     </div>
                     {analysis.summary && (
                       <p className="mt-2 text-sm text-muted-foreground">{analysis.summary}</p>
+                    )}
+                    {analysis.score && (
+                      <div className="mt-3 flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">AI Score:</span>
+                        <span className="text-lg font-bold text-brand">{analysis.score.toFixed(1)}</span>
+                        <span className="text-xs text-muted-foreground">/10</span>
+                      </div>
                     )}
                     {analysis.insights && Array.isArray(analysis.insights) && analysis.insights.length > 0 && (
                       <div className="mt-3 grid gap-2 sm:grid-cols-3">
