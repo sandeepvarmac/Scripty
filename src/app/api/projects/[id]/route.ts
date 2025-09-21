@@ -109,20 +109,15 @@ export async function DELETE(
         }
       })
 
-      // Create audit log entry
-      await tx.auditLog.create({
-        data: {
-          userId: user.id,
-          action: 'DELETE_PROJECT',
-          entityType: 'PROJECT',
-          entityId: projectId,
-          metadata: {
-            projectName: project.name,
-            scriptAction,
-            scriptCount: project._count.scripts,
-            scriptIds: project.scripts.map(s => s.id)
-          }
-        }
+      // Log to console for now (could add proper audit logging later)
+      console.log('Project deleted:', {
+        userId: user.id,
+        action: 'DELETE_PROJECT',
+        projectId,
+        projectName: project.name,
+        scriptAction,
+        scriptCount: project._count.scripts,
+        timestamp: new Date().toISOString()
       })
     })
 
