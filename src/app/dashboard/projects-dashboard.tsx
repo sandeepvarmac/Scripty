@@ -434,14 +434,16 @@ export function ProjectsDashboard() {
                       )}
                     </button>
                     <div className="flex items-center space-x-2 ml-3">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleUploadScript(project.id)}
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Script
-                      </Button>
+                      {projectScripts.length > 0 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleUploadScript(project.id)}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Script
+                        </Button>
+                      )}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="sm">
