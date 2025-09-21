@@ -66,7 +66,7 @@ export class RealAuthService {
           name: data.firstName && data.lastName
             ? `${data.firstName} ${data.lastName}`
             : data.firstName || data.lastName || null,
-          projectType: data.projectType || 'FEATURE',
+          projectType: data.projectType || 'FEATURE_INDEPENDENT',
           privacyDoNotTrain: data.privacyDoNotTrain ?? true,
           retentionDays: data.retentionDays || 90,
           emailNotifications: data.emailNotifications ?? true,

@@ -111,7 +111,7 @@ export class AuthService {
           name: profileData.firstName && profileData.lastName
             ? `${profileData.firstName} ${profileData.lastName}`
             : undefined,
-          projectType: profileData.projectType || ProjectType.FEATURE,
+          projectType: profileData.projectType || ProjectType.FEATURE_INDEPENDENT,
           privacyDoNotTrain: profileData.privacyDoNotTrain ?? true,
           retentionDays: profileData.retentionDays ?? 90,
           emailNotifications: profileData.emailNotifications ?? true,

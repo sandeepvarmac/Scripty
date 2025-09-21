@@ -13,7 +13,7 @@ const signUpSchema = z.object({
     .regex(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/, 'Password must contain at least one special character'),
   firstName: z.string().optional(),
   lastName: z.string().optional(),
-  projectType: z.enum(['SHORT', 'FEATURE', 'TV', 'OTHER']).optional(),
+  projectType: z.enum(['SHORT_FILM', 'FEATURE_INDEPENDENT', 'FEATURE_MAINSTREAM', 'WEB_SERIES', 'TV_SERIES', 'OTHER']).optional(),
   privacyDoNotTrain: z.boolean().optional(),
   retentionDays: z.number().optional(),
   emailNotifications: z.boolean().optional(),
