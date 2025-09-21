@@ -11,7 +11,6 @@ import { ScriptyBoyLogo } from "@/components/ui/logo"
 interface OnboardingData {
   firstName: string
   lastName: string
-  projectType: "short" | "feature" | "tv" | "other"
   privacyDoNotTrain: boolean
   retentionDays: number
   emailNotifications: boolean
@@ -35,7 +34,6 @@ export function OnboardingWizard({ onComplete, initialData }: OnboardingWizardPr
   const [formData, setFormData] = React.useState<OnboardingData>({
     firstName: initialData?.firstName || "",
     lastName: initialData?.lastName || "",
-    projectType: "" as any, // Force user to select
     privacyDoNotTrain: true, // Default ON as per requirements
     retentionDays: 90,
     emailNotifications: true
@@ -54,7 +52,7 @@ export function OnboardingWizard({ onComplete, initialData }: OnboardingWizardPr
     }
   }
 
-  const totalSteps = 3 // Always 3 steps now
+  const totalSteps = 2 // Privacy settings and summary
   const startStep = 1 // Always start at step 1
 
   return (
@@ -78,80 +76,8 @@ export function OnboardingWizard({ onComplete, initialData }: OnboardingWizardPr
             />
           </div>
 
-          {/* Step 1: Project Focus */}
+          {/* Step 1: Privacy Settings */}
           {step === 1 && (
-            <div className="space-y-6">
-              <div className="text-center space-y-2">
-                <h3 className="text-xl font-semibold">What&apos;s your focus?</h3>
-                <p className="text-muted-foreground">
-                  This helps us tailor the analysis and feedback to your specific writing needs.
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                <Label className="text-base font-medium">What do you primarily write?</Label>
-                <div className="grid gap-3">
-                  {[
-                    { value: "short", label: "Short Films", desc: "Scripts under 40 pages" },
-                    { value: "feature", label: "Feature Films", desc: "Full-length screenplays (90-120 pages)" },
-                    { value: "tv", label: "TV/Streaming Series", desc: "Episodes, pilots, and series" },
-                    { value: "other", label: "Other", desc: "Web series, commercials, etc." }
-                  ].map((option) => (
-                    <div
-                      key={option.value}
-                      className={`border rounded-lg p-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.01] ${
-                        formData.projectType === option.value
-                          ? "border-brand bg-brand/10 ring-2 ring-brand/30 shadow-lg"
-                          : "border-border hover:border-brand/50 hover:bg-muted/50"
-                      }`}
-                      onClick={() => updateFormData({ projectType: option.value as any })}
-                      role="radio"
-                      aria-checked={formData.projectType === option.value}
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault()
-                          updateFormData({ projectType: option.value as any })
-                        }
-                      }}
-                    >
-                      <div className="flex items-center space-x-3">
-                        {/* Custom Radio Button */}
-                        <div className="relative">
-                          <input
-                            type="radio"
-                            name="projectType"
-                            value={option.value}
-                            checked={formData.projectType === option.value}
-                            onChange={() => updateFormData({ projectType: option.value as any })}
-                            className="sr-only"
-                          />
-                          <div className={`w-5 h-5 rounded-full border-2 transition-all duration-200 flex items-center justify-center ${
-                            formData.projectType === option.value
-                              ? "border-indigo-600 bg-indigo-600"
-                              : "border-gray-300"
-                          }`}>
-                            {formData.projectType === option.value && (
-                              <div className="w-2 h-2 bg-white rounded-full"></div>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex-1">
-                          <div className={`font-medium transition-colors ${
-                            formData.projectType === option.value ? "text-brand" : ""
-                          }`}>{option.label}</div>
-                          <div className="text-sm text-muted-foreground">{option.desc}</div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Step 2: Privacy Settings */}
-          {step === 2 && (
             <div className="space-y-6">
               <div className="text-center space-y-2">
                 <h3 className="text-xl font-semibold">Privacy & Data Protection</h3>
@@ -197,8 +123,8 @@ export function OnboardingWizard({ onComplete, initialData }: OnboardingWizardPr
             </div>
           )}
 
-          {/* Step 3: Summary & Preferences */}
-          {step === 3 && (
+          {/* Step 2: Summary & Preferences */}
+          {step === 2 && (
             <div className="space-y-6">
               <div className="text-center space-y-2">
                 <h3 className="text-xl font-semibold">Almost done!</h3>
@@ -214,15 +140,6 @@ export function OnboardingWizard({ onComplete, initialData }: OnboardingWizardPr
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Name:</span>
                     <span>{formData.firstName} {formData.lastName}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Focus:</span>
-                    <span>{
-                      formData.projectType === "short" ? "Short Films" :
-                      formData.projectType === "feature" ? "Feature Films" :
-                      formData.projectType === "tv" ? "TV/Series" :
-                      formData.projectType === "other" ? "Other" : "Not selected"
-                    }</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">AI Training:</span>
@@ -271,7 +188,6 @@ export function OnboardingWizard({ onComplete, initialData }: OnboardingWizardPr
               <Button
                 variant="brand"
                 onClick={() => setStep(step + 1)}
-                disabled={step === 1 && !formData.projectType}
               >
                 Continue
               </Button>

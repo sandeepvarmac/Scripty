@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Plus, Upload, FileText, BarChart3, Clock, Settings, LogOut, User, CreditCard, Bell, Search, HelpCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { ScriptsDashboard } from './scripts-dashboard'
+import { ProjectsDashboard } from './projects-dashboard'
 
 interface UserData {
   id: string
@@ -281,8 +281,8 @@ export default function DashboardPage() {
           </div>
 
 
-          {/* Scripts Dashboard */}
-          <ScriptsDashboard />
+          {/* Projects Dashboard */}
+          <ProjectsDashboard />
         </div>
       </AppContent>
     </AppShell>

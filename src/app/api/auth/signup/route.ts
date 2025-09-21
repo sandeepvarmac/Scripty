@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { RealAuthService } from '@/lib/auth/real-auth-service'
-import { ProjectType } from '@prisma/client'
 
 const signUpSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -13,7 +12,6 @@ const signUpSchema = z.object({
     .regex(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/, 'Password must contain at least one special character'),
   firstName: z.string().optional(),
   lastName: z.string().optional(),
-  projectType: z.enum(['SHORT_FILM', 'FEATURE_INDEPENDENT', 'FEATURE_MAINSTREAM', 'WEB_SERIES', 'TV_SERIES', 'OTHER']).optional(),
   privacyDoNotTrain: z.boolean().optional(),
   retentionDays: z.number().optional(),
   emailNotifications: z.boolean().optional(),
@@ -34,7 +32,6 @@ export async function POST(request: NextRequest) {
       password: validatedData.password,
       firstName: validatedData.firstName,
       lastName: validatedData.lastName,
-      projectType: validatedData.projectType as ProjectType,
       privacyDoNotTrain: validatedData.privacyDoNotTrain,
       retentionDays: validatedData.retentionDays,
       emailNotifications: validatedData.emailNotifications
