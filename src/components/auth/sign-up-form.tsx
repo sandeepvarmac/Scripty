@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ErrorAlert } from "@/components/ui/error-alert"
 import { PasswordStrengthIndicator, validatePassword } from "@/components/ui/password-strength"
@@ -22,6 +23,9 @@ const signUpSchema = z.object({
     .regex(/\d/, "Password must contain at least one number")
     .regex(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/, "Password must contain at least one special character"),
   confirmPassword: z.string(),
+  privacyDoNotTrain: z.boolean().default(true),
+  retentionDays: z.number().default(90),
+  emailNotifications: z.boolean().default(true),
   terms: z.boolean().refine(val => val === true, {
     message: "You must accept the terms and conditions"
   })
@@ -42,6 +46,9 @@ export function SignUpForm({ onSubmit, onToggleForm, isLoading }: SignUpFormProp
   const [acceptTerms, setAcceptTerms] = React.useState(false)
   const [password, setPassword] = React.useState("")
   const [error, setError] = React.useState<string | null>(null)
+  const [privacyDoNotTrain, setPrivacyDoNotTrain] = React.useState(true)
+  const [retentionDays, setRetentionDays] = React.useState(90)
+  const [emailNotifications, setEmailNotifications] = React.useState(true)
 
   const {
     register,
@@ -74,7 +81,10 @@ export function SignUpForm({ onSubmit, onToggleForm, isLoading }: SignUpFormProp
 
       await onSubmit({
         ...data,
-        terms: acceptTerms
+        terms: acceptTerms,
+        privacyDoNotTrain,
+        retentionDays,
+        emailNotifications
       })
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create account. Please try again.")
@@ -163,6 +173,62 @@ export function SignUpForm({ onSubmit, onToggleForm, isLoading }: SignUpFormProp
             )}
           </div>
 
+          {/* Privacy Settings Section */}
+          <div className="space-y-4 p-4 bg-muted/30 rounded-lg border">
+            <h4 className="font-medium text-sm">Privacy & Data Settings</h4>
+
+            <div className="space-y-3">
+              <div className="flex items-start space-x-3">
+                <Checkbox
+                  id="privacy-training"
+                  checked={privacyDoNotTrain}
+                  onCheckedChange={(checked) => setPrivacyDoNotTrain(checked as boolean)}
+                />
+                <div className="space-y-1">
+                  <label htmlFor="privacy-training" className="text-sm font-medium">
+                    Do not use my scripts for AI training (Recommended)
+                  </label>
+                  <p className="text-xs text-muted-foreground">
+                    When enabled, your uploaded scripts will never be used to improve AI models. This protects your intellectual property.
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="retention" className="text-sm">Data Retention Period</Label>
+                <Select value={retentionDays.toString()} onValueChange={(value) => setRetentionDays(parseInt(value))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="30">30 days</SelectItem>
+                    <SelectItem value="90">90 days (Recommended)</SelectItem>
+                    <SelectItem value="365">1 year</SelectItem>
+                    <SelectItem value="-1">Keep indefinitely</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  How long to keep your uploaded scripts and analysis data
+                </p>
+              </div>
+
+              <div className="flex items-start space-x-3">
+                <Checkbox
+                  id="email-notifications"
+                  checked={emailNotifications}
+                  onCheckedChange={(checked) => setEmailNotifications(checked as boolean)}
+                />
+                <div className="space-y-1">
+                  <label htmlFor="email-notifications" className="text-sm font-medium">
+                    Email notifications
+                  </label>
+                  <p className="text-xs text-muted-foreground">
+                    Get notified when analysis is complete and for important account updates
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <div className="flex items-center space-x-2">
             <Checkbox

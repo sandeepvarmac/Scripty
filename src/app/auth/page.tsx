@@ -4,15 +4,12 @@ import * as React from "react"
 import { useRouter } from "next/navigation"
 import { SignInForm } from "@/components/auth/sign-in-form"
 import { SignUpForm } from "@/components/auth/sign-up-form"
-import { OnboardingWizard } from "@/components/auth/onboarding-wizard"
 import { ScriptyBoyLogo } from "@/components/ui/logo"
 
 export default function AuthPage() {
   const router = useRouter()
   const [isSignUp, setIsSignUp] = React.useState(false)
   const [isLoading, setIsLoading] = React.useState(false)
-  const [showOnboarding, setShowOnboarding] = React.useState(false)
-  const [signUpData, setSignUpData] = React.useState<{firstName: string, lastName: string, email: string} | null>(null)
 
   const handleSignIn = async (data: { email: string; password: string }) => {
     setIsLoading(true)
@@ -50,6 +47,9 @@ export default function AuthPage() {
     email: string
     password: string
     confirmPassword: string
+    privacyDoNotTrain: boolean
+    retentionDays: number
+    emailNotifications: boolean
     terms: boolean
   }) => {
     setIsLoading(true)
@@ -64,21 +64,18 @@ export default function AuthPage() {
           lastName: data.lastName,
           email: data.email,
           password: data.password,
-          privacyDoNotTrain: true, // Will be set properly in onboarding
+          privacyDoNotTrain: data.privacyDoNotTrain,
+          retentionDays: data.retentionDays,
+          emailNotifications: data.emailNotifications,
         }),
       })
 
       const result = await response.json()
 
       if (response.ok) {
-        // Successful sign up - store data and show onboarding
+        // Successful sign up - redirect directly to dashboard
         console.log('Sign up successful:', result.user)
-        setSignUpData({
-          firstName: data.firstName,
-          lastName: data.lastName,
-          email: data.email
-        })
-        setShowOnboarding(true)
+        router.push('/dashboard')
       } else {
         // Throw error to be caught by form
         throw new Error(result.error || 'Sign up failed')
@@ -92,28 +89,6 @@ export default function AuthPage() {
     }
   }
 
-  const handleOnboardingComplete = async (onboardingData: any) => {
-    try {
-      // TODO: Save onboarding data and redirect to dashboard
-      console.log("Onboarding complete:", onboardingData)
-      await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
-
-      // Redirect to dashboard
-      router.push("/dashboard")
-    } catch (error) {
-      console.error("Failed to complete onboarding:", error)
-    }
-  }
-
-  // Show onboarding wizard after successful signup
-  if (showOnboarding) {
-    return (
-      <OnboardingWizard
-        onComplete={handleOnboardingComplete}
-        initialData={signUpData || undefined}
-      />
-    )
-  }
 
   return (
     <div className="min-h-screen flex">

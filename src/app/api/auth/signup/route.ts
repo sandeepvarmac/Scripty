@@ -10,11 +10,11 @@ const signUpSchema = z.object({
     .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
     .regex(/\d/, 'Password must contain at least one number')
     .regex(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/, 'Password must contain at least one special character'),
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
-  privacyDoNotTrain: z.boolean().optional(),
-  retentionDays: z.number().optional(),
-  emailNotifications: z.boolean().optional(),
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  privacyDoNotTrain: z.boolean().default(true),
+  retentionDays: z.number().default(90),
+  emailNotifications: z.boolean().default(true),
 })
 
 export async function POST(request: NextRequest) {
