@@ -6,6 +6,7 @@ import { ParsedScript, Scene as ParsedScene } from '@/lib/parsers'
 
 export interface SaveScriptOptions {
   userId: string
+  projectId: string
   parsedScript: ParsedScript
   fileUrl?: string // Optional file storage URL
 }
@@ -32,7 +33,7 @@ export interface SceneEvidence {
 export async function saveScriptToEvidenceStore(
   options: SaveScriptOptions
 ): Promise<SavedScript> {
-  const { userId, parsedScript, fileUrl } = options
+  const { userId, projectId, parsedScript, fileUrl } = options
 
 
   if (!parsedScript.scenes) {
@@ -49,6 +50,7 @@ export async function saveScriptToEvidenceStore(
       const script = await tx.script.create({
         data: {
           userId,
+          projectId,
           originalFilename: parsedScript.metadata.originalFilename,
           title: parsedScript.title,
           author: parsedScript.author,

@@ -7,7 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { BrandHeader } from "@/components/ui/brand-header"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Upload, FileText, AlertCircle, CheckCircle, X, ArrowLeft, User, Settings, LogOut, Search, HelpCircle, Bell, CreditCard } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Upload, FileText, AlertCircle, CheckCircle, X, ArrowLeft, User, Settings, LogOut, Search, HelpCircle, Bell, CreditCard, Plus, Folder } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 interface UserData {
@@ -17,6 +21,25 @@ interface UserData {
   firstName: string | null
   lastName: string | null
   plan: string
+}
+
+interface Project {
+  id: string
+  name: string
+  type: string
+  genre?: string
+  description?: string
+  createdAt: string
+}
+
+interface ProjectFormData {
+  name: string
+  type: string
+  genre: string
+  description: string
+  targetBudget: string
+  targetAudience: string
+  developmentStage: string
 }
 
 export default function UploadPage() {
@@ -29,8 +52,23 @@ export default function UploadPage() {
   const [user, setUser] = React.useState<UserData | null>(null)
   const [loading, setLoading] = React.useState(true)
 
+  // Project-related state
+  const [projects, setProjects] = React.useState<Project[]>([])
+  const [selectedProject, setSelectedProject] = React.useState<string>('')
+  const [showNewProjectForm, setShowNewProjectForm] = React.useState(false)
+  const [projectForm, setProjectForm] = React.useState<ProjectFormData>({
+    name: '',
+    type: '',
+    genre: '',
+    description: '',
+    targetBudget: 'LOW',
+    targetAudience: 'General',
+    developmentStage: 'FIRST_DRAFT'
+  })
+
   React.useEffect(() => {
     fetchUserData()
+    fetchProjects()
   }, [])
 
   const fetchUserData = async () => {
@@ -52,6 +90,52 @@ export default function UploadPage() {
       router.push('/auth')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchProjects = async () => {
+    try {
+      const response = await fetch('/api/projects')
+      if (response.ok) {
+        const data = await response.json()
+        setProjects(data.projects || [])
+      }
+    } catch (error) {
+      console.error('Error fetching projects:', error)
+    }
+  }
+
+  const handleCreateProject = async () => {
+    try {
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(projectForm)
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        const newProject = data.project
+        setProjects([...projects, newProject])
+        setSelectedProject(newProject.id)
+        setShowNewProjectForm(false)
+        // Reset form
+        setProjectForm({
+          name: '',
+          type: '',
+          genre: '',
+          description: '',
+          targetBudget: 'LOW',
+          targetAudience: 'General',
+          developmentStage: 'FIRST_DRAFT'
+        })
+      } else {
+        const error = await response.json()
+        alert(`Failed to create project: ${error.error}`)
+      }
+    } catch (error) {
+      console.error('Error creating project:', error)
+      alert('Failed to create project')
     }
   }
 
@@ -129,6 +213,11 @@ export default function UploadPage() {
   const handleUpload = async () => {
     if (files.length === 0) return
 
+    if (!selectedProject) {
+      alert('Please select a project or create a new one before uploading.')
+      return
+    }
+
     setUploading(true)
     setUploadProgress(0)
     setCurrentStage('Uploading screenplay...')
@@ -144,6 +233,9 @@ export default function UploadPage() {
         // Create form data
         const formData = new FormData()
         formData.append('file', file)
+        if (selectedProject) {
+          formData.append('projectId', selectedProject)
+        }
 
         // Simulate upload progress tracking
         const uploadPromise = fetch('/api/upload', {
@@ -422,6 +514,128 @@ export default function UploadPage() {
               Upload your script to get professional AI-powered analysis and feedback
             </p>
           </div>
+
+          {/* Project Selection */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Select Project</CardTitle>
+              <CardDescription>
+                Choose an existing project or create a new one for this screenplay
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {!showNewProjectForm ? (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="project-select">Choose Project</Label>
+                    <Select value={selectedProject} onValueChange={setSelectedProject}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a project..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {projects.map((project) => (
+                          <SelectItem key={project.id} value={project.id}>
+                            <div className="flex items-center space-x-2">
+                              <Folder className="h-4 w-4" />
+                              <span>{project.name}</span>
+                              <span className="text-sm text-muted-foreground">({project.type})</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex justify-center">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowNewProjectForm(true)}
+                      className="w-full"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create New Project
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="project-name">Project Name</Label>
+                      <Input
+                        id="project-name"
+                        value={projectForm.name}
+                        onChange={(e) => setProjectForm({...projectForm, name: e.target.value})}
+                        placeholder="Enter project name..."
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="project-type">Project Type</Label>
+                      <Select value={projectForm.type} onValueChange={(value) => setProjectForm({...projectForm, type: value})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select type..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="SHORT_FILM">Short Film</SelectItem>
+                          <SelectItem value="FEATURE_INDEPENDENT">Feature Film - Independent</SelectItem>
+                          <SelectItem value="FEATURE_MAINSTREAM">Feature Film - Mainstream</SelectItem>
+                          <SelectItem value="WEB_SERIES">Web Series/OTT Platform</SelectItem>
+                          <SelectItem value="TV_SERIES">TV Series</SelectItem>
+                          <SelectItem value="OTHER">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="project-genre">Genre</Label>
+                      <Input
+                        id="project-genre"
+                        value={projectForm.genre}
+                        onChange={(e) => setProjectForm({...projectForm, genre: e.target.value})}
+                        placeholder="e.g., Drama, Comedy, Thriller..."
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="project-budget">Target Budget</Label>
+                      <Select value={projectForm.targetBudget} onValueChange={(value) => setProjectForm({...projectForm, targetBudget: value})}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="MICRO">Micro (Under $500K)</SelectItem>
+                          <SelectItem value="LOW">Low ($500K - $5M)</SelectItem>
+                          <SelectItem value="MEDIUM">Medium ($5M - $25M)</SelectItem>
+                          <SelectItem value="HIGH">High ($25M+)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="project-description">Description (Optional)</Label>
+                    <Textarea
+                      id="project-description"
+                      value={projectForm.description}
+                      onChange={(e) => setProjectForm({...projectForm, description: e.target.value})}
+                      placeholder="Brief description of your project..."
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="flex space-x-2">
+                    <Button onClick={handleCreateProject} disabled={!projectForm.name || !projectForm.type}>
+                      Create Project
+                    </Button>
+                    <Button variant="outline" onClick={() => setShowNewProjectForm(false)}>
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Upload Area */}
           <Card>

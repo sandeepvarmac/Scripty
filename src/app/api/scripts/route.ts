@@ -38,6 +38,13 @@ export async function GET(request: NextRequest) {
         deletedAt: null // Only show non-deleted scripts
       },
       include: {
+        project: {
+          select: {
+            id: true,
+            name: true,
+            type: true
+          }
+        },
         analyses: {
           orderBy: { startedAt: 'desc' }
         },

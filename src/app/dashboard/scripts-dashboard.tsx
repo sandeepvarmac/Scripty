@@ -15,6 +15,11 @@ interface Script {
   format: string
   pageCount: number
   uploadedAt: string
+  project?: {
+    id: string
+    name: string
+    type: string
+  }
   analyses: Array<{
     id: string
     status: string
@@ -232,6 +237,12 @@ export function ScriptsDashboard() {
                     <div>
                       <h3 className="font-semibold">{script.title || script.originalFilename}</h3>
                       <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                        {script.project && (
+                          <>
+                            <span className="text-brand font-medium">{script.project.name}</span>
+                            <span>•</span>
+                          </>
+                        )}
                         <span>{script.format}</span>
                         <span>•</span>
                         <span>{script.pageCount} pages</span>

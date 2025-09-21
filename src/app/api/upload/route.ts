@@ -36,10 +36,18 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData()
     const file = formData.get('file') as File
+    const projectId = formData.get('projectId') as string
 
     if (!file) {
       return NextResponse.json(
         { error: 'No file uploaded' },
+        { status: 400 }
+      )
+    }
+
+    if (!projectId) {
+      return NextResponse.json(
+        { error: 'Project ID is required' },
         { status: 400 }
       )
     }
@@ -84,6 +92,7 @@ export async function POST(request: NextRequest) {
     // Save to evidence store
     const savedScript = await saveScriptToEvidenceStore({
       userId,
+      projectId,
       parsedScript: parseResult.data!
     })
 

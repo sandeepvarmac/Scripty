@@ -48,7 +48,7 @@ model User {
   passwordHash      String?
 
   // Profile & Preferences
-  projectType       ProjectType @default(FEATURE)
+  projectType       ProjectType @default(FEATURE_INDEPENDENT)
   privacyDoNotTrain Boolean     @default(true)
   retentionDays     Int         @default(90)
   emailNotifications Boolean    @default(true)
@@ -80,6 +80,7 @@ model User {
   organizationMemberships OrganizationMember[]
   subscriptions     Subscription[]
   usageRecords      UsageRecord[]
+  projects          Project[]
   scripts           Script[]
   analyses          Analysis[]
 
@@ -172,9 +173,11 @@ model RateLimit {
 
 // Enums
 enum ProjectType {
-  SHORT
-  FEATURE
-  TV
+  SHORT_FILM
+  FEATURE_INDEPENDENT
+  FEATURE_MAINSTREAM
+  WEB_SERIES
+  TV_SERIES
   OTHER
 }
 
@@ -208,6 +211,22 @@ enum SubscriptionStatus {
   CANCELED
   PAST_DUE
   UNPAID
+}
+
+enum BudgetRange {
+  MICRO          // Under $500K
+  LOW            // $500K - $5M
+  MEDIUM         // $5M - $25M
+  HIGH           // $25M+
+}
+
+enum DevelopmentStage {
+  FIRST_DRAFT
+  REVISION
+  POLISH
+  PRODUCTION_READY
+  IN_PRODUCTION
+  COMPLETED
 }
 
 // Billing & Subscription Models
@@ -247,10 +266,35 @@ model UsageRecord {
   @@map("usage_records")
 }
 
+// Project & Script Management Models
+model Project {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?  @db.Text
+  type        ProjectType
+  genre       String?  // AI-detected or user-specified primary genre
+  targetBudget BudgetRange @default(LOW)
+  targetAudience String? @default("General")
+  developmentStage DevelopmentStage @default(FIRST_DRAFT)
+
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scripts     Script[]
+
+  @@map("projects")
+}
+
 // Script Analysis & Evidence Store Models
 model Script {
   id               String   @id @default(cuid())
   userId           String
+  projectId        String?  // Optional during migration
   originalFilename String
   title            String?
   author           String?
@@ -259,6 +303,12 @@ model Script {
   pageCount        Int
   totalScenes      Int      @default(0)
   totalCharacters  Int      @default(0)
+
+  // Version tracking
+  versionMajor     Int      @default(1)
+  versionMinor     Int      @default(0)
+  versionLabel     String?  // e.g., "First Draft", "Producer Notes", "Final"
+  isLatestVersion  Boolean  @default(true)
 
   // Processing status
   status           ProcessingStatus @default(PENDING)
@@ -273,10 +323,13 @@ model Script {
 
   // Relations
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project          Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
   scenes           Scene[]
   characters       Character[]
   analyses         Analysis[]
 
+  @@index([projectId, versionMajor, versionMinor])
+  @@index([projectId, isLatestVersion])
   @@map("scripts")
 }
 
