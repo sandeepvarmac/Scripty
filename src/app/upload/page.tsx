@@ -56,6 +56,9 @@ export default function UploadPage() {
   const [projects, setProjects] = React.useState<Project[]>([])
   const [selectedProject, setSelectedProject] = React.useState<string>('')
   const [showNewProjectForm, setShowNewProjectForm] = React.useState(false)
+  const [projectsLoading, setProjectsLoading] = React.useState(true)
+  const [projectsError, setProjectsError] = React.useState<string | null>(null)
+  const [creatingProject, setCreatingProject] = React.useState(false)
   const [projectForm, setProjectForm] = React.useState<ProjectFormData>({
     name: '',
     type: '',
@@ -70,6 +73,23 @@ export default function UploadPage() {
     fetchUserData()
     fetchProjects()
   }, [])
+
+  // Handle projectId from URL params
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const projectId = urlParams.get('projectId')
+    if (projectId && projects.length > 0) {
+      const projectExists = projects.find(p => p.id === projectId)
+      if (projectExists) {
+        setSelectedProject(projectId)
+      }
+    }
+  }, [projects])
+
+  // Get pre-selected project info for display
+  const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
+  const preSelectedProjectId = urlParams?.get('projectId')
+  const preSelectedProject = preSelectedProjectId ? projects.find(p => p.id === preSelectedProjectId) : null
 
   const fetchUserData = async () => {
     try {
@@ -95,18 +115,45 @@ export default function UploadPage() {
 
   const fetchProjects = async () => {
     try {
+      setProjectsLoading(true)
+      setProjectsError(null)
       const response = await fetch('/api/projects')
       if (response.ok) {
         const data = await response.json()
         setProjects(data.projects || [])
+      } else {
+        throw new Error('Failed to fetch projects')
       }
     } catch (error) {
       console.error('Error fetching projects:', error)
+      setProjectsError('Failed to load projects')
+    } finally {
+      setProjectsLoading(false)
     }
   }
 
   const handleCreateProject = async () => {
+    // Validate required fields
+    if (!projectForm.name.trim()) {
+      alert('Project name is required')
+      return
+    }
+    if (!projectForm.type) {
+      alert('Project type is required')
+      return
+    }
+
+    // Check for duplicate project names
+    const duplicateProject = projects.find(p =>
+      p.name.toLowerCase().trim() === projectForm.name.toLowerCase().trim()
+    )
+    if (duplicateProject) {
+      alert(`A project named "${projectForm.name}" already exists. Please choose a different name.`)
+      return
+    }
+
     try {
+      setCreatingProject(true)
       const response = await fetch('/api/projects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -136,6 +183,8 @@ export default function UploadPage() {
     } catch (error) {
       console.error('Error creating project:', error)
       alert('Failed to create project')
+    } finally {
+      setCreatingProject(false)
     }
   }
 
@@ -526,35 +575,104 @@ export default function UploadPage() {
             <CardContent className="space-y-4">
               {!showNewProjectForm ? (
                 <div className="space-y-4">
+                  {preSelectedProject && (
+                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex items-center space-x-2 text-blue-800">
+                        <Folder className="h-4 w-4" />
+                        <span className="text-sm font-medium">
+                          Adding script to: {preSelectedProject.name}
+                        </span>
+                      </div>
+                      <p className="text-xs text-blue-600 mt-1">
+                        This project was automatically selected from your dashboard
+                      </p>
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <Label htmlFor="project-select">Choose Project</Label>
-                    <Select value={selectedProject} onValueChange={setSelectedProject}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a project..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {projects.map((project) => (
-                          <SelectItem key={project.id} value={project.id}>
-                            <div className="flex items-center space-x-2">
-                              <Folder className="h-4 w-4" />
-                              <span>{project.name}</span>
-                              <span className="text-sm text-muted-foreground">({project.type})</span>
+                    {projectsLoading ? (
+                      <div className="flex items-center space-x-2 p-3 border rounded-md bg-muted/50">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-brand"></div>
+                        <span className="text-sm text-muted-foreground">Loading projects...</span>
+                      </div>
+                    ) : projectsError ? (
+                      <div className="p-3 border rounded-md bg-red-50 border-red-200">
+                        <div className="flex items-center space-x-2 text-red-600">
+                          <AlertCircle className="h-4 w-4" />
+                          <span className="text-sm">{projectsError}</span>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={fetchProjects}
+                          className="mt-2"
+                        >
+                          Try Again
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        <Select value={selectedProject} onValueChange={setSelectedProject}>
+                          <SelectTrigger>
+                            <SelectValue
+                              placeholder={
+                                projects.length === 0
+                                  ? "No projects yet - Create your first project"
+                                  : "Select a project..."
+                              }
+                            />
+                          </SelectTrigger>
+                        <SelectContent>
+                          {projects.length === 0 ? (
+                            <div className="p-3 text-center text-muted-foreground">
+                              <Folder className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                              <p className="text-sm">No projects yet</p>
+                              <p className="text-xs">Create your first project to get started</p>
                             </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                          ) : (
+                            projects.map((project) => (
+                              <SelectItem key={project.id} value={project.id}>
+                                <div className="flex items-center space-x-2">
+                                  <Folder className="h-4 w-4" />
+                                  <span>{project.name}</span>
+                                  <span className="text-sm text-muted-foreground">({project.type})</span>
+                                </div>
+                              </SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                        </Select>
+                        {selectedProject && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedProject('')}
+                            className="absolute right-8 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted"
+                            title="Clear selection"
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </div>
 
-                  <div className="flex justify-center">
+                  <div className="space-y-2">
                     <Button
+                      type="button"
                       variant="outline"
                       onClick={() => setShowNewProjectForm(true)}
                       className="w-full"
+                      disabled={selectedProject !== ''}
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       Create New Project
                     </Button>
+                    {selectedProject !== '' && (
+                      <p className="text-xs text-muted-foreground text-center">
+                        Disabled: A project is already selected. Clear selection to create new project.
+                      </p>
+                    )}
                   </div>
                 </div>
               ) : (
@@ -625,10 +743,24 @@ export default function UploadPage() {
                   </div>
 
                   <div className="flex space-x-2">
-                    <Button onClick={handleCreateProject} disabled={!projectForm.name || !projectForm.type}>
-                      Create Project
+                    <Button
+                      onClick={handleCreateProject}
+                      disabled={!projectForm.name.trim() || !projectForm.type || creatingProject}
+                    >
+                      {creatingProject ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                          Creating...
+                        </>
+                      ) : (
+                        'Create Project'
+                      )}
                     </Button>
-                    <Button variant="outline" onClick={() => setShowNewProjectForm(false)}>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowNewProjectForm(false)}
+                      disabled={creatingProject}
+                    >
                       Cancel
                     </Button>
                   </div>
@@ -677,9 +809,15 @@ export default function UploadPage() {
                     variant="brand"
                     className="cursor-pointer"
                     onClick={() => document.getElementById('file-upload')?.click()}
+                    disabled={!selectedProject && projects.length >= 0}
                   >
                     Choose Files
                   </Button>
+                  {!selectedProject && projects.length >= 0 && (
+                    <p className="text-sm text-muted-foreground mt-3 text-center">
+                      Please select or create a project before uploading files
+                    </p>
+                  )}
 
                   <div className="mt-6 text-sm text-muted-foreground">
                     <p>✓ Final Draft (.fdx) - Best for analysis</p>

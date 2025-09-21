@@ -6,10 +6,18 @@ import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
 import {
   FileText, Clock, CheckCircle, XCircle, Plus, Upload, ChevronDown, ChevronRight,
-  Folder, FolderOpen, Eye, Trash2
+  Folder, FolderOpen, Eye, Trash2, MoreHorizontal
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { DeleteProjectDialog } from '@/components/ui/delete-project-dialog'
+import { CreateProjectModal } from '@/components/ui/create-project-modal'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 interface Project {
   id: string
@@ -67,6 +75,9 @@ export function ProjectsDashboard() {
   const [isLoading, setIsLoading] = useState(true)
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set())
   const [deletingScript, setDeletingScript] = useState<string | null>(null)
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null)
+  const [isDeletingProject, setIsDeletingProject] = useState(false)
+  const [showCreateProjectModal, setShowCreateProjectModal] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -116,11 +127,65 @@ export function ProjectsDashboard() {
   }
 
   const handleCreateProject = () => {
-    router.push('/upload')
+    setShowCreateProjectModal(true)
   }
 
-  const handleUploadScript = () => {
-    router.push('/upload')
+  const handleProjectCreated = (newProject: Project) => {
+    setProjects([newProject, ...projects])
+    // Auto-expand the new project
+    setExpandedProjects(new Set([newProject.id, ...expandedProjects]))
+  }
+
+  const handleUploadScript = (projectId?: string) => {
+    if (projectId) {
+      router.push(`/upload?projectId=${projectId}`)
+    } else {
+      router.push('/upload')
+    }
+  }
+
+  const handleDeleteProject = async (projectId: string, scriptAction: 'delete' | 'unassign') => {
+    setIsDeletingProject(true)
+
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ scriptAction })
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to delete project')
+      }
+
+      // Remove project from local state
+      setProjects(projects.filter(p => p.id !== projectId))
+
+      // If scripts were unassigned, refresh scripts to show them in unassigned section
+      if (scriptAction === 'unassign') {
+        const scriptsResponse = await fetch('/api/scripts')
+        const scriptsResult = await scriptsResponse.json()
+        if (scriptsResponse.ok) {
+          setScripts(scriptsResult.data.scripts)
+        }
+      } else {
+        // If scripts were deleted, remove them from local state
+        setScripts(scripts.filter(s => s.project?.id !== projectId))
+      }
+
+      setProjectToDelete(null)
+      alert(`✅ ${result.message}`)
+
+    } catch (error) {
+      console.error('Delete project error:', error)
+      alert(`❌ Failed to delete project: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setIsDeletingProject(false)
+    }
   }
 
   const handleDeleteScript = async (scriptId: string, scriptTitle: string) => {
@@ -368,15 +433,33 @@ export function ProjectsDashboard() {
                         <ChevronRight className="h-4 w-4 text-muted-foreground" />
                       )}
                     </button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleUploadScript}
-                      className="ml-3"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Script
-                    </Button>
+                    <div className="flex items-center space-x-2 ml-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleUploadScript(project.id)}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Script
+                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Project options</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => setProjectToDelete(project)}
+                            className="text-red-600 focus:text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete Project
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
                 </CardHeader>
 
@@ -386,7 +469,7 @@ export function ProjectsDashboard() {
                       <div className="border-2 border-dashed border-border rounded-lg p-8 text-center bg-muted/30">
                         <FileText className="h-8 w-8 mx-auto text-muted-foreground mb-3" />
                         <p className="text-muted-foreground mb-4">No scripts in this project yet</p>
-                        <Button variant="outline" onClick={handleUploadScript}>
+                        <Button variant="outline" onClick={() => handleUploadScript(project.id)}>
                           <Plus className="h-4 w-4 mr-2" />
                           Upload First Script
                         </Button>
@@ -455,9 +538,9 @@ export function ProjectsDashboard() {
                                     size="sm"
                                     onClick={() => handleDeleteScript(script.id, script.title || script.originalFilename)}
                                     disabled={deletingScript === script.id}
-                                    className={deletingScript === script.id ? "text-gray-400 cursor-not-allowed" : ""}
+                                    className={deletingScript === script.id ? "text-gray-400 cursor-not-allowed" : "text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"}
                                   >
-                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    <Trash2 className={`h-4 w-4 mr-2 ${deletingScript === script.id ? '' : 'text-red-600'}`} />
                                     {deletingScript === script.id ? 'Deleting...' : 'Delete'}
                                   </Button>
                                 </div>
@@ -537,8 +620,9 @@ export function ProjectsDashboard() {
                               size="sm"
                               onClick={() => handleDeleteScript(script.id, script.title || script.originalFilename)}
                               disabled={deletingScript === script.id}
+                              className={deletingScript === script.id ? "text-gray-400 cursor-not-allowed" : "text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"}
                             >
-                              <Trash2 className="h-4 w-4 mr-2" />
+                              <Trash2 className={`h-4 w-4 mr-2 ${deletingScript === script.id ? '' : 'text-red-600'}`} />
                               {deletingScript === script.id ? 'Deleting...' : 'Delete'}
                             </Button>
                           </div>
@@ -552,6 +636,23 @@ export function ProjectsDashboard() {
           )}
         </>
       )}
+
+      {/* Delete Project Dialog */}
+      <DeleteProjectDialog
+        project={projectToDelete}
+        isOpen={!!projectToDelete}
+        onClose={() => setProjectToDelete(null)}
+        onConfirm={handleDeleteProject}
+        isDeleting={isDeletingProject}
+      />
+
+      {/* Create Project Modal */}
+      <CreateProjectModal
+        isOpen={showCreateProjectModal}
+        onClose={() => setShowCreateProjectModal(false)}
+        onProjectCreated={handleProjectCreated}
+        existingProjects={projects}
+      />
     </div>
   )
 }
