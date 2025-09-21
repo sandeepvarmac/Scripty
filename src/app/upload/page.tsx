@@ -6,15 +6,17 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { BrandHeader } from "@/components/ui/brand-header"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Upload, FileText, AlertCircle, CheckCircle, X, ArrowLeft, User, Settings, LogOut } from "lucide-react"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Upload, FileText, AlertCircle, CheckCircle, X, ArrowLeft, User, Settings, LogOut, Search, HelpCircle, Bell, CreditCard } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 interface UserData {
   id: string
   email: string
+  name: string | null
   firstName: string | null
   lastName: string | null
+  plan: string
 }
 
 export default function UploadPage() {
@@ -311,10 +313,10 @@ export default function UploadPage() {
   // Create proper display name and initials
   const fullName = user.firstName && user.lastName
     ? `${user.firstName} ${user.lastName}`
-    : user.email
+    : user.name || user.email
   const initials = user.firstName && user.lastName
     ? `${user.firstName[0]}${user.lastName[0]}`
-    : user.email[0].toUpperCase()
+    : user.name?.split(' ').map(n => n[0]).join('').slice(0, 2) || user.email[0].toUpperCase()
 
   return (
     <AppShell
@@ -347,10 +349,27 @@ export default function UploadPage() {
           <BrandHeader size="md" />
         </div>
         <div className="flex items-center space-x-4">
+          {/* Modern header elements */}
+          <div className="hidden md:flex items-center space-x-2">
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+              <Search className="h-4 w-4" />
+              <span className="sr-only">Search</span>
+            </Button>
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+              <HelpCircle className="h-4 w-4" />
+              <span className="sr-only">Help</span>
+            </Button>
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground relative">
+              <Bell className="h-4 w-4" />
+              <span className="sr-only">Notifications</span>
+              {/* Notification dot */}
+              <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full"></span>
+            </Button>
+          </div>
           <div className="flex items-center space-x-3">
             <div className="text-right">
               <p className="text-sm font-medium leading-none">{fullName}</p>
-              <p className="text-xs text-muted-foreground">Upload Script</p>
+              <p className="text-xs text-muted-foreground">{user.plan} Plan</p>
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -362,9 +381,22 @@ export default function UploadPage() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{fullName}</p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user.email}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  <span>Billing</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <Settings className="mr-2 h-4 w-4" />

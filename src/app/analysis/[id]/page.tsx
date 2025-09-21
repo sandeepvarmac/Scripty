@@ -7,13 +7,15 @@ import { BrandHeader } from '@/components/ui/brand-header'
 import { RealAuthService } from '@/lib/auth/real-auth-service'
 import { getScriptWithScenes } from '@/lib/evidence-store'
 import { format } from 'date-fns'
-import { AlertCircle, Film, MapPin, MessageSquare, User, FileText, Play, RefreshCw, CheckCircle, XCircle, Clock, ArrowLeft } from 'lucide-react'
+import { AlertCircle, Film, MapPin, MessageSquare, User, FileText, Play, RefreshCw, CheckCircle, XCircle, Clock, ArrowLeft, Search, HelpCircle, Bell, CreditCard, Settings, LogOut } from 'lucide-react'
 import { AnalysisControls } from './analysis-controls'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -64,7 +66,9 @@ export default async function AnalysisPage({ params }: AnalysisPageProps) {
 
   const issuesByType = groupEvidenceByType(sceneIssues)
 
-  const fullName = user.name ?? user.email
+  const fullName = user.firstName && user.lastName
+    ? `${user.firstName} ${user.lastName}`
+    : user.name || user.email
 
   return (
     <AppShell
@@ -103,29 +107,70 @@ export default async function AnalysisPage({ params }: AnalysisPageProps) {
           </div>
         </div>
         <div className="flex items-center space-x-4">
+          {/* Modern header elements */}
+          <div className="hidden md:flex items-center space-x-2">
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+              <Search className="h-4 w-4" />
+              <span className="sr-only">Search</span>
+            </Button>
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+              <HelpCircle className="h-4 w-4" />
+              <span className="sr-only">Help</span>
+            </Button>
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground relative">
+              <Bell className="h-4 w-4" />
+              <span className="sr-only">Notifications</span>
+              {/* Notification dot */}
+              <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full"></span>
+            </Button>
+          </div>
           <div className="flex items-center space-x-3">
             <div className="text-right">
               <p className="text-sm font-medium leading-none">{fullName}</p>
-              <p className="text-xs text-muted-foreground">Analysis View</p>
+              <p className="text-xs text-muted-foreground">{user.plan} Plan</p>
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
                     <AvatarImage src="/avatars/user.png" alt={fullName} />
-                    <AvatarFallback>{fullName.slice(0, 2).toUpperCase()}</AvatarFallback>
+                    <AvatarFallback>
+                      {user.firstName && user.lastName
+                        ? `${user.firstName[0]}${user.lastName[0]}`
+                        : user.name?.split(' ').map(n => n[0]).join('').slice(0, 2) || user.email[0].toUpperCase()
+                      }
+                    </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard">Dashboard</Link>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{fullName}</p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user.email}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/upload">Upload Script</Link>
+                <DropdownMenuItem>
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  <span>Billing</span>
                 </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/auth">Sign Out</Link>
+                  <Link href="/auth">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Sign out</span>
+                  </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
