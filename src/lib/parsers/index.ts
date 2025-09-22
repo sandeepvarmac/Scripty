@@ -4,6 +4,7 @@
 // Import individual parser implementations
 import { parseFdxFile } from './fdx'
 import { parseFountainFile } from './fountain'
+import { parseEnhancedFountainFile } from './fountain-enhanced'
 import { parsePdfFile } from './pdf'
 
 export interface ParsedScript {
@@ -17,6 +18,9 @@ export interface ParsedScript {
     parsedAt: Date
     originalFilename: string
     fileSize: number
+    titlePageDetected?: boolean
+    bodyPages?: number
+    renderingMethod?: string
   }
 }
 
@@ -50,7 +54,7 @@ export async function parseScript(
       case 'fdx':
         return await parseFdxFile(file, filename)
       case 'fountain':
-        return await parseFountainFile(file, filename)
+        return await parseEnhancedFountainFile(file, filename)
       case 'pdf':
         return await parsePdfFile(file, filename)
       default:

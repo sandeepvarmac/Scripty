@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { MultiSelect, type Option } from '@/components/ui/multi-select'
 import {
   Dialog,
   DialogContent,
@@ -19,7 +20,7 @@ import { Plus, Folder, AlertCircle } from 'lucide-react'
 interface ProjectFormData {
   name: string
   type: string
-  genre: string
+  genres: string[]
   description: string
   targetBudget: string
   targetAudience: string
@@ -33,6 +34,43 @@ interface CreateProjectModalProps {
   existingProjects: Array<{ name: string }>
 }
 
+// Common screenplay genres
+const GENRE_OPTIONS: Option[] = [
+  { label: 'Action', value: 'Action' },
+  { label: 'Adventure', value: 'Adventure' },
+  { label: 'Animation', value: 'Animation' },
+  { label: 'Biography', value: 'Biography' },
+  { label: 'Comedy', value: 'Comedy' },
+  { label: 'Crime', value: 'Crime' },
+  { label: 'Documentary', value: 'Documentary' },
+  { label: 'Drama', value: 'Drama' },
+  { label: 'Family', value: 'Family' },
+  { label: 'Fantasy', value: 'Fantasy' },
+  { label: 'History', value: 'History' },
+  { label: 'Horror', value: 'Horror' },
+  { label: 'Musical', value: 'Musical' },
+  { label: 'Mystery', value: 'Mystery' },
+  { label: 'Romance', value: 'Romance' },
+  { label: 'Sci-Fi', value: 'Sci-Fi' },
+  { label: 'Sport', value: 'Sport' },
+  { label: 'Thriller', value: 'Thriller' },
+  { label: 'War', value: 'War' },
+  { label: 'Western', value: 'Western' },
+]
+
+// Target audience options
+const TARGET_AUDIENCE_OPTIONS = [
+  { label: 'General Audiences', value: 'General Audiences' },
+  { label: 'Children (Under 13)', value: 'Children (Under 13)' },
+  { label: 'Teens (13-17)', value: 'Teens (13-17)' },
+  { label: 'Young Adults (18-24)', value: 'Young Adults (18-24)' },
+  { label: 'Adults (25-54)', value: 'Adults (25-54)' },
+  { label: 'Mature Adults (55+)', value: 'Mature Adults (55+)' },
+  { label: 'Family', value: 'Family' },
+  { label: 'Art House', value: 'Art House' },
+  { label: 'Niche/Specialty', value: 'Niche/Specialty' },
+]
+
 export function CreateProjectModal({
   isOpen,
   onClose,
@@ -42,10 +80,10 @@ export function CreateProjectModal({
   const [formData, setFormData] = React.useState<ProjectFormData>({
     name: '',
     type: '',
-    genre: '',
+    genres: [],
     description: '',
     targetBudget: 'LOW',
-    targetAudience: 'General',
+    targetAudience: 'General Audiences',
     developmentStage: 'FIRST_DRAFT'
   })
   const [isCreating, setIsCreating] = React.useState(false)
@@ -57,10 +95,10 @@ export function CreateProjectModal({
       setFormData({
         name: '',
         type: '',
-        genre: '',
+        genres: [],
         description: '',
         targetBudget: 'LOW',
-        targetAudience: 'General',
+        targetAudience: 'General Audiences',
         developmentStage: 'FIRST_DRAFT'
       })
       setError(null)
@@ -101,10 +139,16 @@ export function CreateProjectModal({
     setError(null)
 
     try {
+      // Convert genres array to comma-separated string for storage
+      const submitData = {
+        ...formData,
+        genre: formData.genres.join(', ')
+      }
+
       const response = await fetch('/api/projects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(submitData)
       })
 
       if (response.ok) {
@@ -182,14 +226,17 @@ export function CreateProjectModal({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="modal-project-genre">Genre</Label>
-            <Input
-              id="modal-project-genre"
-              value={formData.genre}
-              onChange={(e) => updateFormData({ genre: e.target.value })}
-              placeholder="e.g., Drama, Comedy, Thriller..."
+            <Label htmlFor="modal-project-genres">Genres</Label>
+            <MultiSelect
+              options={GENRE_OPTIONS}
+              selected={formData.genres}
+              onChange={(genres) => updateFormData({ genres })}
+              placeholder="Select genres..."
               disabled={isCreating}
             />
+            <p className="text-xs text-muted-foreground">
+              Select the primary genres for your project. This helps with audience targeting and analysis.
+            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -233,13 +280,22 @@ export function CreateProjectModal({
 
           <div className="space-y-2">
             <Label htmlFor="modal-project-audience">Target Audience</Label>
-            <Input
-              id="modal-project-audience"
+            <Select
               value={formData.targetAudience}
-              onChange={(e) => updateFormData({ targetAudience: e.target.value })}
-              placeholder="e.g., Young Adults, Family, General"
+              onValueChange={(value) => updateFormData({ targetAudience: value })}
               disabled={isCreating}
-            />
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select target audience..." />
+              </SelectTrigger>
+              <SelectContent>
+                {TARGET_AUDIENCE_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
