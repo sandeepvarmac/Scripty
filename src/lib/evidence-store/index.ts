@@ -145,6 +145,17 @@ export async function getScriptWithScenes(scriptId: string, userId: string) {
       deletedAt: null
     },
     include: {
+      project: {
+        select: {
+          id: true,
+          name: true,
+          type: true,
+          genre: true,
+          targetAudience: true,
+          targetBudget: true,
+          developmentStage: true
+        }
+      },
       scenes: {
         where: { deletedAt: null },
         orderBy: { orderIndex: 'asc' },
