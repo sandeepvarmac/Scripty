@@ -20,6 +20,9 @@ import {
   Upload
 } from 'lucide-react'
 import { AIAnalysisPrompt } from './ai-analysis-prompt'
+import { VersionComparison } from './version-comparison'
+import { ImprovementTracking } from './improvement-tracking'
+import { ScriptChat } from './script-chat'
 import { format } from 'date-fns'
 import type { Analysis, Character, Evidence, Scene, Script } from '@prisma/client'
 import {
@@ -86,12 +89,14 @@ type ScriptWithData = Script & {
 
 interface TabbedAnalysisProps {
   script: ScriptWithData
+  allVersions?: ScriptWithData[]
 }
 
-export function TabbedAnalysis({ script }: TabbedAnalysisProps) {
+export function TabbedAnalysis({ script, allVersions = [] }: TabbedAnalysisProps) {
   const [activeTab, setActiveTab] = useState('overview')
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisProgress, setAnalysisProgress] = useState(0)
+  const [isChatCollapsed, setIsChatCollapsed] = useState(true)
 
   const hasAnalysis = script.analyses.some(a => a.status === 'COMPLETED')
 
@@ -145,6 +150,33 @@ export function TabbedAnalysis({ script }: TabbedAnalysisProps) {
     }
   }
 
+  const handleUploadNewVersion = () => {
+    // This would typically redirect to upload page or open upload modal
+    if (script.project) {
+      window.location.href = `/upload?projectId=${script.project.id}`
+    } else {
+      window.location.href = '/upload'
+    }
+  }
+
+  const handleCompareVersions = (versionIds: string[]) => {
+    // This would open a detailed comparison view
+    console.log('Comparing versions:', versionIds)
+    // For now, just show an alert
+    alert(`Comparison feature coming soon! Selected ${versionIds.length} versions.`)
+  }
+
+  const handleMarkRecommendation = (
+    recommendationId: string,
+    status: 'NOT_ADDRESSED' | 'IN_PROGRESS' | 'ADDRESSED' | 'DISMISSED',
+    notes?: string
+  ) => {
+    // This would typically save to database
+    console.log('Marking recommendation:', { recommendationId, status, notes })
+    // For now, just show an alert
+    alert(`Recommendation marked as: ${status}`)
+  }
+
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
     { id: 'coverage', label: 'Coverage Report', icon: FileText },
@@ -167,6 +199,29 @@ export function TabbedAnalysis({ script }: TabbedAnalysisProps) {
         onStartAnalysis={handleStartAnalysis}
         isAnalyzing={isAnalyzing}
         progress={analysisProgress}
+      />
+
+      {/* Version Management */}
+      <VersionComparison
+        currentScript={script}
+        allVersions={allVersions.length > 0 ? allVersions : [script]}
+        onUploadNewVersion={handleUploadNewVersion}
+        onCompareVersions={handleCompareVersions}
+      />
+
+      {/* Improvement Tracking */}
+      <ImprovementTracking
+        currentScript={script}
+        allVersions={allVersions.length > 0 ? allVersions : [script]}
+        onMarkRecommendation={handleMarkRecommendation}
+        onUploadNewVersion={handleUploadNewVersion}
+      />
+
+      {/* Script Chat Assistant */}
+      <ScriptChat
+        script={script}
+        isCollapsed={isChatCollapsed}
+        onToggleCollapse={() => setIsChatCollapsed(!isChatCollapsed)}
       />
 
       {/* Tab Navigation */}
