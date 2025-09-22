@@ -5,7 +5,7 @@
 import { parseFdxFile } from './fdx'
 import { parseFountainFile } from './fountain'
 import { parseEnhancedFountainFile } from './fountain-enhanced'
-import { parsePdfFile } from './pdf'
+import { parseEnhancedPdfFile } from './pdf-enhanced'
 
 export interface ParsedScript {
   title?: string
@@ -21,6 +21,42 @@ export interface ParsedScript {
     titlePageDetected?: boolean
     bodyPages?: number
     renderingMethod?: string
+    // Enhanced PDF-specific metadata based on Hollywood Screenplay Format
+    screenplayFormat?: {
+      fontFamily?: string
+      fontSize?: number
+      margins?: {
+        left: number
+        right: number
+        top: number
+        bottom: number
+      }
+      pageLayout?: {
+        standardFormat: boolean
+        courierFont: boolean
+        properSpacing: boolean
+      }
+    }
+    elementCounts?: {
+      sceneHeadings: number
+      actionBlocks: number
+      characterCues: number
+      dialogueLines: number
+      parentheticals: number
+      transitions: number
+    }
+    structuralAnalysis?: {
+      estimatedRuntime?: number
+      averageSceneLength?: number
+      dialogueToActionRatio?: number
+      characterDistribution?: Array<{ name: string, lineCount: number }>
+    }
+    qualityIndicators?: {
+      hasProperFormatting: boolean
+      hasConsistentMargins: boolean
+      hasStandardElements: boolean
+      ocrConfidence?: number
+    }
   }
 }
 
@@ -56,7 +92,7 @@ export async function parseScript(
       case 'fountain':
         return await parseEnhancedFountainFile(file, filename)
       case 'pdf':
-        return await parsePdfFile(file, filename)
+        return await parseEnhancedPdfFile(file, filename)
       default:
         return {
           success: false,

@@ -6,7 +6,7 @@ import { ParsedScript, Scene as ParsedScene } from '@/lib/parsers'
 
 export interface SaveScriptOptions {
   userId: string
-  projectId: string
+  projectId: string | null
   parsedScript: ParsedScript
   fileUrl?: string // Optional file storage URL
 }
@@ -65,31 +65,29 @@ export async function saveScriptToEvidenceStore(
         }
       })
 
-      // 2. Save scenes in batches to avoid timeout
-      const scenes = []
-      const batchSize = 50 // Process 50 scenes at a time
+      // 2. Save scenes in batches using createMany for better performance
+      const sceneData = parsedScript.scenes.map((scene, index) => ({
+        scriptId: script.id,
+        sceneNumber: scene.sceneNumber,
+        type: mapSceneTypeToEnum(scene.type),
+        content: scene.content,
+        pageNumber: scene.pageNumber,
+        lineNumber: scene.lineNumber,
+        character: scene.character,
+        orderIndex: index,
+        wordCount: scene.content ? scene.content.split(' ').length : 0
+      }))
 
-      for (let i = 0; i < parsedScript.scenes.length; i += batchSize) {
-        const batch = parsedScript.scenes.slice(i, i + batchSize)
-        const batchScenes = await Promise.all(
-          batch.map((scene, batchIndex) =>
-            tx.scene.create({
-              data: {
-                scriptId: script.id,
-                sceneNumber: scene.sceneNumber,
-                type: mapSceneTypeToEnum(scene.type),
-                content: scene.content,
-                pageNumber: scene.pageNumber,
-                lineNumber: scene.lineNumber,
-                character: scene.character,
-                orderIndex: i + batchIndex,
-                wordCount: scene.content ? scene.content.split(' ').length : 0
-              }
-            })
-          )
-        )
-        scenes.push(...batchScenes)
-      }
+      // Use createMany for much better performance
+      await tx.scene.createMany({
+        data: sceneData
+      })
+
+      // Get created scenes for evidence generation
+      const scenes = await tx.scene.findMany({
+        where: { scriptId: script.id },
+        orderBy: { orderIndex: 'asc' }
+      })
 
       // 3. Save unique characters
       const characterMap = new Map<string, number>()
@@ -99,21 +97,20 @@ export async function saveScriptToEvidenceStore(
         }
       })
 
-      const characters = await Promise.all(
-        Array.from(characterMap.entries()).map(([name, dialogueCount]) =>
-          tx.character.create({
-            data: {
-              scriptId: script.id,
-              name,
-              dialogueCount,
-              firstAppearance: findFirstAppearance(parsedScript.scenes, name)
-            }
-          })
-        )
-      )
+      // Use createMany for characters as well
+      const characterData = Array.from(characterMap.entries()).map(([name, dialogueCount]) => ({
+        scriptId: script.id,
+        name,
+        dialogueCount,
+        firstAppearance: findFirstAppearance(parsedScript.scenes, name)
+      }))
 
-      // 4. Generate initial evidence from scenes
-      await generateInitialEvidence(tx, script.id, scenes)
+      await tx.character.createMany({
+        data: characterData
+      })
+
+      // 4. Generate initial evidence from scenes (in smaller batches)
+      await generateInitialEvidenceInBatches(tx, script.id, scenes)
 
       return {
         id: script.id,
@@ -125,7 +122,7 @@ export async function saveScriptToEvidenceStore(
         status: script.status
       }
     }, {
-      timeout: 60000 // 60 seconds timeout for very large scripts
+      timeout: 180000 // 180 seconds timeout for very large scripts (3 minutes)
     })
 
     return result
@@ -259,50 +256,48 @@ function findFirstAppearance(scenes: ParsedScene[], characterName: string): numb
   return null
 }
 
-// Generate basic evidence from scenes
-async function generateInitialEvidence(tx: any, scriptId: string, scenes: any[]) {
-  const evidencePromises: Promise<any>[] = []
+// Generate basic evidence from scenes in batches
+async function generateInitialEvidenceInBatches(tx: any, scriptId: string, scenes: any[]) {
+  const evidenceData: any[] = []
 
   scenes.forEach((scene) => {
     // Generate evidence for dialogue issues (long dialogue blocks)
     if (scene.type === 'DIALOGUE' && scene.wordCount > 50) {
-      evidencePromises.push(
-        tx.evidence.create({
-          data: {
-            sceneId: scene.id,
-            type: 'DIALOGUE_ISSUE',
-            content: 'Long dialogue block detected',
-            context: scene.content.substring(0, 200),
-            confidence: 0.7,
-            tags: ['long-dialogue', 'pacing'],
-            startLine: scene.lineNumber,
-            endLine: scene.lineNumber
-          }
-        })
-      )
+      evidenceData.push({
+        sceneId: scene.id,
+        type: 'DIALOGUE_ISSUE',
+        content: 'Long dialogue block detected',
+        context: scene.content.substring(0, 200),
+        confidence: 0.7,
+        tags: ['long-dialogue', 'pacing'],
+        startLine: scene.lineNumber,
+        endLine: scene.lineNumber
+      })
     }
 
     // Generate evidence for scene structure
     if (scene.type === 'SCENE_HEADING') {
-      evidencePromises.push(
-        tx.evidence.create({
-          data: {
-            sceneId: scene.id,
-            type: 'STRUCTURE_ELEMENT',
-            content: 'Scene heading identified',
-            context: scene.content,
-            confidence: 0.9,
-            tags: ['scene-break', 'structure'],
-            startLine: scene.lineNumber,
-            endLine: scene.lineNumber
-          }
-        })
-      )
+      evidenceData.push({
+        sceneId: scene.id,
+        type: 'STRUCTURE_ELEMENT',
+        content: 'Scene heading identified',
+        context: scene.content,
+        confidence: 0.9,
+        tags: ['scene-break', 'structure'],
+        startLine: scene.lineNumber,
+        endLine: scene.lineNumber
+      })
     }
   })
 
-  // Execute all evidence creation in parallel
-  if (evidencePromises.length > 0) {
-    await Promise.all(evidencePromises)
+  // Create evidence in batches using createMany for better performance
+  if (evidenceData.length > 0) {
+    const batchSize = 100
+    for (let i = 0; i < evidenceData.length; i += batchSize) {
+      const batch = evidenceData.slice(i, i + batchSize)
+      await tx.evidence.createMany({
+        data: batch
+      })
+    }
   }
 }

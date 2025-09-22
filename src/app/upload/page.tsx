@@ -79,6 +79,28 @@ interface ProjectFormData {
   targetAudience: string
   developmentStage: string
 }
+type UploadResponsePayload = {
+  error?: string
+  warnings?: string[]
+  data?: {
+    script: {
+      id: string
+      title?: string | null
+      format: string
+      pageCount: number
+      totalScenes: number
+      totalCharacters: number
+    }
+    parsed: {
+      title?: string | null
+      format: string
+      pageCount: number
+      scenes: unknown[]
+      characters: unknown[]
+    }
+  }
+}
+
 
 export default function UploadPage() {
   const router = useRouter()
@@ -303,6 +325,30 @@ export default function UploadPage() {
     }
   }
 
+  const extractErrorMessage = (text: string, fallback: string) => {
+    if (!text) {
+      return fallback
+    }
+
+    const titleMatch = text.match(/<title>([^<]+)<\/title>/i)
+    if (titleMatch?.[1]) {
+      return titleMatch[1].trim()
+    }
+
+    const plain = text
+      .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+      .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+
+    if (plain) {
+      return plain.length > 200 ? `${plain.slice(0, 200)}...` : plain
+    }
+
+    return fallback
+  }
+
   // Real upload function with comprehensive progress tracking
   const handleUpload = async () => {
     if (files.length === 0) return
@@ -367,10 +413,20 @@ export default function UploadPage() {
           }, 200)
         })
 
-        const result = await response.json()
+        const contentType = response.headers.get('content-type') || ''
+        let result: UploadResponsePayload | null = null
+        let rawText = ''
+
+        if (contentType.includes('application/json')) {
+          result = await response.json()
+        } else {
+          rawText = await response.text()
+          result = { error: extractErrorMessage(rawText, 'Unexpected server response') }
+        }
 
         if (!response.ok) {
-          throw new Error(result.error || 'Upload failed')
+          const fallbackMessage = `Request failed with status ${response.status}${response.statusText ? ` ${response.statusText}` : ''}`.trim()
+          throw new Error(result?.error || extractErrorMessage(rawText, fallbackMessage))
         }
 
         // Stage 3: Saving to Database (50-75%)
@@ -393,6 +449,10 @@ export default function UploadPage() {
         // Stage 4: Finalizing (75-100%)
         setUploadProgress(75)
         setCurrentStage('Preparing analysis dashboard...')
+
+        if (!result?.data) {
+          throw new Error('Upload succeeded but response payload was empty')
+        }
 
         const {
           script: savedScript,
@@ -980,7 +1040,7 @@ export default function UploadPage() {
                       onClick={handleUpload}
                       disabled={uploading || files.length === 0}
                     >
-                      {uploading ? 'Uploading...' : 'Start Analysis'}
+{uploading ? 'Processing...' : 'Parse & Extract Metadata'}
                     </Button>
                   </div>
                 </div>

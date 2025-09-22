@@ -51,6 +51,12 @@ export interface AIInsight {
 
 type SceneWithEvidence = Scene & { evidences: Evidence[] }
 type ScriptWithData = Script & {
+  project?: {
+    genre: string | null
+    type: string
+    targetAudience: string | null
+    description: string | null
+  } | null
   scenes: SceneWithEvidence[]
   characters: Character[]
 }
@@ -59,10 +65,18 @@ type ScriptWithData = Script & {
 export async function analyzeScriptWithAI(options: AIAnalysisOptions): Promise<AIAnalysisResult[]> {
   const { scriptId, userId, analysisTypes = ['COMPREHENSIVE'] } = options
 
-  // Get script with full data
+  // Get script with full data including project info
   const script = await prisma.script.findFirst({
     where: { id: scriptId, userId, deletedAt: null },
     include: {
+      project: {
+        select: {
+          genre: true,
+          type: true,
+          targetAudience: true,
+          description: true
+        }
+      },
       scenes: {
         where: { deletedAt: null },
         orderBy: { orderIndex: 'asc' },
@@ -189,14 +203,19 @@ export async function analyzeScriptWithAI(options: AIAnalysisOptions): Promise<A
 async function runQuickOverview(script: ScriptWithData) {
   const scriptText = formatScriptForAnalysis(script)
 
-  const prompt = `As a professional screenplay analyst, provide a QUICK OVERVIEW analysis of this screenplay. Focus on immediate, high-level insights that can be determined quickly.
+  // Build context-aware prompt
+  const projectGenreHint = script.project?.genre
+    ? `\n\nNOTE: The writer has identified this project as "${script.project.genre}". Please consider this context when determining the genre, but feel free to suggest a more specific or accurate classification if the content indicates otherwise.`
+    : ''
+
+  const prompt = `As a professional screenplay analyst, provide a QUICK OVERVIEW analysis of this screenplay. Focus on immediate, high-level insights that can be determined quickly.${projectGenreHint}
 
 SCREENPLAY:
 ${scriptText}
 
 Provide analysis in this JSON format:
 {
-  "genre": "Primary genre (e.g., Drama, Comedy, Thriller, Horror, Action, Romance, Sci-Fi, Fantasy, etc.)",
+  "genre": "Primary genre based on the COMPLETE story arc and thematic content, not just opening scenes (e.g., Family Drama, Romantic Comedy, Psychological Thriller, etc.)",
   "overallScore": number (1-10),
   "summary": "Brief 2-3 sentence overall assessment",
   "insights": [
@@ -251,14 +270,19 @@ IMPORTANT: Keep this analysis quick and high-level. Limit to 1-2 insights per ma
 async function runComprehensiveAnalysis(script: ScriptWithData) {
   const scriptText = formatScriptForAnalysis(script)
 
-  const prompt = `As a professional screenplay analyst, provide a comprehensive analysis of this screenplay.
+  // Build context-aware prompt with project information
+  const projectGenreHint = script.project?.genre
+    ? `\n\nCONTEXT: The writer has identified this project as "${script.project.genre}" targeting "${script.project.targetAudience || 'general audiences'}". Please evaluate whether the content aligns with this genre classification and target audience, or suggest refinements based on the actual story content and themes.`
+    : ''
+
+  const prompt = `As a professional screenplay analyst, provide a comprehensive analysis of this screenplay.${projectGenreHint}
 
 SCREENPLAY:
 ${scriptText}
 
 Provide analysis in this JSON format:
 {
-  "genre": "Primary genre (e.g., Drama, Comedy, Thriller, Horror, Action, Romance, Sci-Fi, Fantasy, etc.)",
+  "genre": "Primary genre based on the COMPLETE story arc and thematic content, not just opening scenes (e.g., Family Drama, Romantic Comedy, Psychological Thriller, etc.)",
   "overallScore": number (1-10),
   "summary": "Brief overall assessment",
   "insights": [
@@ -275,7 +299,14 @@ Provide analysis in this JSON format:
   "industryComparison": "How this screenplay compares to professional standards and successful examples in its genre. Include specific genre conventions and expectations."
 }
 
-Focus on professional screenplay elements: three-act structure, character arcs, dialogue authenticity, pacing, visual storytelling, and commercial viability within the identified genre.`
+Focus on professional screenplay elements: three-act structure, character arcs, dialogue authenticity, pacing, visual storytelling, and commercial viability within the identified genre.
+
+IMPORTANT FOR GENRE CLASSIFICATION: Consider the ENTIRE story arc from beginning to end. Pay special attention to:
+- The central emotional journey and themes
+- How conflicts are resolved
+- The story's primary focus (family relationships, romance, action, mystery, etc.)
+- The intended emotional impact on the audience
+- Genre conventions present throughout the complete narrative`
 
   const response = await openai.chat.completions.create({
     model: "gpt-4o",
@@ -435,21 +466,63 @@ Provide analysis in JSON format focusing on thematic strengths and development o
   return parseAIResponse(response.choices[0].message.content, 'Theme Analysis')
 }
 
-// Helper function to format script for AI analysis
+// Helper function to format script for AI analysis with curated samples
 function formatScriptForAnalysis(script: ScriptWithData): string {
-  const maxScenes = 50 // Limit for token management
-  const scenesToAnalyze = script.scenes.slice(0, maxScenes)
+  const totalScenes = script.scenes.length
+  const maxScenes = 60 // Increased limit for better coverage
 
-  let formattedScript = `TITLE: ${script.title || script.originalFilename}\n`
-  formattedScript += `FORMAT: ${script.format}\n`
-  formattedScript += `PAGES: ${script.pageCount}\n\n`
+  // Get project context if available
+  const projectContext = script.project ? `
+PROJECT TYPE: ${script.project.type}
+PROJECT GENRE: ${script.project.genre || 'Not specified'}
+TARGET AUDIENCE: ${script.project.targetAudience || 'Not specified'}
+PROJECT DESCRIPTION: ${script.project.description || 'None provided'}` : ''
 
-  scenesToAnalyze.forEach((scene, index) => {
-    formattedScript += `[${scene.type}] ${scene.content}\n\n`
-  })
+  let formattedScript = `SCREENPLAY METADATA:
+TITLE: ${script.title || script.originalFilename}
+FORMAT: ${script.format}
+PAGES: ${script.pageCount}
+TOTAL SCENES: ${totalScenes}${projectContext}
 
-  if (script.scenes.length > maxScenes) {
-    formattedScript += `[... ${script.scenes.length - maxScenes} more scenes truncated for analysis]`
+`
+
+  // Strategy: Sample from beginning, middle, and end for better genre context
+  if (totalScenes <= maxScenes) {
+    // Include all scenes if small enough
+    script.scenes.forEach((scene, index) => {
+      formattedScript += `[Scene ${index + 1}/${totalScenes}] [${scene.type}] ${scene.content}\n\n`
+    })
+  } else {
+    // Curated sampling approach
+    const beginningCount = Math.floor(maxScenes * 0.4) // 40% from beginning
+    const middleCount = Math.floor(maxScenes * 0.3)    // 30% from middle
+    const endCount = maxScenes - beginningCount - middleCount // 30% from end
+
+    // Beginning scenes (establishment, setup)
+    formattedScript += `BEGINNING SCENES (Setup & Character Introduction):\n`
+    const beginningScenes = script.scenes.slice(0, beginningCount)
+    beginningScenes.forEach((scene, index) => {
+      formattedScript += `[Scene ${index + 1}/${totalScenes}] [${scene.type}] ${scene.content}\n\n`
+    })
+
+    // Middle scenes (development, conflict)
+    formattedScript += `MIDDLE SCENES (Development & Conflict):\n`
+    const middleStart = Math.floor(totalScenes * 0.35)
+    const middleScenes = script.scenes.slice(middleStart, middleStart + middleCount)
+    middleScenes.forEach((scene, index) => {
+      const actualIndex = middleStart + index + 1
+      formattedScript += `[Scene ${actualIndex}/${totalScenes}] [${scene.type}] ${scene.content}\n\n`
+    })
+
+    // End scenes (climax, resolution)
+    formattedScript += `ENDING SCENES (Climax & Resolution):\n`
+    const endScenes = script.scenes.slice(-endCount)
+    endScenes.forEach((scene, index) => {
+      const actualIndex = totalScenes - endCount + index + 1
+      formattedScript += `[Scene ${actualIndex}/${totalScenes}] [${scene.type}] ${scene.content}\n\n`
+    })
+
+    formattedScript += `[NOTE: Sampled ${maxScenes} scenes from ${totalScenes} total scenes across beginning, middle, and end for comprehensive analysis]`
   }
 
   return formattedScript

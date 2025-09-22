@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { parseScript } from '@/lib/parsers'
 import { saveScriptToEvidenceStore } from '@/lib/evidence-store'
 import { RealAuthService } from '@/lib/auth/real-auth-service'
+import { prisma } from '@/lib/prisma'
+
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,11 +49,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!projectId) {
-      return NextResponse.json(
-        { error: 'Project ID is required' },
-        { status: 400 }
-      )
+    // Validate projectId if provided
+    if (projectId) {
+      const project = await prisma.project.findFirst({
+        where: {
+          id: projectId,
+          userId: user.id,
+          deletedAt: null
+        }
+      })
+
+      if (!project) {
+        return NextResponse.json(
+          { error: 'Project not found or access denied' },
+          { status: 404 }
+        )
+      }
     }
 
     // Validate file size (10MB limit)
@@ -77,7 +92,16 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(arrayBuffer)
 
     // Parse the script
-    const parseResult = await parseScript(buffer, file.name, file.type)
+    let parseResult
+    try {
+      parseResult = await parseScript(buffer, file.name, file.type)
+    } catch (error) {
+      console.error('Upload parsing pipeline error:', error)
+      return NextResponse.json(
+        { error: 'Server failed to parse this file. Please try converting to Fountain (.fountain) or Final Draft (.fdx) format while we improve PDF support.' },
+        { status: 500 }
+      )
+    }
 
     if (!parseResult.success) {
       return NextResponse.json(
@@ -92,7 +116,7 @@ export async function POST(request: NextRequest) {
     // Save to evidence store
     const savedScript = await saveScriptToEvidenceStore({
       userId,
-      projectId,
+      projectId: projectId || null,
       parsedScript: parseResult.data!
     })
 

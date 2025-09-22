@@ -19,6 +19,7 @@ import {
   AlertCircle,
   Upload
 } from 'lucide-react'
+import { AIAnalysisPrompt } from './ai-analysis-prompt'
 import { format } from 'date-fns'
 import type { Analysis, Character, Evidence, Scene, Script } from '@prisma/client'
 import {
@@ -27,6 +28,45 @@ import {
   getActionDialogueRatio,
   formatRuntime
 } from '@/lib/utils/runtime-calculator'
+
+// Helper function to get AI detected genres from analysis results
+function getAIDetectedGenres(script: ScriptWithData): string[] {
+  // Get the most recent completed analysis that has genre information
+  const recentAnalysis = script.analyses
+    .filter(a => a.status === 'COMPLETED' && a.genre && a.genre !== 'Unknown')
+    .sort((a, b) => new Date(b.completedAt || 0).getTime() - new Date(a.completedAt || 0).getTime())[0]
+
+  if (recentAnalysis?.genre) {
+    // Handle comma-separated genres or single genre
+    return recentAnalysis.genre.split(',').map(g => g.trim()).filter(g => g)
+  }
+
+  // Fallback: if no AI analysis available, return empty array
+  return []
+}
+
+// Helper function to get genre analysis description
+function getGenreAnalysisDescription(script: ScriptWithData, genres: string[]): string {
+  if (genres.length === 0) {
+    return 'Run AI analysis to detect genre classification based on story elements and narrative structure'
+  }
+
+  // Get the most recent analysis summary if available
+  const recentAnalysis = script.analyses
+    .filter(a => a.status === 'COMPLETED' && a.summary)
+    .sort((a, b) => new Date(b.completedAt || 0).getTime() - new Date(a.completedAt || 0).getTime())[0]
+
+  if (recentAnalysis?.summary) {
+    return recentAnalysis.summary
+  }
+
+  // Generate a generic description based on detected genres
+  if (genres.length === 1) {
+    return `${genres[0]} elements detected through comprehensive narrative analysis`
+  } else {
+    return `${genres.slice(0, -1).join(', ')} and ${genres[genres.length - 1]} elements detected through narrative analysis`
+  }
+}
 
 type SceneWithEvidence = Scene & { evidences: Evidence[] }
 type ScriptWithData = Script & {
@@ -50,6 +90,60 @@ interface TabbedAnalysisProps {
 
 export function TabbedAnalysis({ script }: TabbedAnalysisProps) {
   const [activeTab, setActiveTab] = useState('overview')
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [analysisProgress, setAnalysisProgress] = useState(0)
+
+  const hasAnalysis = script.analyses.some(a => a.status === 'COMPLETED')
+
+  const handleStartAnalysis = async (
+    analysisType: 'quick' | 'comprehensive' | 'custom',
+    options?: string[]
+  ) => {
+    setIsAnalyzing(true)
+    setAnalysisProgress(0)
+
+    try {
+      // Simulate progress updates
+      const progressInterval = setInterval(() => {
+        setAnalysisProgress(prev => {
+          const newProgress = prev + Math.random() * 15
+          return newProgress >= 95 ? 95 : newProgress
+        })
+      }, 1000)
+
+      const response = await fetch(`/api/scripts/${script.id}/analyze`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          analysisType,
+          options: options || []
+        })
+      })
+
+      clearInterval(progressInterval)
+
+      if (response.ok) {
+        setAnalysisProgress(100)
+        // Refresh the page to show new analysis
+        setTimeout(() => {
+          window.location.reload()
+        }, 1000)
+      } else {
+        const error = await response.json()
+        console.error('Analysis failed:', error)
+        setIsAnalyzing(false)
+        setAnalysisProgress(0)
+        alert('Analysis failed: ' + (error.error || 'Unknown error'))
+      }
+    } catch (error) {
+      console.error('Analysis error:', error)
+      setIsAnalyzing(false)
+      setAnalysisProgress(0)
+      alert('Analysis failed. Please try again.')
+    }
+  }
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
@@ -65,6 +159,15 @@ export function TabbedAnalysis({ script }: TabbedAnalysisProps) {
     <div className="space-y-6">
       {/* Script Metadata Section */}
       <ScriptMetadata script={script} />
+
+      {/* AI Analysis Prompt */}
+      <AIAnalysisPrompt
+        scriptId={script.id}
+        hasAnalysis={hasAnalysis}
+        onStartAnalysis={handleStartAnalysis}
+        isAnalyzing={isAnalyzing}
+        progress={analysisProgress}
+      />
 
       {/* Tab Navigation */}
       <Card>
@@ -118,7 +221,7 @@ function ScriptMetadata({ script }: { script: ScriptWithData }) {
   })
 
   // Real data from database and analysis
-  const aiDetectedGenres = ['Drama', 'Thriller'] // Would come from AI analysis
+  const aiDetectedGenres = getAIDetectedGenres(script)
   const userSelectedGenres = script.project?.genre
     ? script.project.genre.split(', ').filter(g => g.trim() !== '')
     : ['Not specified']
@@ -263,14 +366,20 @@ function ScriptMetadata({ script }: { script: ScriptWithData }) {
                 </div>
               </div>
               <div className="flex flex-wrap gap-2 mb-3">
-                {aiDetectedGenres.map((genre) => (
-                  <Badge key={genre} className="bg-blue-600 text-white hover:bg-blue-700">
-                    {genre}
+                {aiDetectedGenres.length > 0 ? (
+                  aiDetectedGenres.map((genre) => (
+                    <Badge key={genre} className="bg-blue-600 text-white hover:bg-blue-700">
+                      {genre}
+                    </Badge>
+                  ))
+                ) : (
+                  <Badge className="bg-gray-500 text-white">
+                    Analysis needed
                   </Badge>
-                ))}
+                )}
               </div>
               <p className="text-xs text-blue-700">
-                Strong dramatic elements with thriller undertones detected through narrative analysis
+                {getGenreAnalysisDescription(script, aiDetectedGenres)}
               </p>
             </div>
             <div className="p-4 border rounded-lg bg-gradient-to-br from-gray-50 to-gray-100">
