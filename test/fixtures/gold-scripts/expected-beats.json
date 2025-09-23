@@ -1,0 +1,64 @@
+{
+  "script_title": "THE LAST FRONTIER",
+  "expected_beats": [
+    {
+      "kind": "OPENING_IMAGE",
+      "expected_page_min": 1,
+      "expected_page_max": 3,
+      "description": "Mars colony and xenobiologist discovering crystalline formations",
+      "key_elements": ["Mars Colony Alpha", "Sarah Chen", "crystalline formations"]
+    },
+    {
+      "kind": "INCITING_INCIDENT",
+      "expected_page_min": 8,
+      "expected_page_max": 15,
+      "description": "Sarah discovers the formations are intelligent and communicating",
+      "key_elements": ["formations communicating", "harmonic frequency", "geometric patterns"]
+    },
+    {
+      "kind": "PLOT_POINT_1",
+      "expected_page_min": 20,
+      "expected_page_max": 30,
+      "description": "Discovery of underground chamber with ancient Martian civilization",
+      "key_elements": ["underground chamber", "ancient symbols", "Martian civilization"]
+    },
+    {
+      "kind": "MIDPOINT",
+      "expected_page_min": 45,
+      "expected_page_max": 65,
+      "description": "Sarah realizes the murals show Mars' transformation and contain a message",
+      "key_elements": ["murals", "Mars transformation", "atmospheric collapse", "message"]
+    },
+    {
+      "kind": "PLOT_POINT_2",
+      "expected_page_min": 70,
+      "expected_page_max": 85,
+      "description": "Rescue mission during storm convergence and chamber collapse",
+      "key_elements": ["rescue mission", "storm convergence", "chamber collapse", "Hayes and Martinez"]
+    },
+    {
+      "kind": "CLIMAX",
+      "expected_page_min": 85,
+      "expected_page_max": 100,
+      "description": "Sarah downloads critical data just before chamber collapse",
+      "key_elements": ["data download", "crystal formation", "chamber collapse", "legacy technology"]
+    },
+    {
+      "kind": "RESOLUTION",
+      "expected_page_min": 100,
+      "expected_page_max": 110,
+      "description": "Sarah presents findings showing how to terraform Mars",
+      "key_elements": ["terraform Mars", "fifty years", "roadmap", "second home", "future"]
+    }
+  ],
+  "validation_rules": {
+    "total_beats_expected": 7,
+    "timing_tolerance_pages": 5,
+    "required_story_elements": [
+      "protagonist_journey",
+      "clear_conflict",
+      "discovery_theme",
+      "hope_resolution"
+    ]
+  }
+}
