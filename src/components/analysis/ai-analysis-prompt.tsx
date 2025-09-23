@@ -91,62 +91,62 @@ export function AIAnalysisPrompt({
 
   if (isAnalyzing) {
     return (
-      <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
+      <Card className="border-brand-200 bg-gradient-to-br from-brand-50 to-brand-100">
         <CardHeader>
-          <CardTitle className="flex items-center text-blue-900">
+          <CardTitle className="flex items-center text-brand-900">
             <div className="animate-spin mr-3">
               <Brain className="h-5 w-5" />
             </div>
             AI Analysis in Progress
           </CardTitle>
-          <CardDescription className="text-blue-700">
+          <CardDescription className="text-brand-700">
             Analyzing your script with advanced AI models...
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <div className="flex justify-between text-sm text-blue-800">
+            <div className="flex justify-between text-sm text-brand-800">
               <span>Progress</span>
               <span>{progress}%</span>
             </div>
-            <Progress value={progress} className="bg-blue-200" />
+            <Progress value={progress} className="bg-brand-200" />
           </div>
 
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div className="flex items-center space-x-2">
-              <CheckCircle className="h-4 w-4 text-green-600" />
-              <span className="text-blue-800">Genre Classification</span>
+              <CheckCircle className="h-4 w-4 text-success-600" />
+              <span className="text-brand-800">Genre Classification</span>
             </div>
             <div className="flex items-center space-x-2">
               {progress > 30 ? (
-                <CheckCircle className="h-4 w-4 text-green-600" />
+                <CheckCircle className="h-4 w-4 text-success-600" />
               ) : (
                 <div className="animate-spin">
-                  <Brain className="h-4 w-4 text-blue-600" />
+                  <Brain className="h-4 w-4 text-brand-600" />
                 </div>
               )}
-              <span className="text-blue-800">Story Structure</span>
+              <span className="text-brand-800">Story Structure</span>
             </div>
             <div className="flex items-center space-x-2">
               {progress > 60 ? (
-                <CheckCircle className="h-4 w-4 text-green-600" />
+                <CheckCircle className="h-4 w-4 text-success-600" />
               ) : (
                 <Clock className="h-4 w-4 text-gray-400" />
               )}
-              <span className="text-blue-800">Character Analysis</span>
+              <span className="text-brand-800">Character Analysis</span>
             </div>
             <div className="flex items-center space-x-2">
               {progress > 80 ? (
-                <CheckCircle className="h-4 w-4 text-green-600" />
+                <CheckCircle className="h-4 w-4 text-success-600" />
               ) : (
                 <Clock className="h-4 w-4 text-gray-400" />
               )}
-              <span className="text-blue-800">Final Review</span>
+              <span className="text-brand-800">Final Review</span>
             </div>
           </div>
 
-          <div className="p-3 bg-blue-100 border border-blue-200 rounded-md">
-            <p className="text-xs text-blue-700">
+          <div className="p-3 bg-brand-100 border border-brand-200 rounded-md">
+            <p className="text-xs text-brand-700">
               You can explore the parsed script data while the analysis completes.
               Results will appear automatically as they become available.
             </p>
@@ -158,22 +158,22 @@ export function AIAnalysisPrompt({
 
   if (hasAnalysis) {
     return (
-      <Card className="border-green-200 bg-gradient-to-br from-green-50 to-green-100">
+      <Card className="border-success-200 bg-gradient-to-br from-success-50 to-success-100">
         <CardHeader>
-          <CardTitle className="flex items-center text-green-900">
+          <CardTitle className="flex items-center text-success-900">
             <CheckCircle className="h-5 w-5 mr-3" />
             AI Analysis Complete
           </CardTitle>
-          <CardDescription className="text-green-700">
+          <CardDescription className="text-success-700">
             Professional analysis available with insights and recommendations
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-2">
-            <Badge className="bg-green-600 text-white">Genre Identified</Badge>
-            <Badge className="bg-green-600 text-white">Structure Analyzed</Badge>
-            <Badge className="bg-green-600 text-white">Characters Reviewed</Badge>
-            <Badge className="bg-green-600 text-white">Recommendations Ready</Badge>
+            <Badge className="bg-success-600 text-white">Genre Identified</Badge>
+            <Badge className="bg-success-600 text-white">Structure Analyzed</Badge>
+            <Badge className="bg-success-600 text-white">Characters Reviewed</Badge>
+            <Badge className="bg-success-600 text-white">Recommendations Ready</Badge>
           </div>
 
           <div className="flex space-x-3">
@@ -181,7 +181,7 @@ export function AIAnalysisPrompt({
               onClick={() => onStartAnalysis('comprehensive')}
               variant="outline"
               size="sm"
-              className="border-green-300 text-green-700 hover:bg-green-50"
+              className="border-success-300 text-success-700 hover:bg-success-50"
             >
               <Brain className="h-4 w-4 mr-2" />
               Re-analyze
@@ -190,7 +190,7 @@ export function AIAnalysisPrompt({
               onClick={() => onStartAnalysis('quick')}
               variant="outline"
               size="sm"
-              className="border-green-300 text-green-700 hover:bg-green-50"
+              className="border-success-300 text-success-700 hover:bg-success-50"
             >
               <Zap className="h-4 w-4 mr-2" />
               Quick Update
@@ -202,13 +202,13 @@ export function AIAnalysisPrompt({
   }
 
   return (
-    <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
+    <Card className="border-brand-200 bg-gradient-to-br from-brand-50 to-brand-100">
       <CardHeader>
-        <CardTitle className="flex items-center text-blue-900">
+        <CardTitle className="flex items-center text-brand-900">
           <Brain className="h-5 w-5 mr-3" />
           AI Analysis Available
         </CardTitle>
-        <CardDescription className="text-blue-700">
+        <CardDescription className="text-brand-700">
           Get professional insights, genre classification, and improvement recommendations
         </CardDescription>
       </CardHeader>
@@ -216,15 +216,15 @@ export function AIAnalysisPrompt({
         {/* Analysis Type Selection */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Quick Analysis */}
-          <div className="p-4 border-2 border-yellow-200 rounded-lg bg-gradient-to-br from-yellow-50 to-yellow-100 cursor-pointer hover:border-yellow-300 transition-colors">
+          <div className="p-4 border-2 border-amber-200 rounded-lg bg-gradient-to-br from-amber-50 to-amber-100 cursor-pointer hover:border-amber-300 transition-colors">
             <div className="flex items-center space-x-2 mb-2">
-              <Zap className="h-5 w-5 text-yellow-600" />
-              <h4 className="font-semibold text-yellow-900">Quick Analysis</h4>
+              <Zap className="h-5 w-5 text-amber-600" />
+              <h4 className="font-semibold text-amber-900">Quick Analysis</h4>
             </div>
-            <p className="text-xs text-yellow-700 mb-3">
+            <p className="text-xs text-amber-700 mb-3">
               Fast overview with key insights and genre detection
             </p>
-            <div className="space-y-1 text-xs text-yellow-600">
+            <div className="space-y-1 text-xs text-amber-600">
               <div>⏱️ 1-2 minutes</div>
               <div>🎯 High-level insights</div>
               <div>🏷️ Genre classification</div>
@@ -232,7 +232,7 @@ export function AIAnalysisPrompt({
             <Button
               onClick={() => onStartAnalysis('quick')}
               size="sm"
-              className="w-full mt-3 bg-yellow-600 hover:bg-yellow-700"
+              className="w-full mt-3 bg-amber-600 hover:bg-amber-700"
             >
               <Zap className="h-4 w-4 mr-2" />
               Start Quick Analysis
@@ -240,15 +240,15 @@ export function AIAnalysisPrompt({
           </div>
 
           {/* Comprehensive Analysis */}
-          <div className="p-4 border-2 border-blue-300 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 cursor-pointer hover:border-blue-400 transition-colors">
+          <div className="p-4 border-2 border-brand-300 rounded-lg bg-gradient-to-br from-brand-100 to-brand-200 cursor-pointer hover:border-brand-400 transition-colors">
             <div className="flex items-center space-x-2 mb-2">
-              <Brain className="h-5 w-5 text-blue-700" />
-              <h4 className="font-semibold text-blue-900">Comprehensive</h4>
+              <Brain className="h-5 w-5 text-brand-700" />
+              <h4 className="font-semibold text-brand-900">Comprehensive</h4>
             </div>
-            <p className="text-xs text-blue-700 mb-3">
+            <p className="text-xs text-brand-700 mb-3">
               Complete professional analysis with detailed recommendations
             </p>
-            <div className="space-y-1 text-xs text-blue-600">
+            <div className="space-y-1 text-xs text-brand-600">
               <div>⏱️ {estimatedTime}</div>
               <div>📊 Full structure analysis</div>
               <div>👥 Character development</div>
@@ -257,7 +257,7 @@ export function AIAnalysisPrompt({
             <Button
               onClick={() => onStartAnalysis('comprehensive')}
               size="sm"
-              className="w-full mt-3"
+              className="w-full mt-3 bg-brand-600 hover:bg-brand-700"
             >
               <Brain className="h-4 w-4 mr-2" />
               Start Full Analysis

@@ -4,48 +4,56 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    /* Cinematic Indigo Light Theme */
+    --background: 0 0% 100%;                    /* #FFFFFF */
+    --foreground: 215 60% 9%;                   /* #0B1220 */
+    --card: 210 40% 98%;                        /* #F8FAFC */
+    --card-foreground: 215 60% 9%;              /* #0B1220 */
+    --popover: 210 40% 98%;                     /* #F8FAFC */
+    --popover-foreground: 215 60% 9%;           /* #0B1220 */
+    --primary: 243 75% 59%;                     /* #4F46E5 */
+    --primary-foreground: 0 0% 100%;            /* White text on primary */
+    --secondary: 210 20% 96%;                   /* #F3F4F6 */
+    --secondary-foreground: 215 60% 9%;         /* #0B1220 */
+    --muted: 210 20% 96%;                       /* #F3F4F6 */
+    --muted-foreground: 215 25% 45%;            /* Muted text */
+    --accent: 43 91% 50%;                       /* #F59E0B Amber */
+    --accent-foreground: 215 60% 9%;            /* #0B1220 */
+    --destructive: 0 84% 60%;                   /* #EF4444 */
+    --destructive-foreground: 0 0% 100%;        /* White */
+    --border: 210 16% 93%;                      /* #E5E7EB */
+    --input: 210 16% 93%;                       /* #E5E7EB */
+    --ring: 243 75% 59%;                        /* #4F46E5 */
+    --success: 162 76% 36%;                     /* #10B981 */
+    --warning: 43 91% 50%;                      /* #F59E0B */
+    --info: 199 89% 48%;                        /* #0EA5E9 */
     --radius: 0.75rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 84% 4.9%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 94.1%;
+    /* Cinematic Indigo Dark Theme */
+    --background: 215 60% 9%;                   /* #0B1220 */
+    --foreground: 210 16% 93%;                  /* #E5E7EB */
+    --card: 223 47% 11%;                        /* #111827 */
+    --card-foreground: 210 16% 93%;             /* #E5E7EB */
+    --popover: 223 47% 11%;                     /* #111827 */
+    --popover-foreground: 210 16% 93%;          /* #E5E7EB */
+    --primary: 238 92% 83%;                     /* #A5B4FC Light variant for dark mode */
+    --primary-foreground: 215 60% 9%;           /* Dark text on light primary */
+    --secondary: 217 55% 11%;                   /* #0F172A */
+    --secondary-foreground: 210 16% 93%;        /* #E5E7EB */
+    --muted: 217 55% 11%;                       /* #0F172A */
+    --muted-foreground: 210 16% 65%;            /* Muted text */
+    --accent: 43 86% 82%;                       /* #FDE68A Light amber for dark mode */
+    --accent-foreground: 215 60% 9%;            /* Dark text */
+    --destructive: 0 84% 60%;                   /* #EF4444 */
+    --destructive-foreground: 0 0% 100%;        /* White */
+    --border: 214 22% 24%;                      /* #2D3545 */
+    --input: 214 22% 24%;                       /* #2D3545 */
+    --ring: 238 92% 83%;                        /* #A5B4FC */
+    --success: 162 76% 36%;                     /* #10B981 */
+    --warning: 43 86% 82%;                      /* #FDE68A */
+    --info: 199 89% 48%;                        /* #0EA5E9 */
   }
 }
 
@@ -59,16 +67,41 @@
   }
 }
 
-/* ScriptyBoy brand gradient utilities */
+/* ScriptyBoy Cinematic Indigo utilities */
 @layer utilities {
   .gradient-brand {
-    background: linear-gradient(135deg, theme('colors.brand.500') 0%, theme('colors.teal.500') 100%);
+    background: linear-gradient(135deg, theme('colors.brand.600') 0%, theme('colors.brand.400') 50%, theme('colors.amber.500') 100%);
   }
 
   .text-gradient-brand {
-    background: linear-gradient(135deg, theme('colors.brand.500') 0%, theme('colors.teal.500') 100%);
+    background: linear-gradient(135deg, theme('colors.brand.600') 0%, theme('colors.brand.400') 50%, theme('colors.amber.500') 100%);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+  }
+
+  .gradient-brand-subtle {
+    background: linear-gradient(135deg, theme('colors.brand.50') 0%, theme('colors.brand.100') 100%);
+  }
+
+  .border-gradient-brand {
+    border-image: linear-gradient(135deg, theme('colors.brand.600') 0%, theme('colors.amber.500') 100%) 1;
+  }
+
+  /* Enhanced semantic color utilities */
+  .bg-success {
+    background-color: theme('colors.success.DEFAULT');
+  }
+
+  .bg-warning {
+    background-color: theme('colors.warning.DEFAULT');
+  }
+
+  .bg-danger {
+    background-color: theme('colors.danger.DEFAULT');
+  }
+
+  .bg-info {
+    background-color: theme('colors.info.DEFAULT');
   }
 }

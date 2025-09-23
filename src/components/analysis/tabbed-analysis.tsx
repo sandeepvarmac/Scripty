@@ -410,20 +410,20 @@ function ScriptMetadata({ script }: { script: ScriptWithData }) {
             Genre Analysis
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="p-4 border rounded-lg bg-gradient-to-br from-blue-50 to-blue-100">
+            <div className="p-4 border rounded-lg bg-gradient-to-br from-brand-50 to-brand-100">
               <div className="flex items-center space-x-2 mb-3">
-                <div className="p-2 bg-blue-500 rounded-lg">
+                <div className="p-2 bg-brand-600 rounded-lg">
                   <MessageSquare className="h-4 w-4 text-white" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-blue-900">Detected Genres</h4>
-                  <p className="text-xs text-blue-600">Based on script analysis</p>
+                  <h4 className="font-semibold text-brand-900">Detected Genres</h4>
+                  <p className="text-xs text-brand-600">Based on script analysis</p>
                 </div>
               </div>
               <div className="flex flex-wrap gap-2 mb-3">
                 {aiDetectedGenres.length > 0 ? (
                   aiDetectedGenres.map((genre) => (
-                    <Badge key={genre} className="bg-blue-600 text-white hover:bg-blue-700">
+                    <Badge key={genre} className="bg-brand-600 text-white hover:bg-brand-700">
                       {genre}
                     </Badge>
                   ))
@@ -433,7 +433,7 @@ function ScriptMetadata({ script }: { script: ScriptWithData }) {
                   </Badge>
                 )}
               </div>
-              <p className="text-xs text-blue-700">
+              <p className="text-xs text-brand-700">
                 {getGenreAnalysisDescription(script, aiDetectedGenres)}
               </p>
             </div>
@@ -941,29 +941,29 @@ function MetricCard({
   color?: 'blue' | 'green' | 'purple' | 'orange' | 'indigo' | 'gray' | 'brand' | 'yellow' | 'red' | 'emerald'
 }) {
   const colorClasses = {
-    blue: 'border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 text-blue-600',
-    green: 'border-green-200 bg-gradient-to-br from-green-50 to-green-100 text-green-600',
-    purple: 'border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100 text-purple-600',
-    orange: 'border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100 text-orange-600',
-    indigo: 'border-indigo-200 bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-600',
+    blue: 'border-brand-200 bg-gradient-to-br from-brand-50 to-brand-100 text-brand-600',
+    green: 'border-success-200 bg-gradient-to-br from-success-50 to-success-100 text-success-600',
+    purple: 'border-brand-200 bg-gradient-to-br from-brand-50 to-brand-100 text-brand-600',
+    orange: 'border-amber-200 bg-gradient-to-br from-amber-50 to-amber-100 text-amber-600',
+    indigo: 'border-brand-200 bg-gradient-to-br from-brand-50 to-brand-100 text-brand-600',
     gray: 'border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 text-gray-600',
-    brand: 'border-brand/20 bg-gradient-to-br from-brand/5 to-brand/10 text-brand',
-    yellow: 'border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100 text-yellow-600',
-    red: 'border-red-200 bg-gradient-to-br from-red-50 to-red-100 text-red-600',
-    emerald: 'border-emerald-200 bg-gradient-to-br from-emerald-50 to-emerald-100 text-emerald-600'
+    brand: 'border-brand-200 bg-gradient-to-br from-brand-50 to-brand-100 text-brand-600',
+    yellow: 'border-warning-200 bg-gradient-to-br from-warning-50 to-warning-100 text-warning-600',
+    red: 'border-danger-200 bg-gradient-to-br from-danger-50 to-danger-100 text-danger-600',
+    emerald: 'border-success-200 bg-gradient-to-br from-success-50 to-success-100 text-success-600'
   }
 
   const iconColorClasses = {
-    blue: 'bg-blue-500 text-white',
-    green: 'bg-green-500 text-white',
-    purple: 'bg-purple-500 text-white',
-    orange: 'bg-orange-500 text-white',
-    indigo: 'bg-indigo-500 text-white',
+    blue: 'bg-brand-600 text-white',
+    green: 'bg-success-600 text-white',
+    purple: 'bg-brand-600 text-white',
+    orange: 'bg-amber-600 text-white',
+    indigo: 'bg-brand-600 text-white',
     gray: 'bg-gray-500 text-white',
-    brand: 'bg-brand text-white',
-    yellow: 'bg-yellow-500 text-white',
-    red: 'bg-red-500 text-white',
-    emerald: 'bg-emerald-500 text-white'
+    brand: 'bg-brand-600 text-white',
+    yellow: 'bg-warning-600 text-white',
+    red: 'bg-danger-600 text-white',
+    emerald: 'bg-success-600 text-white'
   }
 
   return (
