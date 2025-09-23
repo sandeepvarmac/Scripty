@@ -318,6 +318,13 @@ model Script {
   // File storage
   fileUrl          String?  // S3/storage URL for original file
 
+  // MVP Analysis fields
+  logline          String?  @db.Text
+  synopsisShort    String?  @db.Text @map("synopsis_short")
+  synopsisLong     String?  @db.Text @map("synopsis_long")
+  genreOverride    String?  @map("genre_override")
+  comps            Json?
+
   // Soft delete
   deletedAt        DateTime?
 
@@ -327,6 +334,15 @@ model Script {
   scenes           Scene[]
   characters       Character[]
   analyses         Analysis[]
+
+  // MVP Analysis relations
+  beats            Beat[]
+  notes            Note[]
+  scores           Score[]
+  pageMetrics      PageMetric[]
+  themeStatements  ThemeStatement[]
+  riskFlags        RiskFlag[]
+  subplots         Subplot[]
 
   @@index([projectId, versionMajor, versionMinor])
   @@index([projectId, isLatestVersion])
@@ -347,6 +363,13 @@ model Scene {
   orderIndex   Int       // Sequential order in script
   wordCount    Int       @default(0)
 
+  // MVP Analysis fields
+  intExt       IntExtEnum? @map("int_ext")
+  location     String?
+  tod          String?
+  pageStart    Int?      @map("page_start")
+  pageEnd      Int?      @map("page_end")
+
   // Analysis data will be stored here
   analysisData Json?     // Flexible storage for AI analysis results
 
@@ -356,6 +379,15 @@ model Scene {
   // Relations
   script       Script    @relation(fields: [scriptId], references: [id], onDelete: Cascade)
   evidences    Evidence[]
+
+  // MVP Analysis relations
+  elements     Element[]
+  notes        Note[]
+  feasibility  FeasibilityMetric?
+  characterLinks CharacterScene[]
+  themeAlignment SceneThemeAlignment?
+  riskFlags    RiskFlag[]
+  subplotSpans SubplotSpan[]
 
   @@index([scriptId, orderIndex])
   @@index([scriptId, type])
@@ -370,6 +402,9 @@ model Character {
   dialogueCount Int     @default(0)
   firstAppearance Int?  // Line number of first appearance
 
+  // MVP Analysis fields
+  aliases      String[]
+
   // Character analysis
   analysisData Json?   // AI-generated character insights
 
@@ -378,6 +413,9 @@ model Character {
 
   // Relations
   script       Script   @relation(fields: [scriptId], references: [id], onDelete: Cascade)
+
+  // MVP Analysis relations
+  sceneLinks   CharacterScene[]
 
   @@unique([scriptId, name])
   @@map("characters")
@@ -396,11 +434,17 @@ model Evidence {
   endLine      Int?        // End line in original script
   tags         String[]    // Searchable tags
 
+  // MVP Analysis fields
+  area         NoteArea?
+
   createdAt    DateTime    @default(now())
   deletedAt    DateTime?
 
   // Relations
   scene        Scene       @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+
+  // MVP Analysis relations
+  notes        Note[]
 
   @@index([sceneId, type])
   @@index([type, confidence])
@@ -437,6 +481,7 @@ enum ScriptFormat {
   FDX
   FOUNTAIN
   PDF
+  TXT
 }
 
 enum ProcessingStatus {
@@ -488,4 +533,264 @@ enum AnalysisStatus {
   IN_PROGRESS
   COMPLETED
   FAILED
+}
+
+// MVP Analysis Models
+model Element {
+  id          String  @id @default(cuid())
+  sceneId     String  @map("scene_id")
+  type        String  // 'SCENE_HEADING' | 'ACTION' | 'DIALOGUE' | 'PARENTHETICAL' | 'TRANSITION' | 'SHOT'
+  charName    String? @map("char_name")
+  text        String
+  orderIndex  Int     @map("order_index") @default(0)
+
+  scene Scene @relation(fields: [sceneId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@index([sceneId, type])
+  @@map("elements")
+}
+
+model Beat {
+  id          String     @id @default(cuid())
+  scriptId    String     @map("script_id")
+  kind        BeatKind
+  page        Int?
+  confidence  Decimal?   @db.Decimal(4, 2)
+  timingFlag  TimingFlag? @map("timing_flag")
+  rationale   String?
+
+  script Script @relation(fields: [scriptId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@index([scriptId])
+  @@map("beats")
+}
+
+model Note {
+  id          String       @id @default(cuid())
+  scriptId    String       @map("script_id")
+  severity    NoteSeverity
+  area        NoteArea
+  sceneId     String?      @map("scene_id")
+  page        Int?
+  lineRef     Int?         @map("line_ref")
+  evidenceId  String?      @map("evidence_id")
+  excerpt     String?
+  suggestion  String?
+  applyHook   Json?        @map("apply_hook")
+  ruleCode    String?      @map("rule_code")
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime     @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  script   Script    @relation(fields: [scriptId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  scene    Scene?    @relation(fields: [sceneId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  evidence Evidence? @relation(fields: [evidenceId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+
+  @@index([scriptId, area, severity])
+  @@index([sceneId])
+  @@map("notes")
+}
+
+model Score {
+  id         String        @id @default(cuid())
+  scriptId   String        @map("script_id")
+  category   ScoreCategory
+  value      Decimal       @db.Decimal(3, 1)
+  rationale  String?
+
+  script Script @relation(fields: [scriptId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@unique([scriptId, category], map: "uq_scores_script_category")
+  @@map("scores")
+}
+
+model FeasibilityMetric {
+  id                String     @id @default(cuid())
+  sceneId           String     @unique @map("scene_id")
+  intExt            IntExtEnum? @map("int_ext")
+  location          String?
+  tod               String?
+  hasStunts         Boolean?   @map("has_stunts")
+  hasVfx            Boolean?   @map("has_vfx")
+  hasSfx            Boolean?   @map("has_sfx")
+  hasCrowd          Boolean?   @map("has_crowd")
+  hasMinors         Boolean?   @map("has_minors")
+  hasAnimals        Boolean?   @map("has_animals")
+  hasWeapons        Boolean?   @map("has_weapons")
+  hasVehicles       Boolean?   @map("has_vehicles")
+  hasSpecialProps   Boolean?   @map("has_special_props")
+  complexityScore   Int        @default(0) @map("complexity_score")
+
+  scene Scene @relation(fields: [sceneId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@map("feasibility_metrics")
+}
+
+model CharacterScene {
+  characterId String  @map("character_id")
+  sceneId     String  @map("scene_id")
+  lines       Int     @default(0)
+  words       Int     @default(0)
+  onPage      Boolean @default(true) @map("on_page")
+
+  character Character @relation(fields: [characterId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  scene     Scene     @relation(fields: [sceneId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@id([characterId, sceneId])
+  @@index([sceneId])
+  @@map("character_scenes")
+}
+
+model Subplot {
+  id          String   @id @default(cuid())
+  scriptId    String   @map("script_id")
+  label       String
+  description String?
+
+  script Script        @relation(fields: [scriptId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  spans  SubplotSpan[]
+
+  @@map("subplots")
+}
+
+model SubplotSpan {
+  subplotId String      @map("subplot_id")
+  sceneId   String      @map("scene_id")
+  role      SubplotRole
+
+  subplot Subplot @relation(fields: [subplotId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  scene   Scene   @relation(fields: [sceneId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@id([subplotId, sceneId])
+  @@map("subplot_spans")
+}
+
+model ThemeStatement {
+  id         String   @id @default(cuid())
+  scriptId   String   @map("script_id")
+  statement  String
+  confidence Decimal? @db.Decimal(4, 2)
+
+  script Script @relation(fields: [scriptId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@map("theme_statements")
+}
+
+model SceneThemeAlignment {
+  sceneId   String   @id @map("scene_id")
+  onTheme   Boolean  @map("on_theme")
+  rationale String?
+
+  scene Scene @relation(fields: [sceneId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@map("scene_theme_alignment")
+}
+
+model RiskFlag {
+  id          String    @id @default(cuid())
+  scriptId    String    @map("script_id")
+  sceneId     String?   @map("scene_id")
+  kind        RiskKind
+  page        Int?
+  startLine   Int?      @map("start_line")
+  endLine     Int?      @map("end_line")
+  snippet     String?
+  confidence  Decimal?  @db.Decimal(4, 2)
+
+  script Script @relation(fields: [scriptId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  scene  Scene?  @relation(fields: [sceneId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+
+  @@index([scriptId, kind])
+  @@map("risk_flags")
+}
+
+model PageMetric {
+  scriptId          String  @map("script_id")
+  page              Int
+  sceneLengthLines  Int?    @map("scene_length_lines")
+  dialogueLines     Int?    @map("dialogue_lines")
+  actionLines       Int?    @map("action_lines")
+  tensionScore      Int?    @map("tension_score")
+  complexityScore   Int?    @map("complexity_score")
+
+  script Script @relation(fields: [scriptId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@id([scriptId, page])
+  @@map("page_metrics")
+}
+
+// MVP Analysis Enums
+enum BeatKind {
+  INCITING
+  ACT1_BREAK
+  MIDPOINT
+  LOW_POINT
+  ACT2_BREAK
+  CLIMAX
+  RESOLUTION
+  @@map("beat_kind")
+}
+
+enum TimingFlag {
+  EARLY
+  ON_TIME
+  LATE
+  UNKNOWN
+  @@map("timing_flag")
+}
+
+enum NoteSeverity {
+  HIGH
+  MEDIUM
+  LOW
+  @@map("note_severity")
+}
+
+enum NoteArea {
+  STRUCTURE
+  CHARACTER
+  DIALOGUE
+  PACING
+  THEME
+  GENRE
+  FORMATTING
+  LOGIC
+  REPRESENTATION
+  LEGAL
+  @@map("note_area")
+}
+
+enum IntExtEnum {
+  INT
+  EXT
+  INT_EXT @map("INT/EXT")
+  @@map("int_ext_enum")
+}
+
+enum RiskKind {
+  REAL_PERSON
+  TRADEMARK
+  LYRICS
+  DEFAMATION_RISK
+  LIFE_RIGHTS
+  @@map("risk_kind")
+}
+
+enum SubplotRole {
+  INTRO
+  DEVELOP
+  CONVERGE
+  RESOLVE
+  @@map("subplot_role")
+}
+
+enum ScoreCategory {
+  STRUCTURE
+  CHARACTER
+  DIALOGUE
+  PACING
+  THEME
+  GENRE_FIT
+  ORIGINALITY
+  FEASIBILITY
+  @@map("score_category")
 }
