@@ -1,0 +1,1038 @@
+openapi: 3.0.3
+info:
+  title: ScriptyBoy MVP API
+  description: |
+    AI-Powered Screenplay Analysis Platform API for Module 1 MVP.
+
+    Provides endpoints for script upload, parsing, analysis, and export functionality.
+    All endpoints are designed with structured outputs and validation schemas.
+  version: 1.0.0
+  contact:
+    name: ScriptyBoy Support
+    email: support@scriptyboy.local
+  license:
+    name: Proprietary
+    url: https://scriptyboy.local/license
+
+servers:
+  - url: /api/v1
+    description: ScriptyBoy MVP API v1
+
+paths:
+  /projects/{id}/upload:
+    post:
+      summary: Upload script file to project
+      description: |
+        Accept script files in multiple formats (.pdf/.fdx/.fountain/.txt).
+        Supports optional PDF password for protected documents.
+        Returns file_id and script_id for subsequent processing.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Project ID
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Script file (.pdf/.fdx/.fountain/.txt)
+                pdfPassword:
+                  type: string
+                  description: Optional password for protected PDF files
+                title:
+                  type: string
+                  description: Optional script title override
+                author:
+                  type: string
+                  description: Optional script author override
+              required:
+                - file
+      responses:
+        '200':
+          description: File uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  file_id:
+                    type: string
+                    description: Unique file identifier
+                  script_id:
+                    type: string
+                    description: Created script identifier
+                  status:
+                    type: string
+                    enum: [uploaded, processing]
+                  message:
+                    type: string
+                required:
+                  - file_id
+                  - script_id
+                  - status
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '413':
+          $ref: '#/components/responses/PayloadTooLarge'
+
+  /scripts/{id}/parse-preview:
+    get:
+      summary: Get script parsing preview
+      description: |
+        Returns parsed script preview with pages, scenes, characters, slug parts,
+        and quick genre detection before full analysis.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Script ID
+      responses:
+        '200':
+          description: Parse preview data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  script_id:
+                    type: string
+                  title:
+                    type: string
+                  author:
+                    type: string
+                  format:
+                    $ref: '#/components/schemas/ScriptFormat'
+                  pageCount:
+                    type: integer
+                  scenes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ScenePreview'
+                  characters:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CharacterPreview'
+                  genreGuess:
+                    type: string
+                    description: AI-detected genre suggestion
+                  slugParts:
+                    type: object
+                    properties:
+                      locations:
+                        type: array
+                        items:
+                          type: string
+                      timeOfDay:
+                        type: array
+                        items:
+                          type: string
+                      intExt:
+                        type: array
+                        items:
+                          type: string
+                required:
+                  - script_id
+                  - pageCount
+                  - scenes
+                  - characters
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /scripts/{id}/dashboard:
+    get:
+      summary: Get comprehensive script analysis dashboard
+      description: |
+        Returns normalized aggregates for beats, page metrics, character presence,
+        feasibility, notes, scores, theme analysis, subplots, and risk flags.
+        This is the primary endpoint for dashboard visualization.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Script ID
+      responses:
+        '200':
+          description: Complete dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardPayload'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /scenes/{id}:
+    get:
+      summary: Get detailed scene analysis
+      description: |
+        Returns scene details with elements, feasibility metrics,
+        and anchored notes for specific scene.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Scene ID
+      responses:
+        '200':
+          description: Scene analysis data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  scene:
+                    $ref: '#/components/schemas/Scene'
+                  elements:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Element'
+                  feasibility:
+                    $ref: '#/components/schemas/FeasibilityMetric'
+                  notes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Note'
+                required:
+                  - scene
+                  - elements
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /scripts/{id}/notes:
+    post:
+      summary: Bulk upsert script notes
+      description: |
+        Create or update analysis notes with severity, area, anchors,
+        apply hooks, and rule codes for automated suggestions.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Script ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                notes:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/NoteInput'
+              required:
+                - notes
+      responses:
+        '200':
+          description: Notes created/updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  created:
+                    type: integer
+                    description: Number of notes created
+                  updated:
+                    type: integer
+                    description: Number of notes updated
+                  notes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Note'
+                required:
+                  - created
+                  - updated
+                  - notes
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /scripts/{id}/scores:
+    put:
+      summary: Set rubric scores for script
+      description: |
+        Update all rubric category scores for comprehensive script evaluation.
+        Each category gets a score from 0-10 with rationale.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Script ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                scores:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ScoreInput'
+              required:
+                - scores
+      responses:
+        '200':
+          description: Scores updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  scores:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Score'
+                required:
+                  - scores
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /scripts/{id}/feasibility:
+    get:
+      summary: Get production feasibility breakdown
+      description: |
+        Returns location breakdown, category counts, and company move estimates
+        for production planning and budgeting.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Script ID
+      responses:
+        '200':
+          description: Feasibility analysis data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  locationBreakdown:
+                    type: object
+                    properties:
+                      interior:
+                        type: integer
+                      exterior:
+                        type: integer
+                      intExt:
+                        type: integer
+                      locations:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            count:
+                              type: integer
+                            complexity:
+                              type: number
+                  categoryCount:
+                    type: object
+                    properties:
+                      stunts:
+                        type: integer
+                      vfx:
+                        type: integer
+                      sfx:
+                        type: integer
+                      crowd:
+                        type: integer
+                      minors:
+                        type: integer
+                      animals:
+                        type: integer
+                      weapons:
+                        type: integer
+                      vehicles:
+                        type: integer
+                      specialProps:
+                        type: integer
+                  companyMoveEstimate:
+                    type: object
+                    properties:
+                      days:
+                        type: integer
+                      cost:
+                        type: number
+                      complexity:
+                        type: string
+                        enum: [low, medium, high, extreme]
+                required:
+                  - locationBreakdown
+                  - categoryCount
+                  - companyMoveEstimate
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /reports/coverage:
+    post:
+      summary: Generate coverage report
+      description: |
+        Create professional coverage PDF with pass/consider/recommend evaluation,
+        comparable titles, and synopsis variations.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                script_id:
+                  type: string
+                recommendation:
+                  type: string
+                  enum: [pass, consider, recommend]
+                logline:
+                  type: string
+                synopsis_short:
+                  type: string
+                synopsis_long:
+                  type: string
+                comps:
+                  type: array
+                  items:
+                    type: string
+                strengths:
+                  type: array
+                  items:
+                    type: string
+                concerns:
+                  type: array
+                  items:
+                    type: string
+                notes:
+                  type: string
+              required:
+                - script_id
+                - recommendation
+      responses:
+        '200':
+          description: Coverage report generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  report_id:
+                    type: string
+                  download_url:
+                    type: string
+                  format:
+                    type: string
+                    enum: [pdf]
+                required:
+                  - report_id
+                  - download_url
+                  - format
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /notes/export:
+    post:
+      summary: Export notes to PDF or CSV
+      description: |
+        Generate downloadable notes export with anchors, excerpts,
+        and suggestions in PDF or CSV format.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                script_id:
+                  type: string
+                format:
+                  type: string
+                  enum: [pdf, csv]
+                filters:
+                  type: object
+                  properties:
+                    severity:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/NoteSeverity'
+                    area:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/NoteArea'
+                    scene_ids:
+                      type: array
+                      items:
+                        type: string
+              required:
+                - script_id
+                - format
+      responses:
+        '200':
+          description: Notes export generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  export_id:
+                    type: string
+                  download_url:
+                    type: string
+                  format:
+                    type: string
+                    enum: [pdf, csv]
+                  note_count:
+                    type: integer
+                required:
+                  - export_id
+                  - download_url
+                  - format
+                  - note_count
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /scripts/{id}/finaldraft-change-list:
+    get:
+      summary: Generate FDX change list
+      description: |
+        Best-effort generation of Final Draft change list if source script is FDX format.
+        Returns structured change recommendations that can be imported into Final Draft.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Script ID
+      responses:
+        '200':
+          description: FDX change list generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  script_id:
+                    type: string
+                  format:
+                    type: string
+                    enum: [fdx]
+                  changes:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        page:
+                          type: integer
+                        line:
+                          type: integer
+                        type:
+                          type: string
+                          enum: [insert, replace, delete, comment]
+                        original:
+                          type: string
+                        suggestion:
+                          type: string
+                        note:
+                          type: string
+                        rule_code:
+                          type: string
+                  download_url:
+                    type: string
+                    description: URL to download FDX file with changes
+                required:
+                  - script_id
+                  - format
+                  - changes
+        '400':
+          description: Not an FDX script or change list generation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  schemas:
+    ScriptFormat:
+      type: string
+      enum: [FDX, FOUNTAIN, PDF, TXT]
+
+    BeatKind:
+      type: string
+      enum: [INCITING, ACT1_BREAK, MIDPOINT, LOW_POINT, ACT2_BREAK, CLIMAX, RESOLUTION]
+
+    TimingFlag:
+      type: string
+      enum: [EARLY, ON_TIME, LATE, UNKNOWN]
+
+    NoteSeverity:
+      type: string
+      enum: [HIGH, MEDIUM, LOW]
+
+    NoteArea:
+      type: string
+      enum: [STRUCTURE, CHARACTER, DIALOGUE, PACING, THEME, GENRE, FORMATTING, LOGIC, REPRESENTATION, LEGAL]
+
+    IntExt:
+      type: string
+      enum: [INT, EXT, INT_EXT]
+
+    RiskKind:
+      type: string
+      enum: [REAL_PERSON, TRADEMARK, LYRICS, DEFAMATION_RISK, LIFE_RIGHTS]
+
+    SubplotRole:
+      type: string
+      enum: [INTRO, DEVELOP, CONVERGE, RESOLVE]
+
+    ScoreCategory:
+      type: string
+      enum: [STRUCTURE, CHARACTER, DIALOGUE, PACING, THEME, GENRE_FIT, ORIGINALITY, FEASIBILITY]
+
+    ScenePreview:
+      type: object
+      properties:
+        id:
+          type: string
+        sceneNumber:
+          type: string
+        pageNumber:
+          type: integer
+        intExt:
+          $ref: '#/components/schemas/IntExt'
+        location:
+          type: string
+        tod:
+          type: string
+        content:
+          type: string
+          description: First few lines of scene content
+      required:
+        - id
+        - pageNumber
+
+    CharacterPreview:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        dialogueCount:
+          type: integer
+        firstAppearance:
+          type: integer
+        aliases:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - name
+        - dialogueCount
+
+    Scene:
+      type: object
+      properties:
+        id:
+          type: string
+        scriptId:
+          type: string
+        sceneNumber:
+          type: string
+        pageNumber:
+          type: integer
+        lineNumber:
+          type: integer
+        content:
+          type: string
+        intExt:
+          $ref: '#/components/schemas/IntExt'
+        location:
+          type: string
+        tod:
+          type: string
+        pageStart:
+          type: integer
+        pageEnd:
+          type: integer
+        wordCount:
+          type: integer
+      required:
+        - id
+        - scriptId
+        - pageNumber
+        - content
+
+    Element:
+      type: object
+      properties:
+        id:
+          type: string
+        sceneId:
+          type: string
+        type:
+          type: string
+          enum: [SCENE_HEADING, ACTION, DIALOGUE, PARENTHETICAL, TRANSITION, SHOT]
+        charName:
+          type: string
+        text:
+          type: string
+        orderIndex:
+          type: integer
+      required:
+        - id
+        - sceneId
+        - type
+        - text
+        - orderIndex
+
+    Beat:
+      type: object
+      properties:
+        kind:
+          $ref: '#/components/schemas/BeatKind'
+        page:
+          type: integer
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        timingFlag:
+          $ref: '#/components/schemas/TimingFlag'
+        rationale:
+          type: string
+      required:
+        - kind
+
+    Note:
+      type: object
+      properties:
+        id:
+          type: string
+        severity:
+          $ref: '#/components/schemas/NoteSeverity'
+        area:
+          $ref: '#/components/schemas/NoteArea'
+        sceneId:
+          type: string
+        page:
+          type: integer
+        lineRef:
+          type: integer
+        excerpt:
+          type: string
+        suggestion:
+          type: string
+        applyHook:
+          type: object
+          description: Metadata for automated application of suggestions
+        ruleCode:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - severity
+        - area
+
+    NoteInput:
+      type: object
+      properties:
+        severity:
+          $ref: '#/components/schemas/NoteSeverity'
+        area:
+          $ref: '#/components/schemas/NoteArea'
+        sceneId:
+          type: string
+        page:
+          type: integer
+        lineRef:
+          type: integer
+        excerpt:
+          type: string
+        suggestion:
+          type: string
+        applyHook:
+          type: object
+        ruleCode:
+          type: string
+      required:
+        - severity
+        - area
+
+    Score:
+      type: object
+      properties:
+        id:
+          type: string
+        category:
+          $ref: '#/components/schemas/ScoreCategory'
+        value:
+          type: number
+          minimum: 0
+          maximum: 10
+        rationale:
+          type: string
+      required:
+        - id
+        - category
+        - value
+
+    ScoreInput:
+      type: object
+      properties:
+        category:
+          $ref: '#/components/schemas/ScoreCategory'
+        value:
+          type: number
+          minimum: 0
+          maximum: 10
+        rationale:
+          type: string
+      required:
+        - category
+        - value
+
+    FeasibilityMetric:
+      type: object
+      properties:
+        id:
+          type: string
+        sceneId:
+          type: string
+        intExt:
+          $ref: '#/components/schemas/IntExt'
+        location:
+          type: string
+        tod:
+          type: string
+        hasStunts:
+          type: boolean
+        hasVfx:
+          type: boolean
+        hasSfx:
+          type: boolean
+        hasCrowd:
+          type: boolean
+        hasMinors:
+          type: boolean
+        hasAnimals:
+          type: boolean
+        hasWeapons:
+          type: boolean
+        hasVehicles:
+          type: boolean
+        hasSpecialProps:
+          type: boolean
+        complexityScore:
+          type: integer
+          minimum: 0
+          maximum: 10
+      required:
+        - id
+        - sceneId
+        - complexityScore
+
+    DashboardPayload:
+      type: object
+      properties:
+        beats:
+          type: array
+          items:
+            $ref: '#/components/schemas/Beat'
+        notes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Note'
+        riskFlags:
+          type: array
+          items:
+            type: object
+            properties:
+              kind:
+                $ref: '#/components/schemas/RiskKind'
+              sceneId:
+                type: string
+              page:
+                type: integer
+              startLine:
+                type: integer
+              endLine:
+                type: integer
+              snippet:
+                type: string
+              confidence:
+                type: number
+        themeStatements:
+          type: array
+          items:
+            type: object
+            properties:
+              statement:
+                type: string
+              confidence:
+                type: number
+        sceneThemeAlignment:
+          type: array
+          items:
+            type: object
+            properties:
+              sceneId:
+                type: string
+              onTheme:
+                type: boolean
+              rationale:
+                type: string
+        feasibility:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeasibilityMetric'
+        pageMetrics:
+          type: array
+          items:
+            type: object
+            properties:
+              page:
+                type: integer
+              sceneLengthLines:
+                type: integer
+              dialogueLines:
+                type: integer
+              actionLines:
+                type: integer
+              tensionScore:
+                type: integer
+              complexityScore:
+                type: integer
+        characterScenes:
+          type: array
+          items:
+            type: object
+            properties:
+              characterId:
+                type: string
+              sceneId:
+                type: string
+              lines:
+                type: integer
+              words:
+                type: integer
+              onPage:
+                type: boolean
+        subplots:
+          type: array
+          items:
+            type: object
+            properties:
+              label:
+                type: string
+              description:
+                type: string
+        subplotSpans:
+          type: array
+          items:
+            type: object
+            properties:
+              subplotId:
+                type: string
+              sceneId:
+                type: string
+              role:
+                $ref: '#/components/schemas/SubplotRole'
+        scores:
+          type: array
+          items:
+            $ref: '#/components/schemas/Score'
+      required:
+        - beats
+        - notes
+        - scores
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        code:
+          type: string
+        details:
+          type: object
+      required:
+        - error
+        - message
+
+  responses:
+    BadRequest:
+      description: Invalid request data
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    PayloadTooLarge:
+      description: File too large
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Scripts
+    description: Script upload and management
+  - name: Analysis
+    description: AI analysis and insights
+  - name: Dashboard
+    description: Dashboard data and visualization
+  - name: Export
+    description: Reports and export functionality
