@@ -91,7 +91,7 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600 mx-auto"></div>
           <p className="mt-4 text-muted-foreground">Loading dashboard...</p>
         </div>
       </div>
@@ -102,7 +102,7 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 mb-4">{error || 'User data not found'}</p>
+          <p className="text-danger-600 mb-4">{error || 'User data not found'}</p>
           <Button onClick={() => router.push('/auth')}>
             Sign In
           </Button>
@@ -144,7 +144,7 @@ export default function DashboardPage() {
           <div className="flex items-center space-x-4">
             <span className="text-xs">Status: All systems operational</span>
             <div className="flex items-center space-x-1">
-              <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+              <div className="h-2 w-2 bg-success-500 rounded-full"></div>
               <span className="text-xs">Online</span>
             </div>
           </div>
@@ -170,7 +170,7 @@ export default function DashboardPage() {
               <Bell className="h-4 w-4" />
               <span className="sr-only">Notifications</span>
               {/* Notification dot */}
-              <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full"></span>
+              <span className="absolute -top-1 -right-1 h-2 w-2 bg-danger-500 rounded-full"></span>
             </Button>
           </div>
           <div className="flex items-center space-x-3">

@@ -156,14 +156,14 @@ export function ScriptChat({
 
   if (isCollapsed) {
     return (
-      <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
+      <Card className="border-brand-200 bg-gradient-to-br from-brand-50 to-brand-100">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <MessageCircle className="h-5 w-5 text-blue-600" />
+              <MessageCircle className="h-5 w-5 text-brand-600" />
               <div>
-                <CardTitle className="text-lg text-blue-900">Script Assistant</CardTitle>
-                <CardDescription className="text-blue-700">
+                <CardTitle className="text-lg text-brand-900">Script Assistant</CardTitle>
+                <CardDescription className="text-brand-700">
                   Ask questions about your analysis
                 </CardDescription>
               </div>
@@ -172,7 +172,7 @@ export function ScriptChat({
               onClick={onToggleCollapse}
               variant="outline"
               size="sm"
-              className="border-blue-300 text-blue-700 hover:bg-blue-50"
+              className="border-brand-300 text-brand-700 hover:bg-brand-50"
             >
               <ChevronUp className="h-4 w-4" />
               Expand Chat
@@ -184,11 +184,11 @@ export function ScriptChat({
   }
 
   return (
-    <Card className="border-blue-200">
+    <Card className="border-brand-200">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <MessageCircle className="h-5 w-5 text-blue-600" />
+            <MessageCircle className="h-5 w-5 text-brand-600" />
             <div>
               <CardTitle className="text-lg">Script Assistant</CardTitle>
               <CardDescription>
@@ -219,13 +219,13 @@ export function ScriptChat({
               <div
                 className={`max-w-[80%] rounded-lg p-3 ${
                   message.role === 'user'
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-brand-600 text-white'
                     : 'bg-white border border-gray-200'
                 }`}
               >
                 <div className="flex items-start space-x-2">
                   <div className={`p-1 rounded-full ${
-                    message.role === 'user' ? 'bg-blue-500' : 'bg-gray-100'
+                    message.role === 'user' ? 'bg-brand-500' : 'bg-gray-100'
                   }`}>
                     {message.role === 'user' ? (
                       <User className="h-3 w-3 text-white" />
@@ -264,7 +264,7 @@ export function ScriptChat({
                     )}
 
                     <div className={`text-xs mt-1 ${
-                      message.role === 'user' ? 'text-blue-100' : 'text-gray-500'
+                      message.role === 'user' ? 'text-brand-100' : 'text-gray-500'
                     }`}>
                       {format(message.timestamp, 'HH:mm')}
                     </div>

@@ -86,15 +86,15 @@ function getScoreTrend(current: number, previous: number): 'up' | 'down' | 'same
 }
 
 function getScoreColor(score: number): string {
-  if (score >= 8) return 'text-green-600'
-  if (score >= 6) return 'text-yellow-600'
-  return 'text-red-600'
+  if (score >= 8) return 'text-success-600'
+  if (score >= 6) return 'text-warning-600'
+  return 'text-danger-600'
 }
 
 function getScoreBgColor(score: number): string {
-  if (score >= 8) return 'bg-green-50 border-green-200'
-  if (score >= 6) return 'bg-yellow-50 border-yellow-200'
-  return 'bg-red-50 border-red-200'
+  if (score >= 8) return 'bg-success-50 border-success-200'
+  if (score >= 6) return 'bg-warning-50 border-warning-200'
+  return 'bg-danger-50 border-danger-200'
 }
 
 export function VersionComparison({
@@ -127,26 +127,26 @@ export function VersionComparison({
 
   if (sortedVersions.length <= 1) {
     return (
-      <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
+      <Card className="border-brand-200 bg-gradient-to-br from-brand-50 to-brand-100">
         <CardHeader>
-          <CardTitle className="flex items-center text-blue-900">
+          <CardTitle className="flex items-center text-brand-900">
             <GitBranch className="h-5 w-5 mr-3" />
             Version Management
           </CardTitle>
-          <CardDescription className="text-blue-700">
+          <CardDescription className="text-brand-700">
             Track script improvements across iterations
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="text-center py-8">
-            <Upload className="h-12 w-12 text-blue-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-blue-900 mb-2">Upload Additional Versions</h3>
-            <p className="text-blue-700 mb-4">
+            <Upload className="h-12 w-12 text-brand-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-brand-900 mb-2">Upload Additional Versions</h3>
+            <p className="text-brand-700 mb-4">
               Upload revised versions of your script to track improvements over time and see what recommendations worked.
             </p>
             <Button
               onClick={onUploadNewVersion}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-brand-600 hover:bg-brand-700"
             >
               <Upload className="h-4 w-4 mr-2" />
               Upload New Version
@@ -212,10 +212,10 @@ export function VersionComparison({
                 <div
                   className={`border rounded-lg p-4 transition-all cursor-pointer ${
                     isSelected
-                      ? 'border-blue-400 bg-blue-50'
+                      ? 'border-brand-400 bg-brand-50'
                       : 'border-gray-200 hover:border-gray-300'
                   } ${
-                    isCurrent ? 'ring-2 ring-green-200 bg-green-50' : ''
+                    isCurrent ? 'ring-2 ring-success-200 bg-success-50' : ''
                   }`}
                   onClick={() => handleVersionSelect(version.id)}
                 >
@@ -224,9 +224,9 @@ export function VersionComparison({
                       {/* Version Icon */}
                       <div className={`p-2 rounded-full ${
                         isCurrent
-                          ? 'bg-green-500 text-white'
+                          ? 'bg-success-500 text-white'
                           : metrics.lastAnalyzed
-                            ? 'bg-blue-500 text-white'
+                            ? 'bg-brand-500 text-white'
                             : 'bg-gray-400 text-white'
                       }`}>
                         {isCurrent ? (
@@ -244,10 +244,10 @@ export function VersionComparison({
                             {version.versionLabel && ` - ${version.versionLabel}`}
                           </h4>
                           {isCurrent && (
-                            <Badge className="bg-green-600 text-white">Current</Badge>
+                            <Badge className="bg-success-600 text-white">Current</Badge>
                           )}
                           {isSelected && (
-                            <Badge variant="outline" className="border-blue-400 text-blue-600">
+                            <Badge variant="outline" className="border-brand-400 text-brand-600">
                               Selected
                             </Badge>
                           )}
@@ -278,9 +278,9 @@ export function VersionComparison({
                                 {scoreTrend !== 'same' && (
                                   <div className="flex items-center">
                                     {scoreTrend === 'up' ? (
-                                      <TrendingUp className="h-3 w-3 text-green-600" />
+                                      <TrendingUp className="h-3 w-3 text-success-600" />
                                     ) : (
-                                      <TrendingDown className="h-3 w-3 text-red-600" />
+                                      <TrendingDown className="h-3 w-3 text-danger-600" />
                                     )}
                                   </div>
                                 )}
@@ -333,16 +333,16 @@ export function VersionComparison({
                           <div className="flex items-center space-x-1">
                             {scoreTrend === 'up' && (
                               <>
-                                <TrendingUp className="h-3 w-3 text-green-600" />
-                                <span className="text-xs text-green-600 font-medium">
+                                <TrendingUp className="h-3 w-3 text-success-600" />
+                                <span className="text-xs text-success-600 font-medium">
                                   +{(metrics.score - previousMetrics.score).toFixed(1)}
                                 </span>
                               </>
                             )}
                             {scoreTrend === 'down' && (
                               <>
-                                <TrendingDown className="h-3 w-3 text-red-600" />
-                                <span className="text-xs text-red-600 font-medium">
+                                <TrendingDown className="h-3 w-3 text-danger-600" />
+                                <span className="text-xs text-danger-600 font-medium">
                                   {(metrics.score - previousMetrics.score).toFixed(1)}
                                 </span>
                               </>
@@ -375,18 +375,18 @@ export function VersionComparison({
 
         {/* Comparison Summary */}
         {selectedVersions.length > 1 && (
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h4 className="font-semibold text-blue-900 mb-2">
+          <div className="p-4 bg-brand-50 border border-brand-200 rounded-lg">
+            <h4 className="font-semibold text-brand-900 mb-2">
               Ready to Compare {selectedVersions.length} Versions
             </h4>
-            <p className="text-sm text-blue-700 mb-3">
+            <p className="text-sm text-brand-700 mb-3">
               Compare analysis results, track improvements, and see which recommendations were most effective.
             </p>
             <div className="flex space-x-2">
               <Button
                 onClick={() => onCompareVersions(selectedVersions)}
                 size="sm"
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-brand-600 hover:bg-brand-700"
               >
                 <BarChart3 className="h-4 w-4 mr-2" />
                 Compare Selected Versions

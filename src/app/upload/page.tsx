@@ -545,7 +545,7 @@ export default function UploadPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600 mx-auto"></div>
           <p className="mt-4 text-muted-foreground">Loading...</p>
         </div>
       </div>
@@ -579,7 +579,7 @@ export default function UploadPage() {
           <div className="flex items-center space-x-4">
             <span className="text-xs">Status: All systems operational</span>
             <div className="flex items-center space-x-1">
-              <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+              <div className="h-2 w-2 bg-success-500 rounded-full"></div>
               <span className="text-xs">Online</span>
             </div>
           </div>
@@ -609,7 +609,7 @@ export default function UploadPage() {
               <Bell className="h-4 w-4" />
               <span className="sr-only">Notifications</span>
               {/* Notification dot */}
-              <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full"></span>
+              <span className="absolute -top-1 -right-1 h-2 w-2 bg-danger-500 rounded-full"></span>
             </Button>
           </div>
           <div className="flex items-center space-x-3">
@@ -681,14 +681,14 @@ export default function UploadPage() {
               {!showNewProjectForm ? (
                 <div className="space-y-4">
                   {preSelectedProject && (
-                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                      <div className="flex items-center space-x-2 text-blue-800">
+                    <div className="p-3 bg-brand-50 border border-brand-200 rounded-lg">
+                      <div className="flex items-center space-x-2 text-brand-800">
                         <Folder className="h-4 w-4" />
                         <span className="text-sm font-medium">
                           Adding script to: {preSelectedProject.name}
                         </span>
                       </div>
-                      <p className="text-xs text-blue-600 mt-1">
+                      <p className="text-xs text-brand-600 mt-1">
                         This project was automatically selected from your dashboard
                       </p>
                     </div>
@@ -701,8 +701,8 @@ export default function UploadPage() {
                         <span className="text-sm text-muted-foreground">Loading projects...</span>
                       </div>
                     ) : projectsError ? (
-                      <div className="p-3 border rounded-md bg-red-50 border-red-200">
-                        <div className="flex items-center space-x-2 text-red-600">
+                      <div className="p-3 border rounded-md bg-danger-50 border-danger-200">
+                        <div className="flex items-center space-x-2 text-danger-600">
                           <AlertCircle className="h-4 w-4" />
                           <span className="text-sm">{projectsError}</span>
                         </div>
@@ -991,7 +991,7 @@ export default function UploadPage() {
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <CheckCircle className="h-5 w-5 text-green-500" />
+                        <CheckCircle className="h-5 w-5 text-success-500" />
                         <Button
                           variant="ghost"
                           size="sm"
@@ -1052,7 +1052,7 @@ export default function UploadPage() {
           <Card className="border-muted">
             <CardContent className="pt-6">
               <div className="flex items-start space-x-3">
-                <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5" />
+                <AlertCircle className="h-5 w-5 text-brand-500 mt-0.5" />
                 <div className="space-y-1">
                   <p className="font-medium">Privacy Protection</p>
                   <p className="text-sm text-muted-foreground">

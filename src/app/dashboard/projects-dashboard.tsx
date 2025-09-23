@@ -231,11 +231,11 @@ export function ProjectsDashboard() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'COMPLETED':
-        return <CheckCircle className="h-4 w-4 text-green-600" />
+        return <CheckCircle className="h-4 w-4 text-success-600" />
       case 'FAILED':
-        return <XCircle className="h-4 w-4 text-red-600" />
+        return <XCircle className="h-4 w-4 text-danger-600" />
       case 'IN_PROGRESS':
-        return <Clock className="h-4 w-4 text-blue-600 animate-pulse" />
+        return <Clock className="h-4 w-4 text-brand-600 animate-pulse" />
       default:
         return <FileText className="h-4 w-4 text-gray-600" />
     }
@@ -253,11 +253,11 @@ export function ProjectsDashboard() {
 
     switch (latestAnalysis.status) {
       case 'COMPLETED':
-        return { text: 'Analysis Complete', color: 'text-green-600' }
+        return { text: 'Analysis Complete', color: 'text-success-600' }
       case 'FAILED':
-        return { text: 'Analysis Failed', color: 'text-red-600' }
+        return { text: 'Analysis Failed', color: 'text-danger-600' }
       case 'IN_PROGRESS':
-        return { text: 'Analyzing...', color: 'text-blue-600' }
+        return { text: 'Analyzing...', color: 'text-brand-600' }
       default:
         return { text: 'Unknown Status', color: 'text-muted-foreground' }
     }
@@ -454,7 +454,7 @@ export function ProjectsDashboard() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem
                             onClick={() => setProjectToDelete(project)}
-                            className="text-red-600 focus:text-red-600"
+                            className="text-danger-600 focus:text-danger-600"
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
                             Delete Project
@@ -496,7 +496,7 @@ export function ProjectsDashboard() {
                                       v{script.versionMajor}.{script.versionMinor}
                                     </span>
                                     {script.isLatestVersion && (
-                                      <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                                      <span className="text-xs bg-success-100 text-success-700 px-2 py-1 rounded">
                                         Latest
                                       </span>
                                     )}
@@ -540,9 +540,9 @@ export function ProjectsDashboard() {
                                     size="sm"
                                     onClick={() => handleDeleteScript(script.id, script.title || script.originalFilename)}
                                     disabled={deletingScript === script.id}
-                                    className={deletingScript === script.id ? "text-gray-400 cursor-not-allowed" : "text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"}
+                                    className={deletingScript === script.id ? "text-gray-400 cursor-not-allowed" : "text-danger-600 hover:text-danger-700 border-danger-200 hover:border-danger-300"}
                                   >
-                                    <Trash2 className={`h-4 w-4 mr-2 ${deletingScript === script.id ? '' : 'text-red-600'}`} />
+                                    <Trash2 className={`h-4 w-4 mr-2 ${deletingScript === script.id ? '' : 'text-danger-600'}`} />
                                     {deletingScript === script.id ? 'Deleting...' : 'Delete'}
                                   </Button>
                                 </div>
@@ -622,9 +622,9 @@ export function ProjectsDashboard() {
                               size="sm"
                               onClick={() => handleDeleteScript(script.id, script.title || script.originalFilename)}
                               disabled={deletingScript === script.id}
-                              className={deletingScript === script.id ? "text-gray-400 cursor-not-allowed" : "text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"}
+                              className={deletingScript === script.id ? "text-gray-400 cursor-not-allowed" : "text-danger-600 hover:text-danger-700 border-danger-200 hover:border-danger-300"}
                             >
-                              <Trash2 className={`h-4 w-4 mr-2 ${deletingScript === script.id ? '' : 'text-red-600'}`} />
+                              <Trash2 className={`h-4 w-4 mr-2 ${deletingScript === script.id ? '' : 'text-danger-600'}`} />
                               {deletingScript === script.id ? 'Deleting...' : 'Delete'}
                             </Button>
                           </div>

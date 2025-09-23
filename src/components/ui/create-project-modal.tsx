@@ -184,8 +184,8 @@ export function CreateProjectModal({
 
         <div className="space-y-4">
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-              <div className="flex items-center space-x-2 text-red-600">
+            <div className="p-3 bg-danger-50 border border-danger-200 rounded-lg">
+              <div className="flex items-center space-x-2 text-danger-600">
                 <AlertCircle className="h-4 w-4" />
                 <span className="text-sm">{error}</span>
               </div>

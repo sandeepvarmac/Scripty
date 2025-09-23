@@ -93,17 +93,17 @@ function extractRecommendationsFromAnalyses(scripts: ScriptWithAnalyses[]): Reco
 
 function getSeverityColor(severity: Recommendation['severity']): string {
   switch (severity) {
-    case 'HIGH': return 'text-red-600 bg-red-50 border-red-200'
-    case 'MEDIUM': return 'text-yellow-600 bg-yellow-50 border-yellow-200'
-    case 'LOW': return 'text-blue-600 bg-blue-50 border-blue-200'
+    case 'HIGH': return 'text-danger-600 bg-danger-50 border-danger-200'
+    case 'MEDIUM': return 'text-warning-600 bg-warning-50 border-warning-200'
+    case 'LOW': return 'text-brand-600 bg-brand-50 border-brand-200'
     default: return 'text-gray-600 bg-gray-50 border-gray-200'
   }
 }
 
 function getStatusColor(status: Recommendation['status']): string {
   switch (status) {
-    case 'ADDRESSED': return 'text-green-600 bg-green-50 border-green-200'
-    case 'IN_PROGRESS': return 'text-blue-600 bg-blue-50 border-blue-200'
+    case 'ADDRESSED': return 'text-success-600 bg-success-50 border-success-200'
+    case 'IN_PROGRESS': return 'text-brand-600 bg-brand-50 border-brand-200'
     case 'DISMISSED': return 'text-gray-600 bg-gray-50 border-gray-200'
     case 'NOT_ADDRESSED': return 'text-amber-600 bg-amber-50 border-amber-200'
     default: return 'text-gray-600 bg-gray-50 border-gray-200'
@@ -157,26 +157,26 @@ export function ImprovementTracking({
 
   if (recommendations.length === 0) {
     return (
-      <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
+      <Card className="border-brand-200 bg-gradient-to-br from-brand-50 to-brand-100">
         <CardHeader>
-          <CardTitle className="flex items-center text-blue-900">
+          <CardTitle className="flex items-center text-brand-900">
             <Target className="h-5 w-5 mr-3" />
             Improvement Tracking
           </CardTitle>
-          <CardDescription className="text-blue-700">
+          <CardDescription className="text-brand-700">
             Track progress on AI recommendations and see what improvements worked
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="text-center py-8">
-            <Lightbulb className="h-12 w-12 text-blue-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-blue-900 mb-2">No Recommendations Yet</h3>
-            <p className="text-blue-700 mb-4">
+            <Lightbulb className="h-12 w-12 text-brand-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-brand-900 mb-2">No Recommendations Yet</h3>
+            <p className="text-brand-700 mb-4">
               Run an AI analysis to get personalized recommendations for improving your script.
             </p>
             <Button
               onClick={() => {/* This would trigger analysis */}}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-brand-600 hover:bg-brand-700"
             >
               <RefreshCw className="h-4 w-4 mr-2" />
               Run AI Analysis
@@ -212,17 +212,17 @@ export function ImprovementTracking({
       <CardContent className="space-y-6">
         {/* Progress Overview */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
-            <div className="text-sm text-blue-600">Total Recommendations</div>
+          <div className="p-4 bg-brand-50 border border-brand-200 rounded-lg">
+            <div className="text-2xl font-bold text-brand-600">{stats.total}</div>
+            <div className="text-sm text-brand-600">Total Recommendations</div>
           </div>
-          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-            <div className="text-2xl font-bold text-green-600">{stats.addressed}</div>
-            <div className="text-sm text-green-600">Addressed</div>
+          <div className="p-4 bg-success-50 border border-success-200 rounded-lg">
+            <div className="text-2xl font-bold text-success-600">{stats.addressed}</div>
+            <div className="text-sm text-success-600">Addressed</div>
           </div>
-          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <div className="text-2xl font-bold text-yellow-600">{stats.inProgress}</div>
-            <div className="text-sm text-yellow-600">In Progress</div>
+          <div className="p-4 bg-warning-50 border border-warning-200 rounded-lg">
+            <div className="text-2xl font-bold text-warning-600">{stats.inProgress}</div>
+            <div className="text-sm text-warning-600">In Progress</div>
           </div>
           <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
             <div className="text-2xl font-bold text-amber-600">{stats.notAddressed}</div>
@@ -239,7 +239,7 @@ export function ImprovementTracking({
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
-                className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                className="bg-success-600 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${(stats.addressed / stats.total) * 100}%` }}
               />
             </div>
@@ -337,7 +337,7 @@ export function ImprovementTracking({
                         onClick={() => onMarkRecommendation(recommendation.id, 'ADDRESSED')}
                         size="sm"
                         variant="outline"
-                        className="border-green-300 text-green-700 hover:bg-green-50"
+                        className="border-success-300 text-success-700 hover:bg-success-50"
                       >
                         <CheckCircle className="h-4 w-4 mr-1" />
                         Mark Fixed
@@ -348,7 +348,7 @@ export function ImprovementTracking({
                         onClick={() => onMarkRecommendation(recommendation.id, 'IN_PROGRESS')}
                         size="sm"
                         variant="outline"
-                        className="border-blue-300 text-blue-700 hover:bg-blue-50"
+                        className="border-brand-300 text-brand-700 hover:bg-brand-50"
                       >
                         <Clock className="h-4 w-4 mr-1" />
                         In Progress
@@ -374,12 +374,12 @@ export function ImprovementTracking({
 
         {/* Call to Action */}
         {stats.addressed > 0 && stats.inProgress + stats.notAddressed > 0 && (
-          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+          <div className="p-4 bg-success-50 border border-success-200 rounded-lg">
             <div className="flex items-center space-x-3">
-              <TrendingUp className="h-5 w-5 text-green-600" />
+              <TrendingUp className="h-5 w-5 text-success-600" />
               <div>
-                <h4 className="font-semibold text-green-900">Great Progress!</h4>
-                <p className="text-sm text-green-700">
+                <h4 className="font-semibold text-success-900">Great Progress!</h4>
+                <p className="text-sm text-success-700">
                   You've addressed {stats.addressed} recommendations.
                   Upload a new version to see how these improvements affected your script's analysis.
                 </p>
@@ -387,7 +387,7 @@ export function ImprovementTracking({
               <Button
                 onClick={onUploadNewVersion}
                 size="sm"
-                className="bg-green-600 hover:bg-green-700 shrink-0"
+                className="bg-success-600 hover:bg-success-700 shrink-0"
               >
                 <Upload className="h-4 w-4 mr-2" />
                 Upload New Version
