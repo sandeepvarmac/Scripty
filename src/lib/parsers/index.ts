@@ -90,6 +90,7 @@ export async function parseScript(
       case 'fdx':
         return await parseFdxFile(file, filename)
       case 'fountain':
+      case 'txt':
         return await parseEnhancedFountainFile(file, filename)
       case 'pdf':
         return await parseEnhancedPdfFile(file, filename)

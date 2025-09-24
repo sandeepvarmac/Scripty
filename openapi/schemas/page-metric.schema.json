@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scriptyboy.ai/schemas/page-metric.schema.json",
+  "title": "PageMetric",
+  "type": "object",
+  "properties": {
+    "page": { "type": "integer", "minimum": 1 },
+    "scene_length_lines": { "type": "integer", "minimum": 0 },
+    "dialogue_lines": { "type": "integer", "minimum": 0 },
+    "action_lines": { "type": "integer", "minimum": 0 },
+    "tension_score": { "type": "integer" },
+    "complexity_score": { "type": "integer" }
+  },
+  "required": ["page"],
+  "additionalProperties": false
+}

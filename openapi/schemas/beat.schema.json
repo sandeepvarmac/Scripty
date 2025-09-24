@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scriptyboy.ai/schemas/beat.schema.json",
+  "title": "Beat",
+  "type": "object",
+  "properties": {
+    "kind": {
+      "type": "string",
+      "enum": ["INCITING","ACT1_BREAK","MIDPOINT","LOW_POINT","ACT2_BREAK","CLIMAX","RESOLUTION"]
+    },
+    "page": { "type": "integer", "minimum": 1 },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "timing_flag": {
+      "type": "string",
+      "enum": ["EARLY","ON_TIME","LATE","UNKNOWN"]
+    },
+    "rationale": { "type": "string" }
+  },
+  "required": ["kind","page","confidence"],
+  "additionalProperties": false
+}

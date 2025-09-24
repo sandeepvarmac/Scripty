@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scriptyboy.ai/schemas/theme-statement.schema.json",
+  "title": "ThemeStatement",
+  "type": "object",
+  "properties": {
+    "id": { "type": "string" },
+    "statement": { "type": "string" },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+  },
+  "required": ["statement","confidence"],
+  "additionalProperties": false
+}

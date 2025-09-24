@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scriptyboy.ai/schemas/element.schema.json",
+  "title": "Element",
+  "type": "object",
+  "properties": {
+    "id": { "type": "string" },
+    "scene_id": { "type": "string" },
+    "type": {
+      "type": "string",
+      "enum": ["SCENE_HEADING","ACTION","DIALOGUE","PARENTHETICAL","TRANSITION","SHOT"]
+    },
+    "char_name": { "type": "string" },
+    "text": { "type": "string" },
+    "order_index": { "type": "integer", "minimum": 0 }
+  },
+  "required": ["type","text"],
+  "additionalProperties": false
+}

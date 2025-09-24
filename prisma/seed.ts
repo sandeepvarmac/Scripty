@@ -548,7 +548,8 @@ async function main() {
         startLine: 6,
         endLine: 8,
         snippet: "Brand-name security system referenced.",
-        confidence: 0.61
+        confidence: 0.61,
+        notes: "Consider genericizing or clearing."
       }
     ],
     skipDuplicates: true

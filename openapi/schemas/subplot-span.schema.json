@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scriptyboy.ai/schemas/subplot-span.schema.json",
+  "title": "SubplotSpan",
+  "type": "object",
+  "properties": {
+    "subplot_id": { "type": "string" },
+    "scene_id": { "type": "string" },
+    "role": {
+      "type": "string",
+      "enum": ["INTRO","DEVELOP","CONVERGE","RESOLVE"]
+    }
+  },
+  "required": ["subplot_id","scene_id","role"],
+  "additionalProperties": false
+}

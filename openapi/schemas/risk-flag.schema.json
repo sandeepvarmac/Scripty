@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scriptyboy.ai/schemas/risk-flag.schema.json",
+  "title": "RiskFlag",
+  "type": "object",
+  "properties": {
+    "id": { "type": "string" },
+    "kind": {
+      "type": "string",
+      "enum": ["REAL_PERSON","TRADEMARK","LYRICS","DEFAMATION_RISK","LIFE_RIGHTS"]
+    },
+    "scene_id": { "type": "string" },
+    "page": { "type": "integer", "minimum": 1 },
+    "start_line": { "type": "integer", "minimum": 1 },
+    "end_line": { "type": "integer", "minimum": 1 },
+    "snippet": { "type": "string" },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "notes": { "type": "string" }
+  },
+  "required": ["kind","confidence"],
+  "additionalProperties": false
+}

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scriptyboy.ai/schemas/scene-theme-alignment.schema.json",
+  "title": "SceneThemeAlignment",
+  "type": "object",
+  "properties": {
+    "scene_id": { "type": "string" },
+    "on_theme": { "type": "boolean" },
+    "rationale": { "type": "string" }
+  },
+  "required": ["scene_id","on_theme"],
+  "additionalProperties": false
+}

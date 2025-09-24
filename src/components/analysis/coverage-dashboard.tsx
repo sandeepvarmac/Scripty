@@ -25,7 +25,7 @@ interface CoverageDashboardProps {
 }
 
 export function CoverageDashboard({ script, dashboardData }: CoverageDashboardProps) {
-  const { beats, scores, notes, riskFlags } = dashboardData
+  const {\n    beats = [],\n    scores = [],\n    notes = [],\n    riskFlags = []\n  } = dashboardData ?? {}
 
   // Calculate recommendation
   const avgScore = scores.length > 0

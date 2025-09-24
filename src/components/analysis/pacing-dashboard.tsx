@@ -33,7 +33,7 @@ interface PacingDashboardProps {
 }
 
 export function PacingDashboard({ script, dashboardData }: PacingDashboardProps) {
-  const { pageMetrics, beats, scores } = dashboardData
+  const {\n  pageMetrics = [],\n  beats = [],\n  scores = []\n} = dashboardData ?? {}
 
   // Calculate pacing metrics
   const pacingScore = scores.find((s: any) => s.category === 'PACING')?.value || 0

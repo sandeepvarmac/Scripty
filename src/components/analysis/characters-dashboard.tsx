@@ -33,7 +33,7 @@ interface CharactersDashboardProps {
 }
 
 export function CharactersDashboard({ script, dashboardData }: CharactersDashboardProps) {
-  const { characterScenes, notes } = dashboardData
+  const { characterScenes = [], notes = [] } = dashboardData ?? {}
 
   // Calculate character presence and dialogue stats
   const characterStats = React.useMemo(() => {

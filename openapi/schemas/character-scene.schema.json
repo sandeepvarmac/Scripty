@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scriptyboy.ai/schemas/character-scene.schema.json",
+  "title": "CharacterScene",
+  "type": "object",
+  "properties": {
+    "character_id": { "type": "string" },
+    "scene_id": { "type": "string" },
+    "lines": { "type": "integer", "minimum": 0 },
+    "words": { "type": "integer", "minimum": 0 },
+    "on_page": { "type": "boolean" }
+  },
+  "required": ["character_id","scene_id"],
+  "additionalProperties": false
+}

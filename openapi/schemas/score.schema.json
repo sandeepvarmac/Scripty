@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scriptyboy.ai/schemas/score.schema.json",
+  "title": "Score",
+  "type": "object",
+  "properties": {
+    "id": { "type": "string" },
+    "category": {
+      "type": "string",
+      "enum": ["STRUCTURE","CHARACTER","DIALOGUE","PACING","THEME","GENRE_FIT","ORIGINALITY","FEASIBILITY"]
+    },
+    "value": { "type": "number" },
+    "rationale": { "type": "string" }
+  },
+  "required": ["category","value"],
+  "additionalProperties": false
+}

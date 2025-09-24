@@ -39,7 +39,7 @@ interface NotesDashboardProps {
 }
 
 export function NotesDashboard({ script, dashboardData, onNotesUpdate }: NotesDashboardProps) {
-  const { notes } = dashboardData
+  const { notes = [] } = dashboardData ?? {}
   const [filteredNotes, setFilteredNotes] = React.useState(notes)
   const [searchTerm, setSearchTerm] = React.useState("")
   const [selectedSeverity, setSelectedSeverity] = React.useState<string>("all")

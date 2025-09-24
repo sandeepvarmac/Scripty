@@ -1,0 +1,588 @@
+openapi: 3.1.0
+info:
+  title: ScriptyBoy Module 1 API
+  version: 1.0.0
+  description: |
+    OpenAPI contract for Module 1 (MVP) AI-powered screenplay analysis endpoints.
+servers:
+  - url: https://api.scriptyboy.local
+tags:
+  - name: Projects
+  - name: Scripts
+  - name: Scenes
+  - name: Notes
+  - name: Reports
+  - name: Exports
+paths:
+  /v1/projects/{projectId}/upload:
+    post:
+      tags: [Projects]
+      summary: Upload a screenplay file into a project
+      operationId: uploadScript
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                pdfPassword:
+                  type: string
+                overwriteExisting:
+                  type: boolean
+      responses:
+        '200':
+          description: Upload accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /v1/scripts/{scriptId}/parse-preview:
+    get:
+      tags: [Scripts]
+      summary: Return parsed slug parts, scene/character counts, and genre guess
+      operationId: getParsePreview
+      parameters:
+        - in: path
+          name: scriptId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Preview data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParsePreviewResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /v1/scripts/{scriptId}/dashboard:
+    get:
+      tags: [Scripts]
+      summary: Aggregate dashboard payload for the analysis views
+      operationId: getDashboard
+      parameters:
+        - in: path
+          name: scriptId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Dashboard payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardPayload'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /v1/scenes/{sceneId}:
+    get:
+      tags: [Scenes]
+      summary: Get a scene with elements, feasibility metrics, and anchored notes
+      operationId: getSceneDetail
+      parameters:
+        - in: path
+          name: sceneId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Scene detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SceneDetailResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /v1/scripts/{scriptId}/notes:
+    post:
+      tags: [Notes]
+      summary: Bulk upsert craft notes with anchors
+      operationId: upsertNotes
+      parameters:
+        - in: path
+          name: scriptId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoteUpsertRequest'
+      responses:
+        '200':
+          description: Notes stored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoteUpsertResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /v1/scripts/{scriptId}/scores:
+    put:
+      tags: [Scripts]
+      summary: Replace rubric scores for a script
+      operationId: updateScores
+      parameters:
+        - in: path
+          name: scriptId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScoreUpsertRequest'
+      responses:
+        '200':
+          description: Scores stored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScoreUpsertResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /v1/scripts/{scriptId}/feasibility:
+    get:
+      tags: [Scripts]
+      summary: Production feasibility snapshot for a script
+      operationId: getFeasibility
+      parameters:
+        - in: path
+          name: scriptId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Feasibility summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeasibilityResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /v1/reports/coverage:
+    post:
+      tags: [Reports]
+      summary: Generate coverage PDF metadata using LLM outputs and normalized analytics
+      operationId: generateCoverage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CoverageRequest'
+      responses:
+        '200':
+          description: Report queued or generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoverageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /v1/notes/export:
+    post:
+      tags: [Notes]
+      summary: Export notes as PDF or CSV anchored with scene/page/line
+      operationId: exportNotes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotesExportRequest'
+      responses:
+        '200':
+          description: Export job metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotesExportResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /v1/scripts/{scriptId}/finaldraft-change-list:
+    get:
+      tags: [Scripts]
+      summary: Generate best-effort Final Draft change list when source is FDX
+      operationId: getFinalDraftChangeList
+      parameters:
+        - in: path
+          name: scriptId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Change list or explanatory fallback
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+components:
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        details:
+          type: string
+    UploadResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            fileId:
+              type: string
+            scriptId:
+              type: string
+            format:
+              type: string
+    ParsePreviewResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            script:
+              type: object
+              properties:
+                id:
+                  type: string
+                title:
+                  type: string
+                logline:
+                  type: string
+                genreGuess:
+                  type: string
+                pageCount:
+                  type: integer
+            slugParts:
+              type: array
+              items:
+                type: object
+                properties:
+                  sceneId:
+                    type: string
+                  intExt:
+                    type: string
+                  location:
+                    type: string
+                  tod:
+                    type: string
+    DashboardPayload:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            beats:
+              type: array
+              items:
+                $ref: '#/components/schemas/Beat'
+            notes:
+              type: array
+              items:
+                $ref: '#/components/schemas/Note'
+            riskFlags:
+              type: array
+              items:
+                $ref: '#/components/schemas/RiskFlag'
+            themeStatements:
+              type: array
+              items:
+                $ref: '#/components/schemas/ThemeStatement'
+            sceneThemeAlignment:
+              type: array
+              items:
+                $ref: '#/components/schemas/SceneThemeAlignment'
+            feasibility:
+              type: array
+              items:
+                $ref: '#/components/schemas/FeasibilityMetric'
+            pageMetrics:
+              type: array
+              items:
+                $ref: '#/components/schemas/PageMetric'
+            characterScenes:
+              type: array
+              items:
+                $ref: '#/components/schemas/CharacterScene'
+            subplots:
+              type: array
+              items:
+                $ref: '#/components/schemas/Subplot'
+            subplotSpans:
+              type: array
+              items:
+                $ref: '#/components/schemas/SubplotSpan'
+            scores:
+              type: array
+              items:
+                $ref: '#/components/schemas/Score'
+    SceneDetailResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            scene:
+              type: object
+              properties:
+                id:
+                  type: string
+                orderIndex:
+                  type: integer
+                pageNumber:
+                  type: integer
+                intExt:
+                  type: string
+                location:
+                  type: string
+                tod:
+                  type: string
+                elements:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Element'
+                feasibility:
+                  $ref: '#/components/schemas/FeasibilityMetric'
+                notes:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Note'
+    NoteUpsertRequest:
+      type: object
+      properties:
+        notes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Note'
+      required:
+        - notes
+    NoteUpsertResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        count:
+          type: integer
+    ScoreUpsertRequest:
+      type: object
+      properties:
+        scores:
+          type: array
+          items:
+            $ref: '#/components/schemas/Score'
+      required:
+        - scores
+    ScoreUpsertResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        scores:
+          type: array
+          items:
+            $ref: '#/components/schemas/Score'
+    FeasibilityResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            totals:
+              type: object
+              properties:
+                intScenes:
+                  type: integer
+                extScenes:
+                  type: integer
+                dayScenes:
+                  type: integer
+                nightScenes:
+                  type: integer
+            flags:
+              type: object
+              additionalProperties:
+                type: integer
+            heatmap:
+              type: array
+              items:
+                $ref: '#/components/schemas/PageMetric'
+    CoverageRequest:
+      type: object
+      properties:
+        scriptId:
+          type: string
+        includeNotes:
+          type: boolean
+        includeScores:
+          type: boolean
+        passLevel:
+          type: string
+          enum: [PASS, CONSIDER, RECOMMEND]
+        comps:
+          type: array
+          items:
+            type: string
+      required:
+        - scriptId
+    CoverageResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        reportId:
+          type: string
+    NotesExportRequest:
+      type: object
+      properties:
+        scriptId:
+          type: string
+        format:
+          type: string
+          enum: [pdf, csv]
+        filter:
+          type: object
+          properties:
+            severity:
+              type: array
+              items:
+                type: string
+            area:
+              type: array
+              items:
+                type: string
+      required:
+        - scriptId
+        - format
+    NotesExportResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        jobId:
+          type: string
+    ChangeListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            available:
+              type: boolean
+            diff:
+              type: array
+              items:
+                type: object
+                properties:
+                  elementId:
+                    type: string
+                  change:
+                    type: string
+                  summary:
+                    type: string
+            message:
+              type: string
+    Beat:
+      $ref: './schemas/beat.schema.json'
+    Note:
+      $ref: './schemas/note.schema.json'
+    RiskFlag:
+      $ref: './schemas/risk-flag.schema.json'
+    ThemeStatement:
+      $ref: './schemas/theme-statement.schema.json'
+    SceneThemeAlignment:
+      $ref: './schemas/scene-theme-alignment.schema.json'
+    FeasibilityMetric:
+      $ref: './schemas/feasibility-metric.schema.json'
+    PageMetric:
+      $ref: './schemas/page-metric.schema.json'
+    CharacterScene:
+      $ref: './schemas/character-scene.schema.json'
+    Subplot:
+      $ref: './schemas/subplot.schema.json'
+    SubplotSpan:
+      $ref: './schemas/subplot-span.schema.json'
+    Score:
+      $ref: './schemas/score.schema.json'
+    Element:
+      $ref: './schemas/element.schema.json'

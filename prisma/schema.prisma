@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DATABASE_URL")
 }
 
@@ -38,95 +38,95 @@ model Session {
 }
 
 model User {
-  id                String     @id @default(cuid())
-  email             String     @unique
-  emailVerified     DateTime?
-  name              String?
-  firstName         String?
-  lastName          String?
-  image             String?
-  passwordHash      String?
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  firstName     String?
+  lastName      String?
+  image         String?
+  passwordHash  String?
 
   // Profile & Preferences
-  projectType       ProjectType @default(FEATURE_INDEPENDENT)
-  privacyDoNotTrain Boolean     @default(true)
-  retentionDays     Int         @default(90)
-  emailNotifications Boolean    @default(true)
+  projectType        ProjectType @default(FEATURE_INDEPENDENT)
+  privacyDoNotTrain  Boolean     @default(true)
+  retentionDays      Int         @default(90)
+  emailNotifications Boolean     @default(true)
 
   // RBAC
-  roleId            String?
-  role              Role?       @relation(fields: [roleId], references: [id])
-  organizationId    String?
-  organization      Organization? @relation(fields: [organizationId], references: [id])
+  roleId         String?
+  role           Role?         @relation(fields: [roleId], references: [id])
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
 
   // Timestamps
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
-  lastLoginAt       DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  lastLoginAt DateTime?
 
   // Billing & Plans
-  stripeCustomerId  String?
-  plan              PlanType     @default(FREE)
-  planStartedAt     DateTime?
-  planExpiresAt     DateTime?
-  analysesUsed      Int          @default(0)
-  analysesLimit     Int          @default(3) // Free tier default
+  stripeCustomerId String?
+  plan             PlanType  @default(FREE)
+  planStartedAt    DateTime?
+  planExpiresAt    DateTime?
+  analysesUsed     Int       @default(0)
+  analysesLimit    Int       @default(3) // Free tier default
 
   // Relations
-  accounts          Account[]
-  sessions          Session[]
-  authLogs          AuthLog[]
-  refreshTokens     RefreshToken[]
+  accounts                Account[]
+  sessions                Session[]
+  authLogs                AuthLog[]
+  refreshTokens           RefreshToken[]
   organizationMemberships OrganizationMember[]
-  subscriptions     Subscription[]
-  usageRecords      UsageRecord[]
-  projects          Project[]
-  scripts           Script[]
-  analyses          Analysis[]
+  subscriptions           Subscription[]
+  usageRecords            UsageRecord[]
+  projects                Project[]
+  scripts                 Script[]
+  analyses                Analysis[]
 
   @@map("users")
 }
 
 model Role {
-  id          String   @id @default(cuid())
-  name        String   @unique
+  id          String  @id @default(cuid())
+  name        String  @unique
   description String?
-  permissions Json     @default("[]")
-  isDefault   Boolean  @default(false)
+  permissions Json    @default("[]")
+  isDefault   Boolean @default(false)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  users       User[]
+  users User[]
 
   @@map("roles")
 }
 
 model Organization {
-  id          String   @id @default(cuid())
-  name        String
-  slug        String   @unique
+  id   String @id @default(cuid())
+  name String
+  slug String @unique
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  users       User[]
-  members     OrganizationMember[]
+  users   User[]
+  members OrganizationMember[]
 
   @@map("organizations")
 }
 
 model OrganizationMember {
-  id             String       @id @default(cuid())
+  id             String     @id @default(cuid())
   userId         String
   organizationId String
-  role           MemberRole   @default(MEMBER)
+  role           MemberRole @default(MEMBER)
 
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@unique([userId, organizationId])
   @@map("organization_members")
@@ -140,13 +140,13 @@ model RefreshToken {
 
   createdAt DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("refresh_tokens")
 }
 
 model AuthLog {
-  id        String   @id @default(cuid())
+  id        String     @id @default(cuid())
   userId    String?
   email     String?
   action    AuthAction
@@ -157,7 +157,7 @@ model AuthLog {
 
   createdAt DateTime @default(now())
 
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@map("auth_logs")
 }
@@ -214,10 +214,10 @@ enum SubscriptionStatus {
 }
 
 enum BudgetRange {
-  MICRO          // Under $500K
-  LOW            // $500K - $5M
-  MEDIUM         // $5M - $25M
-  HIGH           // $25M+
+  MICRO // Under $500K
+  LOW // $500K - $5M
+  MEDIUM // $5M - $25M
+  HIGH // $25M+
 }
 
 enum DevelopmentStage {
@@ -231,118 +231,118 @@ enum DevelopmentStage {
 
 // Billing & Subscription Models
 model Subscription {
-  id                String             @id @default(cuid())
-  userId            String
-  stripeSubscriptionId String?         @unique
-  stripePriceId     String?
-  plan              PlanType
-  status            SubscriptionStatus @default(ACTIVE)
-  currentPeriodStart DateTime
-  currentPeriodEnd   DateTime
-  cancelAtPeriodEnd  Boolean           @default(false)
-  canceledAt         DateTime?
-  trialStart         DateTime?
-  trialEnd           DateTime?
+  id                   String             @id @default(cuid())
+  userId               String
+  stripeSubscriptionId String?            @unique
+  stripePriceId        String?
+  plan                 PlanType
+  status               SubscriptionStatus @default(ACTIVE)
+  currentPeriodStart   DateTime
+  currentPeriodEnd     DateTime
+  cancelAtPeriodEnd    Boolean            @default(false)
+  canceledAt           DateTime?
+  trialStart           DateTime?
+  trialEnd             DateTime?
 
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("subscriptions")
 }
 
 model UsageRecord {
-  id        String   @id @default(cuid())
-  userId    String
-  type      String   // "analysis", "export", etc.
-  quantity  Int      @default(1)
-  metadata  Json?    // Additional usage details
+  id       String @id @default(cuid())
+  userId   String
+  type     String // "analysis", "export", etc.
+  quantity Int    @default(1)
+  metadata Json? // Additional usage details
 
   createdAt DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("usage_records")
 }
 
 // Project & Script Management Models
 model Project {
-  id          String   @id @default(cuid())
-  userId      String
-  name        String
-  description String?  @db.Text
-  type        ProjectType
-  genre       String?  // AI-detected or user-specified primary genre
-  targetBudget BudgetRange @default(LOW)
-  targetAudience String? @default("General")
+  id               String           @id @default(cuid())
+  userId           String
+  name             String
+  description      String?          @db.Text
+  type             ProjectType
+  genre            String? // AI-detected or user-specified primary genre
+  targetBudget     BudgetRange      @default(LOW)
+  targetAudience   String?          @default("General")
   developmentStage DevelopmentStage @default(FIRST_DRAFT)
 
   // Timestamps
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  deletedAt   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
   // Relations
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  scripts     Script[]
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scripts Script[]
 
   @@map("projects")
 }
 
 // Script Analysis & Evidence Store Models
 model Script {
-  id               String   @id @default(cuid())
+  id               String       @id @default(cuid())
   userId           String
-  projectId        String?  // Optional during migration
+  projectId        String? // Optional during migration
   originalFilename String
   title            String?
   author           String?
   format           ScriptFormat
   fileSize         Int
   pageCount        Int
-  totalScenes      Int      @default(0)
-  totalCharacters  Int      @default(0)
+  totalScenes      Int          @default(0)
+  totalCharacters  Int          @default(0)
 
   // Version tracking
-  versionMajor     Int      @default(1)
-  versionMinor     Int      @default(0)
-  versionLabel     String?  // e.g., "First Draft", "Producer Notes", "Final"
-  isLatestVersion  Boolean  @default(true)
+  versionMajor    Int     @default(1)
+  versionMinor    Int     @default(0)
+  versionLabel    String? // e.g., "First Draft", "Producer Notes", "Final"
+  isLatestVersion Boolean @default(true)
 
   // Processing status
-  status           ProcessingStatus @default(PENDING)
-  uploadedAt       DateTime @default(now())
-  processedAt      DateTime?
+  status      ProcessingStatus @default(PENDING)
+  uploadedAt  DateTime         @default(now())
+  processedAt DateTime?
 
   // File storage
-  fileUrl          String?  // S3/storage URL for original file
+  fileUrl String? // S3/storage URL for original file
 
   // MVP Analysis fields
-  logline          String?  @db.Text
-  synopsisShort    String?  @db.Text @map("synopsis_short")
-  synopsisLong     String?  @db.Text @map("synopsis_long")
-  genreOverride    String?  @map("genre_override")
-  comps            Json?
+  logline       String? @db.Text
+  synopsisShort String? @map("synopsis_short") @db.Text
+  synopsisLong  String? @map("synopsis_long") @db.Text
+  genreOverride String? @map("genre_override")
+  comps         Json?
 
   // Soft delete
-  deletedAt        DateTime?
+  deletedAt DateTime?
 
   // Relations
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  project          Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  scenes           Scene[]
-  characters       Character[]
-  analyses         Analysis[]
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project    Project?    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  scenes     Scene[]
+  characters Character[]
+  analyses   Analysis[]
 
   // MVP Analysis relations
-  beats            Beat[]
-  notes            Note[]
-  scores           Score[]
-  pageMetrics      PageMetric[]
-  themeStatements  ThemeStatement[]
-  riskFlags        RiskFlag[]
-  subplots         Subplot[]
+  beats           Beat[]
+  notes           Note[]
+  scores          Score[]
+  pageMetrics     PageMetric[]
+  themeStatements ThemeStatement[]
+  riskFlags       RiskFlag[]
+  subplots        Subplot[]
 
   @@index([projectId, versionMajor, versionMinor])
   @@index([projectId, isLatestVersion])
@@ -350,44 +350,44 @@ model Script {
 }
 
 model Scene {
-  id           String    @id @default(cuid())
-  scriptId     String
-  sceneNumber  String?
-  type         SceneType
-  content      String    @db.Text
-  pageNumber   Int
-  lineNumber   Int
-  character    String?   // For dialogue scenes
+  id          String    @id @default(cuid())
+  scriptId    String
+  sceneNumber String?
+  type        SceneType
+  content     String    @db.Text
+  pageNumber  Int
+  lineNumber  Int
+  character   String? // For dialogue scenes
 
   // Scene position and context
-  orderIndex   Int       // Sequential order in script
-  wordCount    Int       @default(0)
+  orderIndex Int // Sequential order in script
+  wordCount  Int @default(0)
 
   // MVP Analysis fields
-  intExt       IntExtEnum? @map("int_ext")
-  location     String?
-  tod          String?
-  pageStart    Int?      @map("page_start")
-  pageEnd      Int?      @map("page_end")
+  intExt    IntExtEnum? @map("int_ext")
+  location  String?
+  tod       String?
+  pageStart Int?        @map("page_start")
+  pageEnd   Int?        @map("page_end")
 
   // Analysis data will be stored here
-  analysisData Json?     // Flexible storage for AI analysis results
+  analysisData Json? // Flexible storage for AI analysis results
 
-  createdAt    DateTime  @default(now())
-  deletedAt    DateTime?
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
 
   // Relations
-  script       Script    @relation(fields: [scriptId], references: [id], onDelete: Cascade)
-  evidences    Evidence[]
+  script    Script     @relation(fields: [scriptId], references: [id], onDelete: Cascade)
+  evidences Evidence[]
 
   // MVP Analysis relations
-  elements     Element[]
-  notes        Note[]
-  feasibility  FeasibilityMetric?
+  elements       Element[]
+  notes          Note[]
+  feasibility    FeasibilityMetric?
   characterLinks CharacterScene[]
   themeAlignment SceneThemeAlignment?
-  riskFlags    RiskFlag[]
-  subplotSpans SubplotSpan[]
+  riskFlags      RiskFlag[]
+  subplotSpans   SubplotSpan[]
 
   @@index([scriptId, orderIndex])
   @@index([scriptId, type])
@@ -396,55 +396,55 @@ model Scene {
 }
 
 model Character {
-  id           String   @id @default(cuid())
-  scriptId     String
-  name         String
-  dialogueCount Int     @default(0)
-  firstAppearance Int?  // Line number of first appearance
+  id              String @id @default(cuid())
+  scriptId        String
+  name            String
+  dialogueCount   Int    @default(0)
+  firstAppearance Int? // Line number of first appearance
 
   // MVP Analysis fields
-  aliases      String[]
+  aliases String[]
 
   // Character analysis
-  analysisData Json?   // AI-generated character insights
+  analysisData Json? // AI-generated character insights
 
-  createdAt    DateTime @default(now())
-  deletedAt    DateTime?
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
 
   // Relations
-  script       Script   @relation(fields: [scriptId], references: [id], onDelete: Cascade)
+  script Script @relation(fields: [scriptId], references: [id], onDelete: Cascade)
 
   // MVP Analysis relations
-  sceneLinks   CharacterScene[]
+  sceneLinks CharacterScene[]
 
   @@unique([scriptId, name])
   @@map("characters")
 }
 
 model Evidence {
-  id           String      @id @default(cuid())
-  sceneId      String
-  type         EvidenceType
-  content      String      @db.Text
-  context      String?     @db.Text // Surrounding context for evidence
-  confidence   Float       // AI confidence score 0-1
+  id         String       @id @default(cuid())
+  sceneId    String
+  type       EvidenceType
+  content    String       @db.Text
+  context    String?      @db.Text // Surrounding context for evidence
+  confidence Float // AI confidence score 0-1
 
   // Evidence metadata
-  startLine    Int?        // Start line in original script
-  endLine      Int?        // End line in original script
-  tags         String[]    // Searchable tags
+  startLine Int? // Start line in original script
+  endLine   Int? // End line in original script
+  tags      String[] // Searchable tags
 
   // MVP Analysis fields
-  area         NoteArea?
+  area NoteArea?
 
-  createdAt    DateTime    @default(now())
-  deletedAt    DateTime?
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
 
   // Relations
-  scene        Scene       @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+  scene Scene @relation(fields: [sceneId], references: [id], onDelete: Cascade)
 
   // MVP Analysis relations
-  notes        Note[]
+  notes Note[]
 
   @@index([sceneId, type])
   @@index([type, confidence])
@@ -452,26 +452,26 @@ model Evidence {
 }
 
 model Analysis {
-  id           String        @id @default(cuid())
-  scriptId     String
-  userId       String
-  type         AnalysisType
-  status       AnalysisStatus @default(PENDING)
+  id       String         @id @default(cuid())
+  scriptId String
+  userId   String
+  type     AnalysisType
+  status   AnalysisStatus @default(PENDING)
 
   // Analysis results
-  results      Json?         // Main analysis results
-  score        Float?        // Overall score if applicable
-  summary      String?       @db.Text
+  results Json? // Main analysis results
+  score   Float? // Overall score if applicable
+  summary String? @db.Text
 
   // Processing info
-  startedAt    DateTime      @default(now())
+  startedAt    DateTime  @default(now())
   completedAt  DateTime?
-  errorMessage String?       @db.Text
+  errorMessage String?   @db.Text
   deletedAt    DateTime?
 
   // Relations
-  script       Script        @relation(fields: [scriptId], references: [id], onDelete: Cascade)
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  script Script @relation(fields: [scriptId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("analyses")
 }
@@ -537,12 +537,12 @@ enum AnalysisStatus {
 
 // MVP Analysis Models
 model Element {
-  id          String  @id @default(cuid())
-  sceneId     String  @map("scene_id")
-  type        String  // 'SCENE_HEADING' | 'ACTION' | 'DIALOGUE' | 'PARENTHETICAL' | 'TRANSITION' | 'SHOT'
-  charName    String? @map("char_name")
-  text        String
-  orderIndex  Int     @map("order_index") @default(0)
+  id         String  @id @default(cuid())
+  sceneId    String  @map("scene_id")
+  type       String // 'SCENE_HEADING' | 'ACTION' | 'DIALOGUE' | 'PARENTHETICAL' | 'TRANSITION' | 'SHOT'
+  charName   String? @map("char_name")
+  text       String
+  orderIndex Int     @default(0) @map("order_index")
 
   scene Scene @relation(fields: [sceneId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
@@ -551,13 +551,13 @@ model Element {
 }
 
 model Beat {
-  id          String     @id @default(cuid())
-  scriptId    String     @map("script_id")
-  kind        BeatKind
-  page        Int?
-  confidence  Decimal?   @db.Decimal(4, 2)
-  timingFlag  TimingFlag? @map("timing_flag")
-  rationale   String?
+  id         String      @id @default(cuid())
+  scriptId   String      @map("script_id")
+  kind       BeatKind
+  page       Int?
+  confidence Decimal?    @db.Decimal(4, 2)
+  timingFlag TimingFlag? @map("timing_flag")
+  rationale  String?
 
   script Script @relation(fields: [scriptId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
@@ -566,20 +566,20 @@ model Beat {
 }
 
 model Note {
-  id          String       @id @default(cuid())
-  scriptId    String       @map("script_id")
-  severity    NoteSeverity
-  area        NoteArea
-  sceneId     String?      @map("scene_id")
-  page        Int?
-  lineRef     Int?         @map("line_ref")
-  evidenceId  String?      @map("evidence_id")
-  excerpt     String?
-  suggestion  String?
-  applyHook   Json?        @map("apply_hook")
-  ruleCode    String?      @map("rule_code")
-  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime     @default(now()) @map("updated_at") @db.Timestamptz(6)
+  id         String       @id @default(cuid())
+  scriptId   String       @map("script_id")
+  severity   NoteSeverity
+  area       NoteArea
+  sceneId    String?      @map("scene_id")
+  page       Int?
+  lineRef    Int?         @map("line_ref")
+  evidenceId String?      @map("evidence_id")
+  excerpt    String?
+  suggestion String?
+  applyHook  Json?        @map("apply_hook")
+  ruleCode   String?      @map("rule_code")
+  createdAt  DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime     @default(now()) @map("updated_at") @db.Timestamptz(6)
 
   script   Script    @relation(fields: [scriptId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   scene    Scene?    @relation(fields: [sceneId], references: [id], onUpdate: Cascade, onDelete: SetNull)
@@ -591,11 +591,11 @@ model Note {
 }
 
 model Score {
-  id         String        @id @default(cuid())
-  scriptId   String        @map("script_id")
-  category   ScoreCategory
-  value      Decimal       @db.Decimal(3, 1)
-  rationale  String?
+  id        String        @id @default(cuid())
+  scriptId  String        @map("script_id")
+  category  ScoreCategory
+  value     Decimal       @db.Decimal(3, 1)
+  rationale String?
 
   script Script @relation(fields: [scriptId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
@@ -604,21 +604,21 @@ model Score {
 }
 
 model FeasibilityMetric {
-  id                String     @id @default(cuid())
-  sceneId           String     @unique @map("scene_id")
-  intExt            IntExtEnum? @map("int_ext")
-  location          String?
-  tod               String?
-  hasStunts         Boolean?   @map("has_stunts")
-  hasVfx            Boolean?   @map("has_vfx")
-  hasSfx            Boolean?   @map("has_sfx")
-  hasCrowd          Boolean?   @map("has_crowd")
-  hasMinors         Boolean?   @map("has_minors")
-  hasAnimals        Boolean?   @map("has_animals")
-  hasWeapons        Boolean?   @map("has_weapons")
-  hasVehicles       Boolean?   @map("has_vehicles")
-  hasSpecialProps   Boolean?   @map("has_special_props")
-  complexityScore   Int        @default(0) @map("complexity_score")
+  id              String      @id @default(cuid())
+  sceneId         String      @unique @map("scene_id")
+  intExt          IntExtEnum? @map("int_ext")
+  location        String?
+  tod             String?
+  hasStunts       Boolean?    @map("has_stunts")
+  hasVfx          Boolean?    @map("has_vfx")
+  hasSfx          Boolean?    @map("has_sfx")
+  hasCrowd        Boolean?    @map("has_crowd")
+  hasMinors       Boolean?    @map("has_minors")
+  hasAnimals      Boolean?    @map("has_animals")
+  hasWeapons      Boolean?    @map("has_weapons")
+  hasVehicles     Boolean?    @map("has_vehicles")
+  hasSpecialProps Boolean?    @map("has_special_props")
+  complexityScore Int         @default(0) @map("complexity_score")
 
   scene Scene @relation(fields: [sceneId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
@@ -641,8 +641,8 @@ model CharacterScene {
 }
 
 model Subplot {
-  id          String   @id @default(cuid())
-  scriptId    String   @map("script_id")
+  id          String  @id @default(cuid())
+  scriptId    String  @map("script_id")
   label       String
   description String?
 
@@ -676,8 +676,8 @@ model ThemeStatement {
 }
 
 model SceneThemeAlignment {
-  sceneId   String   @id @map("scene_id")
-  onTheme   Boolean  @map("on_theme")
+  sceneId   String  @id @map("scene_id")
+  onTheme   Boolean @map("on_theme")
   rationale String?
 
   scene Scene @relation(fields: [sceneId], references: [id], onUpdate: Cascade, onDelete: Cascade)
@@ -686,31 +686,32 @@ model SceneThemeAlignment {
 }
 
 model RiskFlag {
-  id          String    @id @default(cuid())
-  scriptId    String    @map("script_id")
-  sceneId     String?   @map("scene_id")
-  kind        RiskKind
-  page        Int?
-  startLine   Int?      @map("start_line")
-  endLine     Int?      @map("end_line")
-  snippet     String?
-  confidence  Decimal?  @db.Decimal(4, 2)
+  id         String   @id @default(cuid())
+  scriptId   String   @map("script_id")
+  sceneId    String?  @map("scene_id")
+  kind       RiskKind
+  page       Int?
+  startLine  Int?     @map("start_line")
+  endLine    Int?     @map("end_line")
+  snippet    String?
+  confidence Decimal? @db.Decimal(4, 2)
+  notes      String?
 
   script Script @relation(fields: [scriptId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  scene  Scene?  @relation(fields: [sceneId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  scene  Scene? @relation(fields: [sceneId], references: [id], onUpdate: Cascade, onDelete: SetNull)
 
   @@index([scriptId, kind])
   @@map("risk_flags")
 }
 
 model PageMetric {
-  scriptId          String  @map("script_id")
-  page              Int
-  sceneLengthLines  Int?    @map("scene_length_lines")
-  dialogueLines     Int?    @map("dialogue_lines")
-  actionLines       Int?    @map("action_lines")
-  tensionScore      Int?    @map("tension_score")
-  complexityScore   Int?    @map("complexity_score")
+  scriptId         String @map("script_id")
+  page             Int
+  sceneLengthLines Int?   @map("scene_length_lines")
+  dialogueLines    Int?   @map("dialogue_lines")
+  actionLines      Int?   @map("action_lines")
+  tensionScore     Int?   @map("tension_score")
+  complexityScore  Int?   @map("complexity_score")
 
   script Script @relation(fields: [scriptId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
@@ -727,6 +728,7 @@ enum BeatKind {
   ACT2_BREAK
   CLIMAX
   RESOLUTION
+
   @@map("beat_kind")
 }
 
@@ -735,6 +737,7 @@ enum TimingFlag {
   ON_TIME
   LATE
   UNKNOWN
+
   @@map("timing_flag")
 }
 
@@ -742,6 +745,7 @@ enum NoteSeverity {
   HIGH
   MEDIUM
   LOW
+
   @@map("note_severity")
 }
 
@@ -756,6 +760,7 @@ enum NoteArea {
   LOGIC
   REPRESENTATION
   LEGAL
+
   @@map("note_area")
 }
 
@@ -763,6 +768,7 @@ enum IntExtEnum {
   INT
   EXT
   INT_EXT @map("INT/EXT")
+
   @@map("int_ext_enum")
 }
 
@@ -772,6 +778,7 @@ enum RiskKind {
   LYRICS
   DEFAMATION_RISK
   LIFE_RIGHTS
+
   @@map("risk_kind")
 }
 
@@ -780,6 +787,7 @@ enum SubplotRole {
   DEVELOP
   CONVERGE
   RESOLVE
+
   @@map("subplot_role")
 }
 
@@ -792,5 +800,6 @@ enum ScoreCategory {
   GENRE_FIT
   ORIGINALITY
   FEASIBILITY
+
   @@map("score_category")
 }
