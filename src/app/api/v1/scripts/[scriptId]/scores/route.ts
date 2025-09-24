@@ -4,9 +4,17 @@ import { requireAuth } from '@/lib/api/auth'
 import { replaceScores } from '@/lib/api/note-service'
 import { validate } from '@/lib/api/validator'
 import { ok, error } from '@/lib/api/response'
+import { getErrorDetails, getErrorMessage, getErrorStatus } from '@/lib/api/errors'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+
+interface ScorePayload {
+  id?: string
+  category: Prisma.ScoreCategory
+  value: number
+  rationale?: string
+}
 
 export async function PUT(
   request: NextRequest,
@@ -15,28 +23,34 @@ export async function PUT(
   try {
     const { userId } = await requireAuth(request)
     const { scriptId } = params
-    const body = await request.json()
+    const body = (await request.json()) as unknown
 
-    if (!body?.scores || !Array.isArray(body.scores)) {
+    if (!body || typeof body !== 'object' || !('scores' in body)) {
       return error('Request body must include a scores array', 400)
     }
 
-    const normalized = body.scores.map((score: any) => {
-      validate('score', score)
+    const scoresInput = (body as { scores?: unknown }).scores
+    if (!Array.isArray(scoresInput)) {
+      return error('Request body must include a scores array', 400)
+    }
+
+    const normalized: ScorePayload[] = scoresInput.map((raw) => {
+      validate('score', raw)
+      const { id, category, value, rationale } = raw as ScorePayload
       return {
-        id: score.id as string | undefined,
-        category: score.category as Prisma.ScoreCategory,
-        value: Number(score.value),
-        rationale: score.rationale as string | undefined
+        id,
+        category,
+        value: Number(value),
+        rationale
       }
     })
 
     const result = await replaceScores(scriptId, userId, normalized)
     return ok(result)
   } catch (err) {
-    const status = (err as any)?.status ?? 500
-    const message = err instanceof Error ? err.message : 'Failed to update scores'
+    const status = getErrorStatus(err)
+    const message = getErrorMessage(err, 'Failed to update scores')
     console.error('Scores update error:', err)
-    return error(message, status, (err as any)?.details)
+    return error(message, status, getErrorDetails(err))
   }
 }

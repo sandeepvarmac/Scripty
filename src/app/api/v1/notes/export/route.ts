@@ -3,26 +3,31 @@ import { ExportService } from '@/lib/exports'
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/api/auth'
 import { getScriptOrThrow } from '@/lib/api/dashboard-service'
-import { ok, error } from '@/lib/api/response'\nimport { getErrorStatus, getErrorMessage, getErrorDetails } from '@/lib/api/errors'
+import { ok, error } from '@/lib/api/response'
+import { getErrorDetails, getErrorMessage, getErrorStatus } from '@/lib/api/errors'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
+type NotesExportFormat = 'pdf' | 'csv'
+
+interface NotesExportBody {
+  scriptId: string
+  format: NotesExportFormat
+  emailTo?: string
+  bundleFormat?: 'individual' | 'zip'
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await requireAuth(request)
-    const body = await request.json()
-    const scriptId: string | undefined = body?.scriptId
-    const format: 'pdf' | 'csv' | undefined = body?.format
+    const body = (await request.json()) as unknown
 
-    if (!scriptId || !format) {
+    if (!isNotesExportBody(body)) {
       return error('scriptId and format are required', 400)
     }
 
-    if (!['pdf', 'csv'].includes(format)) {
-      return error('Only pdf and csv formats are supported for notes export', 400)
-    }
-
+    const { scriptId, format, emailTo, bundleFormat } = body
     await getScriptOrThrow(scriptId, userId)
 
     const exportService = new ExportService(prisma)
@@ -30,8 +35,8 @@ export async function POST(request: NextRequest) {
       type: 'notes',
       format,
       includeMetadata: true,
-      emailTo: body?.emailTo,
-      bundleFormat: body?.bundleFormat ?? 'individual'
+      emailTo,
+      bundleFormat: bundleFormat ?? 'individual'
     }, userId)
 
     return ok({
@@ -43,8 +48,18 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     const status = getErrorStatus(err)
     const message = getErrorMessage(err, 'Failed to export notes')
-    console.error(' error:', err)
-    return error(message, status)
+    console.error('Notes export error:', err)
+    return error(message, status, getErrorDetails(err))
   }
 }
 
+function isNotesExportBody(value: unknown): value is NotesExportBody {
+  if (!value || typeof value !== 'object') return false
+  const data = value as Record<string, unknown>
+  if (typeof data.scriptId !== 'string') return false
+  if (data.scriptId.trim().length === 0) return false
+  if (data.format !== 'pdf' && data.format !== 'csv') return false
+  if (data.emailTo !== undefined && typeof data.emailTo !== 'string') return false
+  if (data.bundleFormat !== undefined && data.bundleFormat !== 'individual' && data.bundleFormat !== 'zip') return false
+  return true
+}

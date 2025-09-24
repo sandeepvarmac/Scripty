@@ -3,7 +3,7 @@ import { ExportService } from '@/lib/exports'
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/api/auth'
 import { getScriptOrThrow } from '@/lib/api/dashboard-service'
-import { ok, error } from '@/lib/api/response'
+import { ok, error } from '@/lib/api/response'\nimport { getErrorDetails, getErrorMessage, getErrorStatus } from '@/lib/api/errors'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -52,3 +52,4 @@ export async function GET(
     return error(message, status)
   }
 }
+

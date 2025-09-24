@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { parseScript } from '@/lib/parsers'
+import { parseScript, parseScriptEnhanced, ScriptFile, NormalizedScript, ParsedScript, Scene } from '@/lib/parsers'
 import { saveScriptToEvidenceStore } from '@/lib/evidence-store'
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/api/auth'
@@ -51,15 +51,25 @@ export async function POST(
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
 
-    const parseResult = await parseScript(buffer, file.name, file.type)
-    if (!parseResult.success || !parseResult.data) {
-      return error(parseResult.error ?? 'Unable to parse file', 422)
+    // Use enhanced multiplexer with proper format detection and password support
+    const scriptFile: ScriptFile = {
+      name: file.name,
+      mime: file.type,
+      bytes: buffer,
+      pdfPassword: pdfPassword || undefined
     }
 
-    // pdf password placeholder (not yet implemented)
-    if (pdfPassword && parseResult.data.format === 'pdf') {
-      // TODO: integrate password-protected PDF pipeline
-      console.warn('PDF password supplied but encrypted parsing is not yet implemented.')
+    const enhancedResult = await parseScriptEnhanced(scriptFile)
+    if (!enhancedResult.success || !enhancedResult.data) {
+      return error(enhancedResult.error ?? 'Unable to parse file', 422)
+    }
+
+    // Convert enhanced result back to legacy format for evidence store
+    const legacyData = convertToLegacyFormat(enhancedResult.data)
+    const parseResult = {
+      success: true,
+      data: legacyData,
+      warnings: enhancedResult.warnings
     }
 
     const savedScript = await saveScriptToEvidenceStore({
@@ -89,3 +99,61 @@ function getExtension(filename: string): string {
   const parts = filename.split('.')
   return parts.length > 1 ? `.${parts.pop()!.toLowerCase()}` : ''
 }
+
+// Convert enhanced NormalizedScript back to legacy ParsedScript format
+function convertToLegacyFormat(normalized: NormalizedScript): ParsedScript {
+  // Convert normalized scenes back to legacy Scene format
+  const scenes: Scene[] = []
+  normalized.scenes.forEach((scene, sceneIndex) => {
+    scene.elements.forEach((element, elementIndex) => {
+      scenes.push({
+        id: `${scene.id}-${elementIndex}`,
+        type: mapElementToSceneType(element.kind),
+        content: element.text,
+        pageNumber: scene.pageStart || 1,
+        lineNumber: sceneIndex * 10 + elementIndex,
+        character: 'character' in element ? element.character : undefined,
+        sceneNumber: scene.number?.toString(),
+        confidence: element.confidence
+      })
+    })
+  })
+
+  const characters = normalized.characters.map(c => c.name)
+
+  return {
+    title: normalized.title,
+    author: normalized.author,
+    format: normalized.format.toLowerCase() as 'fdx' | 'fountain' | 'pdf',
+    pageCount: normalized.pages || 1,
+    scenes,
+    characters,
+    metadata: {
+      parsedAt: normalized.meta.parsedAt,
+      originalFilename: normalized.meta.originalFilename,
+      fileSize: normalized.meta.bytes,
+      titlePageDetected: !!normalized.title,
+      bodyPages: normalized.pages ? normalized.pages - (normalized.title ? 1 : 0) : 1,
+      renderingMethod: `enhanced-${normalized.format.toLowerCase()}-multiplexer`,
+      qualityIndicators: {
+        hasProperFormatting: normalized.meta.confidence > 0.8,
+        hasConsistentMargins: true,
+        hasStandardElements: true,
+        ocrConfidence: normalized.meta.usedOCR ? normalized.meta.confidence : undefined
+      }
+    }
+  }
+}
+
+function mapElementToSceneType(kind: string): 'scene' | 'action' | 'dialogue' | 'character' | 'parenthetical' | 'transition' {
+  const mapping: Record<string, any> = {
+    'SCENE_HEADING': 'scene',
+    'ACTION': 'action',
+    'DIALOGUE': 'dialogue',
+    'TRANSITION': 'transition',
+    'PARENTHETICAL': 'parenthetical',
+    'SHOT': 'action'
+  }
+  return mapping[kind] || 'action'
+}
+

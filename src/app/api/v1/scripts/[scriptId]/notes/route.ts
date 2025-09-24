@@ -4,9 +4,23 @@ import { requireAuth } from '@/lib/api/auth'
 import { bulkUpsertNotes } from '@/lib/api/note-service'
 import { validate } from '@/lib/api/validator'
 import { ok, error } from '@/lib/api/response'
+import { getErrorDetails, getErrorMessage, getErrorStatus } from '@/lib/api/errors'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+
+interface NotePayload {
+  id?: string
+  severity: Prisma.NoteSeverity
+  area: Prisma.NoteArea
+  scene_id?: string
+  page?: number
+  line_ref?: number
+  excerpt?: string
+  suggestion?: string
+  apply_hook?: Record<string, unknown>
+  rule_code?: string
+}
 
 export async function POST(
   request: NextRequest,
@@ -15,34 +29,51 @@ export async function POST(
   try {
     const { userId } = await requireAuth(request)
     const { scriptId } = params
-    const body = await request.json()
+    const body = (await request.json()) as unknown
 
-    if (!body?.notes || !Array.isArray(body.notes)) {
+    if (!body || typeof body !== 'object' || !('notes' in body)) {
       return error('Request body must include a notes array', 400)
     }
 
-    const normalized = body.notes.map((note: any) => {
-      validate('note', note)
+    const notesInput = (body as { notes?: unknown }).notes
+    if (!Array.isArray(notesInput)) {
+      return error('Request body must include a notes array', 400)
+    }
+
+    const normalized: NotePayload[] = notesInput.map((raw) => {
+      validate('note', raw)
+      const {
+        id,
+        severity,
+        area,
+        scene_id,
+        page,
+        line_ref,
+        excerpt,
+        suggestion,
+        apply_hook,
+        rule_code
+      } = raw as NotePayload
       return {
-        id: note.id as string | undefined,
-        severity: note.severity as Prisma.NoteSeverity,
-        area: note.area as Prisma.NoteArea,
-        scene_id: note.scene_id as string | undefined,
-        page: note.page as number | undefined,
-        line_ref: note.line_ref as number | undefined,
-        excerpt: note.excerpt as string | undefined,
-        suggestion: note.suggestion as string | undefined,
-        apply_hook: note.apply_hook as Record<string, unknown> | undefined,
-        rule_code: note.rule_code as string | undefined
+        id,
+        severity,
+        area,
+        scene_id,
+        page,
+        line_ref,
+        excerpt,
+        suggestion,
+        apply_hook,
+        rule_code
       }
     })
 
     const result = await bulkUpsertNotes(scriptId, userId, normalized)
     return ok(result)
   } catch (err) {
-    const status = (err as any)?.status ?? 500
-    const message = err instanceof Error ? err.message : 'Failed to upsert notes'
+    const status = getErrorStatus(err)
+    const message = getErrorMessage(err, 'Failed to upsert notes')
     console.error('Notes upsert error:', err)
-    return error(message, status, (err as any)?.details)
+    return error(message, status, getErrorDetails(err))
   }
 }

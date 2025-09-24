@@ -36,7 +36,7 @@ interface PageDimensions {
   height: number
 }
 
-export async function parseEnhancedPdfFile(file: Buffer, filename: string): Promise<ParserResult> {
+export async function parseEnhancedPdfFile(file: Buffer, filename: string, opts?: { pdfPassword?: string }): Promise<ParserResult> {
   try {
     // Step 1: Validate PDF format
     if (!isPdfFormat(file)) {
@@ -52,10 +52,25 @@ export async function parseEnhancedPdfFile(file: Buffer, filename: string): Prom
     let pageCount: number
 
     if (hasTextLayer) {
-      // Extract text directly from PDF
-      const pdfData = await pdfParse(file)
-      textContent = pdfData.text
-      pageCount = pdfData.numpages
+      // Extract text directly from PDF with password support
+      try {
+        const pdfOptions: any = {}
+        if (opts?.pdfPassword) {
+          pdfOptions.password = opts.pdfPassword
+        }
+        const pdfData = await pdfParse(file, pdfOptions)
+        textContent = pdfData.text
+        pageCount = pdfData.numpages
+      } catch (error: any) {
+        if (error.message?.includes('password') || error.message?.includes('encrypted')) {
+          return {
+            success: false,
+            error: 'PDF is password-protected. Please provide the correct password.',
+            warnings: ['This PDF requires a password to be parsed']
+          }
+        }
+        throw error
+      }
     } else {
       // Use OCR for scanned PDFs
       const ocrResult = await performOCR(file)
