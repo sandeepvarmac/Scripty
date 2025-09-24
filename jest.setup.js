@@ -29,14 +29,22 @@ jest.mock('next/router', () => ({
 }))
 
 // Mock environment variables
-process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test_scriptyboy'
+process.env.DATABASE_URL = 'file:./test.db'
 process.env.OPENAI_API_KEY = 'test-key'
 process.env.NEXTAUTH_SECRET = 'test-secret'
 process.env.NEXTAUTH_URL = 'http://localhost:3000'
 
 // Setup test database
 beforeAll(async () => {
-  // Database setup would go here in a real implementation
+  // Create test database if needed
+  const { PrismaClient } = require('@prisma/client')
+  const prisma = new PrismaClient()
+
+  try {
+    await prisma.$connect()
+  } catch (error) {
+    console.warn('Could not connect to test database:', error.message)
+  }
 })
 
 afterAll(async () => {

@@ -75,7 +75,13 @@ export async function saveScriptToEvidenceStore(
         lineNumber: scene.lineNumber,
         character: scene.character,
         orderIndex: index,
-        wordCount: scene.content ? scene.content.split(' ').length : 0
+        wordCount: scene.content ? scene.content.split(' ').length : 0,
+        // Enhanced scene information from slug parsing
+        intExt: scene.slugInfo?.intExt === 'INT' ? 'INT' :
+                scene.slugInfo?.intExt === 'EXT' ? 'EXT' :
+                scene.slugInfo?.intExt === 'INT/EXT' ? 'INT_EXT' : null,
+        location: scene.slugInfo?.location,
+        tod: scene.slugInfo?.tod
       }))
 
       // Use createMany for much better performance
@@ -170,6 +176,113 @@ export async function getScriptWithScenes(scriptId: string, userId: string) {
       analyses: {
         where: { deletedAt: null },
         orderBy: { startedAt: 'desc' }
+      }
+    }
+  })
+}
+
+// Get script with complete MVP data for enhanced analysis
+export async function getScriptWithEnhancedData(scriptId: string, userId: string) {
+  return await prisma.script.findFirst({
+    where: {
+      id: scriptId,
+      userId,
+      deletedAt: null
+    },
+    include: {
+      project: {
+        select: {
+          id: true,
+          name: true,
+          type: true,
+          genre: true,
+          targetAudience: true,
+          targetBudget: true,
+          developmentStage: true
+        }
+      },
+      scenes: {
+        where: { deletedAt: null },
+        orderBy: { orderIndex: 'asc' },
+        include: {
+          evidences: {
+            where: { deletedAt: null },
+            orderBy: [{ confidence: 'desc' }, { createdAt: 'desc' }]
+          },
+          elements: {
+            orderBy: { orderIndex: 'asc' }
+          },
+          notes: {
+            orderBy: { createdAt: 'desc' }
+          },
+          feasibility: true,
+          characterLinks: {
+            include: {
+              character: true
+            }
+          },
+          themeAlignment: true,
+          riskFlags: {
+            orderBy: { confidence: 'desc' }
+          },
+          subplotSpans: {
+            include: {
+              subplot: true
+            }
+          }
+        }
+      },
+      characters: {
+        where: { deletedAt: null },
+        orderBy: { dialogueCount: 'desc' },
+        include: {
+          sceneLinks: {
+            include: {
+              scene: true
+            }
+          }
+        }
+      },
+      analyses: {
+        where: { deletedAt: null },
+        orderBy: { startedAt: 'desc' }
+      },
+      beats: {
+        orderBy: { page: 'asc' }
+      },
+      notes: {
+        orderBy: [
+          { severity: 'desc' },
+          { createdAt: 'desc' }
+        ],
+        include: {
+          scene: true,
+          evidence: true
+        }
+      },
+      scores: {
+        orderBy: { category: 'asc' }
+      },
+      pageMetrics: {
+        orderBy: { page: 'asc' }
+      },
+      themeStatements: {
+        orderBy: { confidence: 'desc' }
+      },
+      riskFlags: {
+        orderBy: { confidence: 'desc' },
+        include: {
+          scene: true
+        }
+      },
+      subplots: {
+        include: {
+          spans: {
+            include: {
+              scene: true
+            }
+          }
+        }
       }
     }
   })
