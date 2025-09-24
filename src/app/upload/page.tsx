@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { MultiSelect, type Option } from "@/components/ui/multi-select"
 import { Upload, FileText, AlertCircle, CheckCircle, X, ArrowLeft, User, Settings, LogOut, Search, HelpCircle, Bell, CreditCard, Plus, Folder } from "lucide-react"
 import { useRouter } from "next/navigation"
+import FileValidationDialog from '@/components/upload/file-validation-dialog'
 
 // Common screenplay genres
 const GENRE_OPTIONS: Option[] = [
@@ -79,6 +80,13 @@ interface ProjectFormData {
   targetAudience: string
   developmentStage: string
 }
+
+interface FileValidationError {
+  fileName: string
+  error: string
+  fileSize?: number
+  fileExtension?: string
+}
 type UploadResponsePayload = {
   error?: string
   warnings?: string[]
@@ -128,6 +136,10 @@ export default function UploadPage() {
     targetAudience: 'General Audiences',
     developmentStage: 'FIRST_DRAFT'
   })
+
+  // File validation dialog state
+  const [validationDialogOpen, setValidationDialogOpen] = React.useState(false)
+  const [validationErrors, setValidationErrors] = React.useState<FileValidationError[]>([])
 
   React.useEffect(() => {
     fetchUserData()
@@ -257,19 +269,33 @@ export default function UploadPage() {
 
   // File validation
   const validateFile = (file: File) => {
-    const allowedTypes = ['.fdx', '.fountain', '.pdf']
+    const allowedTypes = ['.fdx', '.fountain', '.pdf', '.txt']
     const maxSize = 10 * 1024 * 1024 // 10MB
     const extension = '.' + file.name.split('.').pop()?.toLowerCase()
 
     if (!allowedTypes.includes(extension)) {
-      return { valid: false, error: `File type ${extension} not supported. Please upload .fdx, .fountain, or .pdf files.` }
+      return {
+        valid: false,
+        error: `File type ${extension} is not supported. Please upload a screenplay in one of the supported formats.`,
+        fileExtension: extension
+      }
     }
 
     if (file.size > maxSize) {
-      return { valid: false, error: `File size ${(file.size / 1024 / 1024).toFixed(1)}MB exceeds 10MB limit.` }
+      return {
+        valid: false,
+        error: `File size ${(file.size / 1024 / 1024).toFixed(1)}MB exceeds the 10MB limit.`,
+        fileSize: file.size
+      }
     }
 
     return { valid: true }
+  }
+
+  // Show validation errors in dialog
+  const showValidationErrors = (errors: FileValidationError[]) => {
+    setValidationErrors(errors)
+    setValidationDialogOpen(true)
   }
 
   // Handle drag events
@@ -292,15 +318,25 @@ export default function UploadPage() {
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const droppedFiles = Array.from(e.dataTransfer.files)
       const validFiles: File[] = []
+      const errors: FileValidationError[] = []
 
       droppedFiles.forEach(file => {
         const validation = validateFile(file)
         if (validation.valid) {
           validFiles.push(file)
         } else {
-          alert(validation.error)
+          errors.push({
+            fileName: file.name,
+            error: validation.error,
+            fileSize: file.size,
+            fileExtension: validation.fileExtension
+          })
         }
       })
+
+      if (errors.length > 0) {
+        showValidationErrors(errors)
+      }
 
       setFiles(validFiles)
     }
@@ -311,15 +347,25 @@ export default function UploadPage() {
     if (e.target.files && e.target.files[0]) {
       const selectedFiles = Array.from(e.target.files)
       const validFiles: File[] = []
+      const errors: FileValidationError[] = []
 
       selectedFiles.forEach(file => {
         const validation = validateFile(file)
         if (validation.valid) {
           validFiles.push(file)
         } else {
-          alert(validation.error)
+          errors.push({
+            fileName: file.name,
+            error: validation.error,
+            fileSize: file.size,
+            fileExtension: validation.fileExtension
+          })
         }
       })
+
+      if (errors.length > 0) {
+        showValidationErrors(errors)
+      }
 
       setFiles(validFiles)
     }
@@ -924,7 +970,7 @@ export default function UploadPage() {
             <CardHeader>
               <CardTitle>Select Your Script File</CardTitle>
               <CardDescription>
-                Supports Final Draft (.fdx), Fountain (.fountain), and PDF files up to 10MB
+                Supports Final Draft (.fdx), Fountain (.fountain), Plain Text (.txt), and PDF files up to 10MB
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -950,7 +996,7 @@ export default function UploadPage() {
                   <input
                     type="file"
                     multiple
-                    accept=".fdx,.fountain,.pdf"
+                    accept=".fdx,.fountain,.pdf,.txt"
                     onChange={handleFileSelect}
                     className="hidden"
                     id="file-upload"
@@ -972,6 +1018,7 @@ export default function UploadPage() {
                   <div className="mt-6 text-sm text-muted-foreground">
                     <p>✓ Final Draft (.fdx) - Best for analysis</p>
                     <p>✓ Fountain (.fountain) - Plain text format</p>
+                    <p>✓ Plain Text (.txt) - Screenplay format</p>
                     <p>✓ PDF - Will be processed with OCR</p>
                     <p>✓ Maximum file size: 10MB</p>
                   </div>
@@ -1064,6 +1111,22 @@ export default function UploadPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* File Validation Dialog */}
+        <FileValidationDialog
+          open={validationDialogOpen}
+          onOpenChange={setValidationDialogOpen}
+          errors={validationErrors}
+          onTryAgain={() => {
+            // Clear current files and reset file input
+            setFiles([])
+            const fileInput = document.getElementById('file-upload') as HTMLInputElement
+            if (fileInput) {
+              fileInput.value = ''
+              fileInput.click()
+            }
+          }}
+        />
       </AppContent>
     </AppShell>
   )
