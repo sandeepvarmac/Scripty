@@ -33,7 +33,7 @@ const customJestConfig = {
       statements: 70
     }
   },
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   testTimeout: 60000, // 60 seconds for LLM-dependent tests

@@ -4,7 +4,6 @@
 
 import crypto from 'crypto'
 import { parseFdxFile } from './fdx'
-import { parseFountainFile } from './fountain'
 import { parseEnhancedFountainFile } from './fountain-enhanced'
 import { parseEnhancedPdfFile } from './pdf-enhanced'
 
@@ -115,6 +114,12 @@ export interface Scene {
   character?: string
   sceneNumber?: string
   confidence?: number
+  // Enhanced scene information
+  slugInfo?: {
+    intExt?: string
+    location?: string
+    tod?: string
+  }
 }
 
 // Enhanced file input interface

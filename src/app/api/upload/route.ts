@@ -3,6 +3,7 @@ import { parseScript } from '@/lib/parsers'
 import { saveScriptToEvidenceStore } from '@/lib/evidence-store'
 import { RealAuthService } from '@/lib/auth/real-auth-service'
 import { prisma } from '@/lib/prisma'
+import { assessScreenplayQuality } from '@/lib/quality/screenplay-quality'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -77,12 +78,22 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate file type
-    const allowedExtensions = ['.fdx', '.fountain', '.pdf']
+    const allowedExtensions = ['.fdx', '.fountain', '.pdf', '.txt']
     const extension = '.' + file.name.split('.').pop()?.toLowerCase()
 
     if (!allowedExtensions.includes(extension)) {
       return NextResponse.json(
-        { error: `Unsupported file type. Please upload ${allowedExtensions.join(', ')} files.` },
+        {
+          error: 'Please upload a screenplay file in one of these supported formats:',
+          supportedFormats: [
+            { extension: '.fountain', description: 'Fountain format (recommended)' },
+            { extension: '.fdx', description: 'Final Draft format' },
+            { extension: '.pdf', description: 'PDF screenplay' },
+            { extension: '.txt', description: 'Plain text screenplay' }
+          ],
+          rejectedFormat: extension,
+          message: `Files with extension '${extension}' are not supported. Other document formats (.docx, .doc, .rtf) cannot be processed.`
+        },
         { status: 400 }
       )
     }
@@ -110,6 +121,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Assess screenplay quality
+    const qualityAssessment = assessScreenplayQuality(parseResult.data!)
+
     // Use authenticated user ID
     const userId = user.id
 
@@ -120,12 +134,13 @@ export async function POST(request: NextRequest) {
       parsedScript: parseResult.data!
     })
 
-    // Return saved script data
+    // Return saved script data with quality assessment
     return NextResponse.json({
       success: true,
       data: {
         script: savedScript,
-        parsed: parseResult.data
+        parsed: parseResult.data,
+        qualityAssessment
       },
       warnings: parseResult.warnings
     })

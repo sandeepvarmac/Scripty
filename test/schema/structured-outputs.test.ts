@@ -2,21 +2,29 @@ import { describe, test, expect } from '@jest/globals'
 import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
 import {
-  beatSchema,
-  noteSchema,
-  scoreSchema,
-  riskFlagSchema,
-  feasibilityMetricSchema,
-  themeStatementSchema,
-  pageMetricSchema
+  BeatSchema as beatSchema,
+  NoteSchema as noteSchema,
+  ScoreSchema as scoreSchema,
+  RiskFlagSchema as riskFlagSchema,
+  FeasibilityMetricSchema as feasibilityMetricSchema,
+  ThemeStatementSchema as themeStatementSchema,
+  PageMetricSchema as pageMetricSchema
 } from '@/lib/llm/schemas'
 
 const ajv = new Ajv({ allErrors: true })
 addFormats(ajv)
 
+// Compile all validators at module level for reuse
+const validateBeat = ajv.compile(beatSchema)
+const validateNote = ajv.compile(noteSchema)
+const validateScore = ajv.compile(scoreSchema)
+const validateRiskFlag = ajv.compile(riskFlagSchema)
+const validateFeasibilityMetric = ajv.compile(feasibilityMetricSchema)
+const validateThemeStatement = ajv.compile(themeStatementSchema)
+const validatePageMetric = ajv.compile(pageMetricSchema)
+
 describe('Structured Output Schema Validation', () => {
   describe('Beat Schema Validation', () => {
-    const validateBeat = ajv.compile(beatSchema)
 
     test('should validate correct beat structure', () => {
       const validBeat = {
@@ -102,7 +110,6 @@ describe('Structured Output Schema Validation', () => {
   })
 
   describe('Note Schema Validation', () => {
-    const validateNote = ajv.compile(noteSchema)
 
     test('should validate correct note structure', () => {
       const validNote = {
@@ -184,7 +191,6 @@ describe('Structured Output Schema Validation', () => {
   })
 
   describe('Score Schema Validation', () => {
-    const validateScore = ajv.compile(scoreSchema)
 
     test('should validate correct score structure', () => {
       const validScore = {
@@ -251,7 +257,6 @@ describe('Structured Output Schema Validation', () => {
   })
 
   describe('Risk Flag Schema Validation', () => {
-    const validateRiskFlag = ajv.compile(riskFlagSchema)
 
     test('should validate correct risk flag structure', () => {
       const validRiskFlag = {
@@ -292,7 +297,6 @@ describe('Structured Output Schema Validation', () => {
   })
 
   describe('Feasibility Metric Schema Validation', () => {
-    const validateFeasibilityMetric = ajv.compile(feasibilityMetricSchema)
 
     test('should validate correct feasibility metric structure', () => {
       const validMetric = {
@@ -335,7 +339,6 @@ describe('Structured Output Schema Validation', () => {
   })
 
   describe('Theme Statement Schema Validation', () => {
-    const validateThemeStatement = ajv.compile(themeStatementSchema)
 
     test('should validate correct theme statement structure', () => {
       const validTheme = {
@@ -368,7 +371,6 @@ describe('Structured Output Schema Validation', () => {
   })
 
   describe('Page Metric Schema Validation', () => {
-    const validatePageMetric = ajv.compile(pageMetricSchema)
 
     test('should validate correct page metric structure', () => {
       const validMetric = {

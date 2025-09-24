@@ -310,19 +310,64 @@ function paginateElements(elements: RenderedElement[]): { pages: RenderedElement
 
 function convertToScenes(elements: RenderedElement[]): Scene[] {
   const scenes: Scene[] = []
+  let currentScene: Scene | null = null
   let lineNumber = 1
   let pageNumber = 1
+  let sceneCounter = 1
 
   for (const element of elements) {
-    scenes.push({
-      id: `${element.type}-${scenes.length + 1}`,
-      type: mapElementTypeToSceneType(element.type),
-      content: element.content,
-      pageNumber,
-      lineNumber,
-      character: element.character,
-      sceneNumber: element.type === 'scene_heading' ? extractSceneNumber(element.content) : undefined
-    })
+    // Start a new scene when we encounter a scene heading
+    if (element.type === 'scene_heading') {
+      // Save the previous scene if it exists
+      if (currentScene) {
+        scenes.push(currentScene)
+      }
+
+      // Parse scene slug for INT/EXT, location, and time-of-day
+      const slugInfo = parseSceneSlug(element.content)
+
+      // Create new scene with just the scene heading
+      currentScene = {
+        id: `scene-${sceneCounter}`,
+        type: 'scene',  // This represents an actual scene
+        content: element.content,
+        pageNumber,
+        lineNumber,
+        sceneNumber: extractSceneNumber(element.content),
+        // Store parsed slug information for later use in scene creation
+        slugInfo
+      }
+      sceneCounter++
+    }
+    // If we have a current scene, append content to it
+    else if (currentScene) {
+      // Append other elements (action, dialogue, etc.) to the current scene content
+      currentScene.content += '\n\n' + element.content
+
+      // Update character if this is dialogue
+      if (element.type === 'dialogue' && element.character) {
+        // For scenes with multiple characters, we'll track the first speaking character
+        if (!currentScene.character) {
+          currentScene.character = element.character
+        }
+      }
+    }
+    // If we encounter non-scene elements before any scene heading, create a default scene
+    else {
+      currentScene = {
+        id: `scene-${sceneCounter}`,
+        type: 'scene',
+        content: element.content,
+        pageNumber,
+        lineNumber,
+        sceneNumber: undefined
+      }
+      sceneCounter++
+
+      if (element.character) {
+        currentScene.character = element.character
+      }
+    }
 
     lineNumber += element.lines.length + 1 // +1 for blank line
 
@@ -330,6 +375,11 @@ function convertToScenes(elements: RenderedElement[]): Scene[] {
     if (lineNumber > pageNumber * 55) {
       pageNumber++
     }
+  }
+
+  // Don't forget to add the last scene
+  if (currentScene) {
+    scenes.push(currentScene)
   }
 
   return scenes
@@ -340,7 +390,17 @@ function extractCharacters(elements: RenderedElement[]): string[] {
 
   elements.forEach(element => {
     if (element.character) {
-      characters.add(element.character)
+      // Clean up character names - remove (O.S), (V.O), (CONT'D), etc.
+      const cleanName = element.character
+        .replace(/\s*\(O\.S\)/gi, '')
+        .replace(/\s*\(V\.O\)/gi, '')
+        .replace(/\s*\(CONT'D\)/gi, '')
+        .replace(/\s*\(.*\)/g, '') // Remove any other parentheticals
+        .trim()
+
+      if (cleanName && cleanName.length > 0) {
+        characters.add(cleanName)
+      }
     }
   })
 
@@ -387,7 +447,32 @@ function isCharacterCue(line: string, nextLine?: string): boolean {
   // Exclude scene headings and transitions
   if (isSceneHeading(line) || isTransition(line)) return false
 
-  return true
+  // Exclude action descriptions that are all caps
+  const commonActionWords = [
+    'CUT TO:', 'FADE IN:', 'FADE OUT:', 'DISSOLVE TO:', 'SMASH CUT TO:',
+    'A MOMENT LATER', 'LATER', 'MEANWHILE', 'SUDDENLY', 'THEN',
+    'THE END', 'TITLE CARD:', 'SUPER:', 'INSERT:', 'CLOSE UP:',
+    'WIDE SHOT:', 'MEDIUM SHOT:', 'TIGHT SHOT:', 'ESTABLISHING SHOT:',
+    'MONTAGE:', 'SERIES OF SHOTS:'
+  ]
+
+  // Check if it looks like an action description
+  if (commonActionWords.some(word => line.includes(word))) {
+    return false
+  }
+
+  // Must contain only letters, spaces, periods, and common character name symbols
+  if (!/^[A-Z\s\.\(\)]+$/.test(line)) {
+    return false
+  }
+
+  // Next line should look like dialogue (mixed case) or parenthetical
+  const isNextDialogue = trimmedNext !== trimmedNext.toUpperCase() &&
+                        !isSceneHeading(trimmedNext) &&
+                        !isTransition(trimmedNext)
+  const isNextParenthetical = trimmedNext.startsWith('(') && trimmedNext.endsWith(')')
+
+  return isNextDialogue || isNextParenthetical
 }
 
 function wrapText(text: string, maxWidth: number): string[] {
@@ -428,6 +513,38 @@ function mapElementTypeToSceneType(type: string): string {
 function extractSceneNumber(line: string): string | undefined {
   const matches = line.match(/^(\d+[A-Z]?)\s+/) || line.match(/\s+(\d+[A-Z]?)$/)
   return matches?.[1]
+}
+
+function parseSceneSlug(line: string): { intExt?: string; location?: string; tod?: string } {
+  // Remove any scene number prefix
+  const cleanLine = line.replace(/^\d+[A-Z]?\s*/, '')
+
+  // Match pattern: INT./EXT. LOCATION - TIME
+  const slugMatch = cleanLine.match(/^(INT\.?|EXT\.?|INT\/EXT\.?)\s+(.+?)\s*-\s*(.+)$/i)
+
+  if (slugMatch) {
+    const [, intExt, location, tod] = slugMatch
+    return {
+      intExt: intExt.replace('.', '').toUpperCase(),
+      location: location.trim(),
+      tod: tod.trim().toUpperCase()
+    }
+  }
+
+  // Try to match just INT./EXT. LOCATION (no time)
+  const simpleMatch = cleanLine.match(/^(INT\.?|EXT\.?|INT\/EXT\.?)\s+(.+)$/i)
+  if (simpleMatch) {
+    const [, intExt, location] = simpleMatch
+    return {
+      intExt: intExt.replace('.', '').toUpperCase(),
+      location: location.trim()
+    }
+  }
+
+  // If it doesn't match standard format, treat the whole line as location
+  return {
+    location: cleanLine.trim()
+  }
 }
 
 function extractInlineTitle(lines: string[]): string | undefined {
