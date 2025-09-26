@@ -80,7 +80,7 @@ export function CharactersDashboard({ script, dashboardData }: CharactersDashboa
   // Character notes
   const characterNotes = notes.filter((note: any) => note.area === 'CHARACTER')
 
-  const COLORS = ['#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
+  const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))', 'hsl(var(--primary))']
 
   return (
     <div className="space-y-6">
@@ -88,20 +88,20 @@ export function CharactersDashboard({ script, dashboardData }: CharactersDashboa
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <Users className="w-8 h-8 text-brand-600" />
+            <Users className="w-8 h-8 text-primary" />
             <div>
-              <p className="text-sm text-gray-600">Total Characters</p>
-              <p className="text-2xl font-bold text-gray-900">{characterStats.length}</p>
+              <p className="text-sm text-muted-foreground">Total Characters</p>
+              <p className="text-2xl font-bold text-foreground">{characterStats.length}</p>
             </div>
           </div>
         </Card>
 
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <MessageCircle className="w-8 h-8 text-success-600" />
+            <MessageCircle className="w-8 h-8 text-success" />
             <div>
-              <p className="text-sm text-gray-600">Main Characters</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm text-muted-foreground">Main Characters</p>
+              <p className="text-2xl font-bold text-foreground">
                 {characterStats.filter(c => c.totalLines > 20).length}
               </p>
             </div>
@@ -110,10 +110,10 @@ export function CharactersDashboard({ script, dashboardData }: CharactersDashboa
 
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <TrendingUp className="w-8 h-8 text-warning-600" />
+            <TrendingUp className="w-8 h-8 text-warning" />
             <div>
-              <p className="text-sm text-gray-600">Dialogue Distribution</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm text-muted-foreground">Dialogue Distribution</p>
+              <p className="text-2xl font-bold text-foreground">
                 {characterStats.length > 0 ?
                   Math.round((characterStats[0]?.totalLines / characterStats.reduce((sum, c) => sum + c.totalLines, 0)) * 100) : 0}%
               </p>
@@ -123,10 +123,10 @@ export function CharactersDashboard({ script, dashboardData }: CharactersDashboa
 
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <BarChart3 className="w-8 h-8 text-danger-600" />
+            <BarChart3 className="w-8 h-8 text-destructive" />
             <div>
-              <p className="text-sm text-gray-600">Character Notes</p>
-              <p className="text-2xl font-bold text-gray-900">{characterNotes.length}</p>
+              <p className="text-sm text-muted-foreground">Character Notes</p>
+              <p className="text-2xl font-bold text-foreground">{characterNotes.length}</p>
             </div>
           </div>
         </Card>
@@ -148,7 +148,7 @@ export function CharactersDashboard({ script, dashboardData }: CharactersDashboa
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="totalLines" fill="#8b5cf6" />
+                  <Bar dataKey="totalLines" className="fill-primary" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -198,13 +198,13 @@ export function CharactersDashboard({ script, dashboardData }: CharactersDashboa
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className={`w-4 h-4 rounded-full`} style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
-                    <h4 className="font-semibold text-gray-900">{character.name}</h4>
+                    <h4 className="font-semibold text-foreground">{character.name}</h4>
                     <Badge variant="outline">
                       {character.totalLines > 50 ? 'Lead' :
                        character.totalLines > 20 ? 'Supporting' : 'Minor'}
                     </Badge>
                   </div>
-                  <div className="text-right text-sm text-gray-600">
+                  <div className="text-right text-sm text-muted-foreground">
                     <p>{character.totalLines} lines</p>
                     <p>{character.totalWords} words</p>
                   </div>
@@ -212,35 +212,35 @@ export function CharactersDashboard({ script, dashboardData }: CharactersDashboa
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                   <div>
-                    <p className="text-gray-600 mb-1">Dialogue Lines</p>
+                    <p className="text-muted-foreground mb-1">Dialogue Lines</p>
                     <div className="flex items-center gap-2">
                       <Progress
                         value={(character.totalLines / Math.max(...characterStats.map(c => c.totalLines))) * 100}
                         className="h-2 flex-1"
                       />
-                      <span className="text-gray-900 font-medium">{character.totalLines}</span>
+                      <span className="text-foreground font-medium">{character.totalLines}</span>
                     </div>
                   </div>
 
                   <div>
-                    <p className="text-gray-600 mb-1">Word Count</p>
+                    <p className="text-muted-foreground mb-1">Word Count</p>
                     <div className="flex items-center gap-2">
                       <Progress
                         value={(character.totalWords / Math.max(...characterStats.map(c => c.totalWords))) * 100}
                         className="h-2 flex-1"
                       />
-                      <span className="text-gray-900 font-medium">{character.totalWords}</span>
+                      <span className="text-foreground font-medium">{character.totalWords}</span>
                     </div>
                   </div>
 
                   <div>
-                    <p className="text-gray-600 mb-1">Scene Presence</p>
+                    <p className="text-muted-foreground mb-1">Scene Presence</p>
                     <div className="flex items-center gap-2">
                       <Progress
                         value={(character.scenesAppeared / Math.max(...characterStats.map(c => c.scenesAppeared))) * 100}
                         className="h-2 flex-1"
                       />
-                      <span className="text-gray-900 font-medium">{character.scenesAppeared} scenes</span>
+                      <span className="text-foreground font-medium">{character.scenesAppeared} scenes</span>
                     </div>
                   </div>
                 </div>
@@ -260,14 +260,14 @@ export function CharactersDashboard({ script, dashboardData }: CharactersDashboa
           <div className="space-y-4">
             {/* Legend */}
             <div className="flex items-center gap-4 text-sm">
-              <span className="text-gray-600">Characters:</span>
+              <span className="text-muted-foreground">Characters:</span>
               {characterStats.slice(0, 6).map((char, index) => (
                 <div key={char.id} className="flex items-center gap-2">
                   <div
                     className="w-3 h-3 rounded-full"
                     style={{ backgroundColor: COLORS[index % COLORS.length] }}
                   ></div>
-                  <span className="text-gray-700">{char.name}</span>
+                  <span className="text-foreground">{char.name}</span>
                 </div>
               ))}
             </div>
@@ -276,19 +276,19 @@ export function CharactersDashboard({ script, dashboardData }: CharactersDashboa
             <div className="grid grid-cols-10 md:grid-cols-20 gap-1">
               {presenceGrid.map((scene, sceneIndex) => (
                 <div key={sceneIndex} className="space-y-1">
-                  <div className="text-xs text-center text-gray-500 mb-1">{scene.scene}</div>
+                  <div className="text-xs text-center text-muted-foreground mb-1">{scene.scene}</div>
                   {Array.from({ length: Math.min(6, characterStats.length) }, (_, charIndex) => (
                     <div
                       key={charIndex}
                       className={`w-4 h-2 rounded-sm ${
                         scene[`char_${charIndex}`]
                           ? 'opacity-100'
-                          : 'opacity-20 bg-gray-200'
+                          : 'opacity-20 bg-muted'
                       }`}
                       style={{
                         backgroundColor: scene[`char_${charIndex}`]
                           ? COLORS[charIndex % COLORS.length]
-                          : '#e5e7eb'
+                          : 'hsl(var(--muted))'
                       }}
                     ></div>
                   ))}
@@ -309,26 +309,26 @@ export function CharactersDashboard({ script, dashboardData }: CharactersDashboa
           <CardContent>
             <div className="space-y-4">
               {characterNotes.map((note: any, index: number) => (
-                <div key={index} className="border-l-4 border-brand-200 pl-4 space-y-2">
+                <div key={index} className="border-l-4 border-primary/20 pl-4 space-y-2">
                   <div className="flex items-start justify-between">
-                    <span className="font-medium text-gray-900">Character Development</span>
+                    <span className="font-medium text-foreground">Character Development</span>
                     <Badge variant={note.severity === 'HIGH' ? 'destructive' :
                                   note.severity === 'MEDIUM' ? 'default' : 'secondary'}>
                       {note.severity}
                     </Badge>
                   </div>
                   {note.excerpt && (
-                    <p className="text-sm text-gray-700 bg-gray-50 p-2 rounded italic">
+                    <p className="text-sm text-foreground bg-muted p-2 rounded italic">
                       "{note.excerpt}"
                     </p>
                   )}
                   {note.suggestion && (
-                    <p className="text-sm text-gray-600 leading-relaxed">
+                    <p className="text-sm text-muted-foreground leading-relaxed">
                       <strong>Suggestion:</strong> {note.suggestion}
                     </p>
                   )}
                   {note.page && (
-                    <p className="text-xs text-gray-500">Page {note.page}</p>
+                    <p className="text-xs text-muted-foreground">Page {note.page}</p>
                   )}
                 </div>
               ))}
@@ -352,23 +352,23 @@ export function CharactersDashboard({ script, dashboardData }: CharactersDashboa
                     className="w-3 h-3 rounded-full"
                     style={{ backgroundColor: COLORS[index % COLORS.length] }}
                   ></div>
-                  <h4 className="font-medium text-gray-900">{character.name}</h4>
+                  <h4 className="font-medium text-foreground">{character.name}</h4>
                 </div>
 
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Role Significance</span>
+                    <span className="text-muted-foreground">Role Significance</span>
                     <span className="font-medium">
                       {character.totalLines > 50 ? 'Primary' :
                        character.totalLines > 20 ? 'Secondary' : 'Minor'}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Story Presence</span>
+                    <span className="text-muted-foreground">Story Presence</span>
                     <span className="font-medium">{character.scenesAppeared} scenes</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Voice Strength</span>
+                    <span className="text-muted-foreground">Voice Strength</span>
                     <span className="font-medium">
                       {Math.round(character.totalWords / Math.max(character.totalLines, 1))} words/line
                     </span>

@@ -145,12 +145,12 @@ export function FeasibilityDashboard({ script, dashboardData }: FeasibilityDashb
     }
   }, [feasibility])
 
-  const COLORS = ['#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
+  const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))', 'hsl(var(--primary))']
 
   const locationTypeData = [
-    { name: 'Interior', value: locationBreakdown.interior, color: '#8b5cf6' },
-    { name: 'Exterior', value: locationBreakdown.exterior, color: '#06b6d4' },
-    { name: 'Int/Ext', value: locationBreakdown.intExt, color: '#10b981' }
+    { name: 'Interior', value: locationBreakdown.interior, color: 'hsl(var(--primary))' },
+    { name: 'Exterior', value: locationBreakdown.exterior, color: 'hsl(var(--chart-2))' },
+    { name: 'Int/Ext', value: locationBreakdown.intExt, color: 'hsl(var(--chart-3))' }
   ]
 
   return (
@@ -159,40 +159,40 @@ export function FeasibilityDashboard({ script, dashboardData }: FeasibilityDashb
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <DollarSign className="w-8 h-8 text-brand-600" />
+            <DollarSign className="w-8 h-8 text-primary" />
             <div>
-              <p className="text-sm text-gray-600">Feasibility Score</p>
-              <p className="text-2xl font-bold text-gray-900">{feasibilityScore.toFixed(1)}/10</p>
+              <p className="text-sm text-muted-foreground">Feasibility Score</p>
+              <p className="text-2xl font-bold text-foreground">{feasibilityScore.toFixed(1)}/10</p>
             </div>
           </div>
         </Card>
 
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <MapPin className="w-8 h-8 text-success-600" />
+            <MapPin className="w-8 h-8 text-success" />
             <div>
-              <p className="text-sm text-gray-600">Locations</p>
-              <p className="text-2xl font-bold text-gray-900">{companyMoveEstimate.uniqueLocations}</p>
+              <p className="text-sm text-muted-foreground">Locations</p>
+              <p className="text-2xl font-bold text-foreground">{companyMoveEstimate.uniqueLocations}</p>
             </div>
           </div>
         </Card>
 
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <Clock className="w-8 h-8 text-warning-600" />
+            <Clock className="w-8 h-8 text-warning" />
             <div>
-              <p className="text-sm text-gray-600">Est. Days</p>
-              <p className="text-2xl font-bold text-gray-900">{companyMoveEstimate.days}</p>
+              <p className="text-sm text-muted-foreground">Est. Days</p>
+              <p className="text-2xl font-bold text-foreground">{companyMoveEstimate.days}</p>
             </div>
           </div>
         </Card>
 
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <Sparkles className="w-8 h-8 text-danger-600" />
+            <Sparkles className="w-8 h-8 text-destructive" />
             <div>
-              <p className="text-sm text-gray-600">Complexity</p>
-              <p className="text-2xl font-bold text-gray-900 capitalize">{companyMoveEstimate.complexity}</p>
+              <p className="text-sm text-muted-foreground">Complexity</p>
+              <p className="text-2xl font-bold text-foreground capitalize">{companyMoveEstimate.complexity}</p>
             </div>
           </div>
         </Card>
@@ -207,14 +207,14 @@ export function FeasibilityDashboard({ script, dashboardData }: FeasibilityDashb
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center">
-              <p className="text-3xl font-bold text-gray-900">
+              <p className="text-3xl font-bold text-foreground">
                 ${(companyMoveEstimate.cost / 1000000).toFixed(1)}M
               </p>
-              <p className="text-sm text-gray-600">Estimated Budget</p>
+              <p className="text-sm text-muted-foreground">Estimated Budget</p>
             </div>
             <div className="text-center">
-              <p className="text-3xl font-bold text-gray-900">{companyMoveEstimate.days}</p>
-              <p className="text-sm text-gray-600">Shooting Days</p>
+              <p className="text-3xl font-bold text-foreground">{companyMoveEstimate.days}</p>
+              <p className="text-sm text-muted-foreground">Shooting Days</p>
             </div>
             <div className="text-center">
               <Badge
@@ -274,20 +274,20 @@ export function FeasibilityDashboard({ script, dashboardData }: FeasibilityDashb
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2">
                       {location.name.includes('INT') || location.name.toLowerCase().includes('interior') ?
-                        <Home className="w-4 h-4 text-brand-600" /> :
-                        <Building className="w-4 h-4 text-success-600" />
+                        <Home className="w-4 h-4 text-primary" /> :
+                        <Building className="w-4 h-4 text-success" />
                       }
-                      <span className="text-sm font-medium text-gray-900">{location.name}</span>
+                      <span className="text-sm font-medium text-foreground">{location.name}</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-16 bg-gray-200 rounded-full h-2">
+                    <div className="w-16 bg-muted rounded-full h-2">
                       <div
-                        className="bg-brand-600 h-2 rounded-full"
+                        className="bg-primary h-2 rounded-full"
                         style={{ width: `${(location.count / Math.max(...locationBreakdown.locationList.map(l => l.count))) * 100}%` }}
                       ></div>
                     </div>
-                    <span className="text-sm text-gray-600 w-8 text-right">{location.count}</span>
+                    <span className="text-sm text-muted-foreground w-8 text-right">{location.count}</span>
                   </div>
                 </div>
               ))}
@@ -310,7 +310,7 @@ export function FeasibilityDashboard({ script, dashboardData }: FeasibilityDashb
                 <XAxis dataKey="category" angle={-45} textAnchor="end" height={80} />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="count" fill="#8b5cf6" />
+                <Bar dataKey="count" className="fill-primary" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -339,21 +339,21 @@ export function FeasibilityDashboard({ script, dashboardData }: FeasibilityDashb
               }
 
               const getColor = (count: number) => {
-                if (count === 0) return 'text-gray-400'
-                if (count <= 2) return 'text-success-600'
-                if (count <= 5) return 'text-warning-600'
-                return 'text-danger-600'
+                if (count === 0) return 'text-muted-foreground'
+                if (count <= 2) return 'text-success'
+                if (count <= 5) return 'text-warning'
+                return 'text-destructive'
               }
 
               return (
                 <div key={index} className="p-4 border rounded-lg space-y-2">
                   <div className={`flex items-center gap-2 ${getColor(item.count)}`}>
                     {getIcon(item.category)}
-                    <span className="font-medium text-gray-900">{item.category}</span>
+                    <span className="font-medium text-foreground">{item.category}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-2xl font-bold text-gray-900">{item.count}</span>
-                    <span className="text-sm text-gray-600">{item.percentage.toFixed(0)}%</span>
+                    <span className="text-2xl font-bold text-foreground">{item.count}</span>
+                    <span className="text-sm text-muted-foreground">{item.percentage.toFixed(0)}%</span>
                   </div>
                   <Progress value={item.percentage} className="h-1" />
                 </div>
@@ -380,7 +380,7 @@ export function FeasibilityDashboard({ script, dashboardData }: FeasibilityDashb
                 <Line
                   type="monotone"
                   dataKey="complexity"
-                  stroke="#ef4444"
+                  className="stroke-destructive"
                   strokeWidth={3}
                   name="Complexity Score"
                 />
@@ -399,15 +399,15 @@ export function FeasibilityDashboard({ script, dashboardData }: FeasibilityDashb
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <h4 className="font-semibold text-gray-900">High Impact Elements</h4>
+              <h4 className="font-semibold text-foreground">High Impact Elements</h4>
               <div className="space-y-3">
                 {complexityAnalysis
                   .filter(item => item.count > 0)
                   .sort((a, b) => b.count - a.count)
                   .slice(0, 5)
                   .map((item, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <span className="font-medium text-gray-900">{item.category}</span>
+                    <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                      <span className="font-medium text-foreground">{item.category}</span>
                       <div className="flex items-center gap-2">
                         <Badge variant={item.count > 5 ? 'destructive' : item.count > 2 ? 'default' : 'secondary'}>
                           {item.count} scenes
@@ -419,27 +419,27 @@ export function FeasibilityDashboard({ script, dashboardData }: FeasibilityDashb
             </div>
 
             <div className="space-y-4">
-              <h4 className="font-semibold text-gray-900">Optimization Suggestions</h4>
+              <h4 className="font-semibold text-foreground">Optimization Suggestions</h4>
               <div className="space-y-3 text-sm">
                 {companyMoveEstimate.uniqueLocations > 8 && (
-                  <div className="p-3 bg-warning-50 border border-warning-200 rounded-lg">
-                    <p className="text-warning-800">
+                  <div className="p-3 bg-warning/10 border border-warning/20 rounded-lg">
+                    <p className="text-warning">
                       <strong>Location Consolidation:</strong> Consider combining scenes in similar locations
                       to reduce company moves and transportation costs.
                     </p>
                   </div>
                 )}
                 {complexityAnalysis.find(c => c.category.toLowerCase().includes('vfx'))?.count > 5 && (
-                  <div className="p-3 bg-info-50 border border-info-200 rounded-lg">
-                    <p className="text-info-800">
+                  <div className="p-3 bg-muted border border-border rounded-lg">
+                    <p className="text-foreground">
                       <strong>VFX Planning:</strong> High VFX scene count. Consider pre-visualization
                       and detailed planning to optimize post-production budget.
                     </p>
                   </div>
                 )}
                 {complexityAnalysis.find(c => c.category.toLowerCase().includes('crowd'))?.count > 0 && (
-                  <div className="p-3 bg-warning-50 border border-warning-200 rounded-lg">
-                    <p className="text-warning-800">
+                  <div className="p-3 bg-warning/10 border border-warning/20 rounded-lg">
+                    <p className="text-warning">
                       <strong>Crowd Scenes:</strong> Crowd scenes significantly impact budget.
                       Consider digital crowd extension or careful scheduling.
                     </p>

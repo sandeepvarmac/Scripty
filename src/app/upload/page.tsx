@@ -14,7 +14,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { MultiSelect, type Option } from "@/components/ui/multi-select"
 import { Upload, FileText, AlertCircle, CheckCircle, X, ArrowLeft, User, Settings, LogOut, Search, HelpCircle, Bell, CreditCard, Plus, Folder } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useToast } from "@/hooks/use-toast"
 import FileValidationDialog from '@/components/upload/file-validation-dialog'
+import QualityCheckResults from '@/components/quality/quality-check-results'
 
 // Common screenplay genres
 const GENRE_OPTIONS: Option[] = [
@@ -112,6 +114,7 @@ type UploadResponsePayload = {
 
 export default function UploadPage() {
   const router = useRouter()
+  const { toast } = useToast()
   const [dragActive, setDragActive] = React.useState(false)
   const [files, setFiles] = React.useState<File[]>([])
   const [uploading, setUploading] = React.useState(false)
@@ -140,6 +143,12 @@ export default function UploadPage() {
   // File validation dialog state
   const [validationDialogOpen, setValidationDialogOpen] = React.useState(false)
   const [validationErrors, setValidationErrors] = React.useState<FileValidationError[]>([])
+
+  // Quality validation state
+  const [qualityCheckOpen, setQualityCheckOpen] = React.useState(false)
+  const [qualityAssessment, setQualityAssessment] = React.useState<any>(null)
+  const [validatedFile, setValidatedFile] = React.useState<File | null>(null)
+  const [validating, setValidating] = React.useState(false)
 
   React.useEffect(() => {
     fetchUserData()
@@ -207,11 +216,19 @@ export default function UploadPage() {
   const handleCreateProject = async () => {
     // Validate required fields
     if (!projectForm.name.trim()) {
-      alert('Project name is required')
+      toast({
+        variant: "destructive",
+        title: "Validation Error",
+        description: "Project name is required"
+      })
       return
     }
     if (!projectForm.type) {
-      alert('Project type is required')
+      toast({
+        variant: "destructive",
+        title: "Validation Error",
+        description: "Project type is required"
+      })
       return
     }
 
@@ -220,7 +237,11 @@ export default function UploadPage() {
       p.name.toLowerCase().trim() === projectForm.name.toLowerCase().trim()
     )
     if (duplicateProject) {
-      alert(`A project named "${projectForm.name}" already exists. Please choose a different name.`)
+      toast({
+        variant: "destructive",
+        title: "Duplicate Project",
+        description: `A project named "${projectForm.name}" already exists. Please choose a different name.`
+      })
       return
     }
 
@@ -257,11 +278,19 @@ export default function UploadPage() {
         })
       } else {
         const error = await response.json()
-        alert(`Failed to create project: ${error.error}`)
+        toast({
+          variant: "destructive",
+          title: "Project Creation Failed",
+          description: `Failed to create project: ${error.error}`
+        })
       }
     } catch (error) {
       console.error('Error creating project:', error)
-      alert('Failed to create project')
+      toast({
+        variant: "destructive",
+        title: "Project Creation Failed",
+        description: "Failed to create project. Please try again."
+      })
     } finally {
       setCreatingProject(false)
     }
@@ -298,6 +327,116 @@ export default function UploadPage() {
     setValidationDialogOpen(true)
   }
 
+  // Convert compliance object to QualityAssessment format
+  const convertComplianceToQualityAssessment = (compliance: any) => {
+    const score = compliance.score || 0
+    const reasons = compliance.reasons || []
+    const threshold = 0.8 // 80% threshold
+
+    // Map compliance reasons to quality issues
+    const issues = reasons.map((reason: string) => {
+      let category: 'structure' | 'characters' | 'dialogue' | 'formatting' | 'content' = 'formatting'
+      let severity: 'critical' | 'major' | 'minor' = 'major'
+
+      if (reason.includes('scene headings')) category = 'structure'
+      else if (reason.includes('character') || reason.includes('dialogue')) category = 'characters'
+      else if (reason.includes('margins') || reason.includes('formatting')) category = 'formatting'
+
+      if (reason.includes('No scene headings') || reason.includes('Missing character cues')) {
+        severity = 'critical'
+      }
+
+      return {
+        category,
+        severity,
+        issue: reason,
+        impact: `This affects the AI's ability to analyze your screenplay structure and content.`
+      }
+    })
+
+    // Generate some basic strengths and recommendations
+    const strengths: string[] = []
+    const recommendations: string[] = []
+
+    if (compliance.metrics?.sceneHeadings > 0) {
+      strengths.push('Document contains scene headings')
+    }
+    if (compliance.metrics?.characterCues > 0) {
+      strengths.push('Character names are present')
+    }
+    if (compliance.metrics?.dialogueLines > 0) {
+      strengths.push('Dialogue content detected')
+    }
+
+    recommendations.push('Ensure proper screenplay formatting with scene headings (INT./EXT.)')
+    recommendations.push('Include character names in ALL CAPS before dialogue')
+    recommendations.push('Follow standard screenplay structure and formatting')
+
+    return {
+      overallScore: score,
+      passesThreshold: score >= threshold,
+      threshold,
+      issues,
+      strengths,
+      recommendations
+    }
+  }
+
+  // Validate file quality using the validation endpoint
+  const validateFileQuality = async (file: File) => {
+    console.log('Starting file validation:', {
+      fileName: file.name,
+      fileSize: file.size,
+      fileType: file.type
+    })
+    setValidating(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const response = await fetch('/api/validate', {
+        method: 'POST',
+        body: formData
+      })
+
+      const result = await response.json()
+
+      if (!response.ok || !result.ok) {
+        // API-level error (format issues, etc.)
+        const errorMessage = result.error || `Server error (${response.status}): Failed to validate file`
+        showValidationErrors([{
+          fileName: file.name,
+          error: errorMessage,
+          fileSize: file.size,
+          fileExtension: '.' + file.name.split('.').pop()?.toLowerCase()
+        }])
+        return false
+      }
+
+      if (result.blocked) {
+        // Quality compliance issue - convert and show quality check results
+        const qualityAssessment = convertComplianceToQualityAssessment(result.compliance)
+        setQualityAssessment(qualityAssessment)
+        setValidatedFile(file)
+        setQualityCheckOpen(true)
+        return false
+      }
+
+      // File passed all validations
+      return true
+    } catch (error) {
+      console.error('Quality validation error:', error)
+      showValidationErrors([{
+        fileName: file.name,
+        error: 'Failed to validate file quality. Please try again.',
+        fileSize: file.size
+      }])
+      return false
+    } finally {
+      setValidating(false)
+    }
+  }
+
   // Handle drag events
   const handleDrag = React.useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -309,65 +448,61 @@ export default function UploadPage() {
     }
   }, [])
 
-  // Handle drop
-  const handleDrop = React.useCallback((e: React.DragEvent) => {
+  // Handle drop with quality validation
+  const handleDrop = React.useCallback(async (e: React.DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
     setDragActive(false)
 
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const droppedFiles = Array.from(e.dataTransfer.files)
-      const validFiles: File[] = []
-      const errors: FileValidationError[] = []
 
-      droppedFiles.forEach(file => {
-        const validation = validateFile(file)
-        if (validation.valid) {
-          validFiles.push(file)
-        } else {
-          errors.push({
-            fileName: file.name,
-            error: validation.error,
-            fileSize: file.size,
-            fileExtension: validation.fileExtension
-          })
-        }
-      })
+      // Only handle single file for now (first file)
+      const file = droppedFiles[0]
 
-      if (errors.length > 0) {
-        showValidationErrors(errors)
+      // Step 1: Basic validation (format + size)
+      const basicValidation = validateFile(file)
+      if (!basicValidation.valid) {
+        showValidationErrors([{
+          fileName: file.name,
+          error: basicValidation.error,
+          fileSize: file.size,
+          fileExtension: basicValidation.fileExtension
+        }])
+        return
       }
 
-      setFiles(validFiles)
+      // Step 2: Quality validation (parsing + compliance)
+      const qualityValid = await validateFileQuality(file)
+      if (qualityValid) {
+        setFiles([file])
+      }
     }
   }, [])
 
-  // Handle file input change
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle file input change with quality validation
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const selectedFiles = Array.from(e.target.files)
-      const validFiles: File[] = []
-      const errors: FileValidationError[] = []
+      // Only handle single file for now (first file)
+      const file = e.target.files[0]
 
-      selectedFiles.forEach(file => {
-        const validation = validateFile(file)
-        if (validation.valid) {
-          validFiles.push(file)
-        } else {
-          errors.push({
-            fileName: file.name,
-            error: validation.error,
-            fileSize: file.size,
-            fileExtension: validation.fileExtension
-          })
-        }
-      })
-
-      if (errors.length > 0) {
-        showValidationErrors(errors)
+      // Step 1: Basic validation (format + size)
+      const basicValidation = validateFile(file)
+      if (!basicValidation.valid) {
+        showValidationErrors([{
+          fileName: file.name,
+          error: basicValidation.error,
+          fileSize: file.size,
+          fileExtension: basicValidation.fileExtension
+        }])
+        return
       }
 
-      setFiles(validFiles)
+      // Step 2: Quality validation (parsing + compliance)
+      const qualityValid = await validateFileQuality(file)
+      if (qualityValid) {
+        setFiles([file])
+      }
     }
   }
 
@@ -400,7 +535,11 @@ export default function UploadPage() {
     if (files.length === 0) return
 
     if (!selectedProject) {
-      alert('Please select a project or create a new one before uploading.')
+      toast({
+        variant: "destructive",
+        title: "Project Required",
+        description: "Please select a project or create a new one before uploading."
+      })
       return
     }
 
@@ -512,22 +651,22 @@ export default function UploadPage() {
         // Brief pause to show completion
         await new Promise(resolve => setTimeout(resolve, 1000))
 
-        alert(
-          `🎬 Upload Complete!\n\n` +
-          `Title: ${parsedScript.title || savedScript.title || 'Unknown'}\n` +
-          `Format: ${parsedScript.format.toUpperCase()}\n` +
-          `Pages: ${parsedScript.pageCount}\n` +
-          `Scenes: ${parsedScript.scenes.length}\n` +
-          `Characters: ${parsedScript.characters.length}\n\n` +
-          `Redirecting to AI analysis dashboard...`
-        )
+        toast({
+          variant: "default",
+          title: "🎬 Upload Complete!",
+          description: `${parsedScript.title || savedScript.title || 'Unknown'} successfully uploaded with ${parsedScript.scenes.length} scenes and ${parsedScript.characters.length} characters. Redirecting to analysis dashboard...`
+        })
 
         router.push(`/analysis/${savedScript.id}`)
       }
 
     } catch (error) {
       console.error('Upload error:', error)
-      alert(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      toast({
+        variant: "destructive",
+        title: "Upload Failed",
+        description: `Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      })
     } finally {
       setUploading(false)
     }
@@ -667,7 +806,6 @@ export default function UploadPage() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src="/avatars/user.png" alt={fullName} />
                     <AvatarFallback>{initials}</AvatarFallback>
                   </Avatar>
                 </Button>
@@ -1127,6 +1265,29 @@ export default function UploadPage() {
             }
           }}
         />
+
+        {/* Quality Check Results Dialog */}
+        {qualityCheckOpen && qualityAssessment && (
+          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50">
+            <div className="fixed left-[50%] top-[50%] z-50 grid w-full max-w-4xl translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 sm:rounded-lg max-h-[90vh] overflow-y-auto">
+              <QualityCheckResults
+                qualityAssessment={qualityAssessment}
+                onNewUpload={() => {
+                  setQualityCheckOpen(false)
+                  setQualityAssessment(null)
+                  setValidatedFile(null)
+                  setFiles([])
+                  const fileInput = document.getElementById('file-upload') as HTMLInputElement
+                  if (fileInput) {
+                    fileInput.value = ''
+                    fileInput.click()
+                  }
+                }}
+                showProceedOption={false}
+              />
+            </div>
+          </div>
+        )}
       </AppContent>
     </AppShell>
   )

@@ -19,6 +19,7 @@ import {
   AlertCircle,
   Upload
 } from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
 import { AIAnalysisPrompt } from './ai-analysis-prompt'
 import { VersionComparison } from './version-comparison'
 import { ImprovementTracking } from './improvement-tracking'
@@ -93,6 +94,7 @@ interface TabbedAnalysisProps {
 }
 
 export function TabbedAnalysis({ script, allVersions = [] }: TabbedAnalysisProps) {
+  const { toast } = useToast()
   const [activeTab, setActiveTab] = useState('overview')
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisProgress, setAnalysisProgress] = useState(0)
@@ -140,13 +142,21 @@ export function TabbedAnalysis({ script, allVersions = [] }: TabbedAnalysisProps
         console.error('Analysis failed:', error)
         setIsAnalyzing(false)
         setAnalysisProgress(0)
-        alert('Analysis failed: ' + (error.error || 'Unknown error'))
+        toast({
+          variant: "destructive",
+          title: "Analysis Failed",
+          description: error.error || 'Unknown error occurred during analysis'
+        })
       }
     } catch (error) {
       console.error('Analysis error:', error)
       setIsAnalyzing(false)
       setAnalysisProgress(0)
-      alert('Analysis failed. Please try again.')
+      toast({
+        variant: "destructive",
+        title: "Analysis Failed",
+        description: "Analysis failed. Please try again."
+      })
     }
   }
 
@@ -163,7 +173,10 @@ export function TabbedAnalysis({ script, allVersions = [] }: TabbedAnalysisProps
     // This would open a detailed comparison view
     console.log('Comparing versions:', versionIds)
     // For now, just show an alert
-    alert(`Comparison feature coming soon! Selected ${versionIds.length} versions.`)
+    toast({
+      title: "Coming Soon",
+      description: `Comparison feature coming soon! Selected ${versionIds.length} versions.`
+    })
   }
 
   const handleMarkRecommendation = (
@@ -174,7 +187,10 @@ export function TabbedAnalysis({ script, allVersions = [] }: TabbedAnalysisProps
     // This would typically save to database
     console.log('Marking recommendation:', { recommendationId, status, notes })
     // For now, just show an alert
-    alert(`Recommendation marked as: ${status}`)
+    toast({
+      title: "Recommendation Updated",
+      description: `Recommendation marked as: ${status}`
+    })
   }
 
   const tabs = [

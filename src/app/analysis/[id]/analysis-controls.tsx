@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Play, ChevronDown, RefreshCw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useToast } from '@/hooks/use-toast'
 
 interface AnalysisControlsProps {
   scriptId: string
@@ -69,6 +70,7 @@ const comprehensiveOptions: { type: AnalysisType; label: string; description: st
 ]
 
 export function AnalysisControls({ scriptId }: AnalysisControlsProps) {
+  const { toast } = useToast()
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const router = useRouter()
 
@@ -97,18 +99,21 @@ export function AnalysisControls({ scriptId }: AnalysisControlsProps) {
       const analysisCount = result.data.analyses.length
       const successCount = result.data.analyses.filter((a: any) => a.status === 'COMPLETED').length
 
-      alert(
-        `🤖 AI Analysis Complete!\n\n` +
-        `${successCount}/${analysisCount} AI-powered analyses completed successfully.\n` +
-        `Professional screenplay coverage and insights are now available below.`
-      )
+      toast({
+        title: "🤖 AI Analysis Complete!",
+        description: `${successCount}/${analysisCount} AI-powered analyses completed successfully. Professional screenplay coverage and insights are now available below.`
+      })
 
       // Refresh the page to show new results
       router.refresh()
 
     } catch (error) {
       console.error('Analysis error:', error)
-      alert(`Analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      toast({
+        variant: "destructive",
+        title: "Analysis Failed",
+        description: `Analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      })
     } finally {
       setIsAnalyzing(false)
     }

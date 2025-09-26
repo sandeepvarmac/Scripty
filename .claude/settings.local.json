@@ -32,7 +32,17 @@
       "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=yes npx prisma migrate reset --force)",
       "Bash(npx tsc:*)",
       "Bash(cat:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(tasklist)",
+      "Bash(mv:*)",
+      "WebFetch(domain:localhost)",
+      "Bash(npm test)",
+      "Bash(npm test:*)",
+      "Bash(git rm:*)",
+      "Bash(npx next dev:*)",
+      "Bash(del test-script.txt poor-script.txt)",
+      "Bash(del test-script.fountain)",
+      "Bash(del NUL)"
     ],
     "deny": [],
     "ask": []

@@ -6,9 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ScriptyBoyLogo } from "@/components/ui/logo"
 import { BrandHeader } from "@/components/ui/brand-header"
 import { useRouter } from "next/navigation"
+import { useToast } from "@/hooks/use-toast"
 
 export default function HomePage() {
   const router = useRouter()
+  const { toast } = useToast()
 
   const handleSignIn = () => {
     console.log('Sign In button clicked')
@@ -28,7 +30,10 @@ export default function HomePage() {
   const handleViewSample = () => {
     console.log('View Sample button clicked')
     // TODO: Navigate to sample report when available
-    alert('Sample report coming soon!')
+    toast({
+      title: "Coming Soon",
+      description: "Sample report feature is in development!"
+    })
   }
 
   const handleChooseFile = () => {

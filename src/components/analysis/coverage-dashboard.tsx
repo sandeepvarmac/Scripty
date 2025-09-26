@@ -63,16 +63,16 @@ export function CoverageDashboard({ script, dashboardData }: CoverageDashboardPr
         {/* Recommendation */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">Recommendation</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Recommendation</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-3">
-              <RecommendationIcon className={`w-8 h-8 text-${recommendation.color}-600`} />
+              <RecommendationIcon className={`w-8 h-8 ${recommendation.color === 'success' ? 'text-success' : recommendation.color === 'warning' ? 'text-warning' : 'text-destructive'}`} />
               <div>
-                <p className={`text-2xl font-bold text-${recommendation.color}-600`}>
+                <p className={`text-2xl font-bold ${recommendation.color === 'success' ? 'text-success' : recommendation.color === 'warning' ? 'text-warning' : 'text-destructive'}`}>
                   {recommendation.level}
                 </p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted-foreground">
                   Based on {scores.length} criteria
                 </p>
               </div>
@@ -83,16 +83,16 @@ export function CoverageDashboard({ script, dashboardData }: CoverageDashboardPr
         {/* Overall Score */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">Overall Score</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Overall Score</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-gray-900">{avgScore.toFixed(1)}</span>
-                <span className="text-sm text-gray-600">/ 10</span>
+                <span className="text-3xl font-bold text-foreground">{avgScore.toFixed(1)}</span>
+                <span className="text-sm text-muted-foreground">/ 10</span>
               </div>
               <Progress value={avgScore * 10} className="h-2" />
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 {avgScore >= 8 ? "Excellent" : avgScore >= 6 ? "Good" : "Needs Work"}
               </p>
             </div>
@@ -102,23 +102,23 @@ export function CoverageDashboard({ script, dashboardData }: CoverageDashboardPr
         {/* Key Metrics */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">Key Metrics</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Key Metrics</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Story Beats</span>
+              <span className="text-sm text-muted-foreground">Story Beats</span>
               <Badge variant={beats.length >= 7 ? "default" : "secondary"}>
                 {beats.length}/7
               </Badge>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">High Priority Notes</span>
+              <span className="text-sm text-muted-foreground">High Priority Notes</span>
               <Badge variant={highPriorityNotes.length > 0 ? "destructive" : "default"}>
                 {highPriorityNotes.length}
               </Badge>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Risk Flags</span>
+              <span className="text-sm text-muted-foreground">Risk Flags</span>
               <Badge variant={riskFlags.length > 0 ? "destructive" : "default"}>
                 {riskFlags.length}
               </Badge>
@@ -136,16 +136,16 @@ export function CoverageDashboard({ script, dashboardData }: CoverageDashboardPr
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-3">
               <div>
-                <h4 className="font-semibold text-gray-900 mb-1">Logline</h4>
-                <p className="text-gray-700 leading-relaxed">
+                <h4 className="font-semibold text-foreground mb-1">Logline</h4>
+                <p className="text-foreground leading-relaxed">
                   {script.logline || "No logline available"}
                 </p>
               </div>
 
               {script.synopsisShort && (
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-1">Synopsis</h4>
-                  <p className="text-gray-700 leading-relaxed">
+                  <h4 className="font-semibold text-foreground mb-1">Synopsis</h4>
+                  <p className="text-foreground leading-relaxed">
                     {script.synopsisShort}
                   </p>
                 </div>
@@ -154,13 +154,13 @@ export function CoverageDashboard({ script, dashboardData }: CoverageDashboardPr
 
             <div className="space-y-3">
               <div>
-                <h4 className="font-semibold text-gray-900 mb-1">Genre</h4>
+                <h4 className="font-semibold text-foreground mb-1">Genre</h4>
                 <Badge variant="outline">{script.genreOverride || "Unspecified"}</Badge>
               </div>
 
               {script.comps?.titles?.length > 0 && (
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-1">Comparables</h4>
+                  <h4 className="font-semibold text-foreground mb-1">Comparables</h4>
                   <div className="flex flex-wrap gap-2">
                     {script.comps.titles.map((comp: string, index: number) => (
                       <Badge key={index} variant="outline">{comp}</Badge>
@@ -170,8 +170,8 @@ export function CoverageDashboard({ script, dashboardData }: CoverageDashboardPr
               )}
 
               <div>
-                <h4 className="font-semibold text-gray-900 mb-1">Format</h4>
-                <p className="text-gray-700">{script.pageCount} pages</p>
+                <h4 className="font-semibold text-foreground mb-1">Format</h4>
+                <p className="text-foreground">{script.pageCount} pages</p>
               </div>
             </div>
           </div>
@@ -183,7 +183,7 @@ export function CoverageDashboard({ script, dashboardData }: CoverageDashboardPr
         {/* Strengths */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-success-600">
+            <CardTitle className="flex items-center gap-2 text-success">
               <TrendingUp className="w-5 h-5" />
               Key Strengths
             </CardTitle>
@@ -194,15 +194,15 @@ export function CoverageDashboard({ script, dashboardData }: CoverageDashboardPr
                 {strengths.map((score: any, index: number) => (
                   <div key={index} className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="font-medium text-gray-900">
+                      <span className="font-medium text-foreground">
                         {score.category.replace('_', ' ')}
                       </span>
-                      <Badge className="bg-success-50 text-success-700 border-success-200">
+                      <Badge className="bg-success/10 text-success border-success/20">
                         {score.value}/10
                       </Badge>
                     </div>
                     {score.rationale && (
-                      <p className="text-sm text-gray-600 leading-relaxed">
+                      <p className="text-sm text-muted-foreground leading-relaxed">
                         {score.rationale}
                       </p>
                     )}
@@ -210,7 +210,7 @@ export function CoverageDashboard({ script, dashboardData }: CoverageDashboardPr
                 ))}
               </div>
             ) : (
-              <p className="text-gray-600 italic">No significant strengths identified above 7.0</p>
+              <p className="text-muted-foreground italic">No significant strengths identified above 7.0</p>
             )}
           </CardContent>
         </Card>
@@ -218,7 +218,7 @@ export function CoverageDashboard({ script, dashboardData }: CoverageDashboardPr
         {/* Areas for Improvement */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-warning-600">
+            <CardTitle className="flex items-center gap-2 text-warning">
               <TrendingDown className="w-5 h-5" />
               Areas for Improvement
             </CardTitle>
@@ -229,7 +229,7 @@ export function CoverageDashboard({ script, dashboardData }: CoverageDashboardPr
                 {concerns.map((score: any, index: number) => (
                   <div key={index} className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="font-medium text-gray-900">
+                      <span className="font-medium text-foreground">
                         {score.category.replace('_', ' ')}
                       </span>
                       <Badge variant="destructive">
@@ -237,7 +237,7 @@ export function CoverageDashboard({ script, dashboardData }: CoverageDashboardPr
                       </Badge>
                     </div>
                     {score.rationale && (
-                      <p className="text-sm text-gray-600 leading-relaxed">
+                      <p className="text-sm text-muted-foreground leading-relaxed">
                         {score.rationale}
                       </p>
                     )}
@@ -245,7 +245,7 @@ export function CoverageDashboard({ script, dashboardData }: CoverageDashboardPr
                 ))}
               </div>
             ) : (
-              <p className="text-gray-600 italic">No significant concerns identified below 6.0</p>
+              <p className="text-muted-foreground italic">No significant concerns identified below 6.0</p>
             )}
           </CardContent>
         </Card>
@@ -255,7 +255,7 @@ export function CoverageDashboard({ script, dashboardData }: CoverageDashboardPr
       {highPriorityNotes.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-danger-600">
+            <CardTitle className="flex items-center gap-2 text-destructive">
               <AlertCircle className="w-5 h-5" />
               High Priority Issues
             </CardTitle>
@@ -266,9 +266,9 @@ export function CoverageDashboard({ script, dashboardData }: CoverageDashboardPr
           <CardContent>
             <div className="space-y-4">
               {highPriorityNotes.map((note: any, index: number) => (
-                <div key={index} className="border-l-4 border-danger-200 pl-4 space-y-2">
+                <div key={index} className="border-l-4 border-destructive/20 pl-4 space-y-2">
                   <div className="flex items-start justify-between">
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-foreground">
                       {note.area.replace('_', ' ')} Issue
                     </span>
                     <Badge variant="destructive" className="text-xs">
@@ -276,17 +276,17 @@ export function CoverageDashboard({ script, dashboardData }: CoverageDashboardPr
                     </Badge>
                   </div>
                   {note.excerpt && (
-                    <p className="text-sm text-gray-700 bg-gray-50 p-2 rounded italic">
+                    <p className="text-sm text-foreground bg-muted p-2 rounded italic">
                       "{note.excerpt}"
                     </p>
                   )}
                   {note.suggestion && (
-                    <p className="text-sm text-gray-600 leading-relaxed">
+                    <p className="text-sm text-muted-foreground leading-relaxed">
                       <strong>Suggestion:</strong> {note.suggestion}
                     </p>
                   )}
                   {note.page && (
-                    <p className="text-xs text-gray-500">Page {note.page}</p>
+                    <p className="text-xs text-muted-foreground">Page {note.page}</p>
                   )}
                 </div>
               ))}

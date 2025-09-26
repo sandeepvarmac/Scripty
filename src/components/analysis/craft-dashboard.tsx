@@ -94,7 +94,7 @@ export function CraftDashboard({ script, dashboardData }: CraftDashboardProps) {
     { key: 'FEASIBILITY', label: 'Formatting', icon: FileText, score: getScoreByCategory('FEASIBILITY') }
   ]
 
-  const COLORS = ['#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
+  const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))', 'hsl(var(--primary))']
 
   return (
     <div className="space-y-6">
@@ -111,10 +111,10 @@ export function CraftDashboard({ script, dashboardData }: CraftDashboardProps) {
           return (
             <Card key={area.key} className="p-4">
               <div className="flex items-center gap-3">
-                <Icon className={`w-6 h-6 text-${getScoreColor(area.score)}-600`} />
+                <Icon className={`w-6 h-6 ${getScoreColor(area.score) === 'success' ? 'text-success' : getScoreColor(area.score) === 'warning' ? 'text-warning' : 'text-destructive'}`} />
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm text-gray-600 truncate">{area.label}</p>
-                  <p className="text-xl font-bold text-gray-900">{area.score.toFixed(1)}</p>
+                  <p className="text-sm text-muted-foreground truncate">{area.label}</p>
+                  <p className="text-xl font-bold text-foreground">{area.score.toFixed(1)}</p>
                 </div>
               </div>
             </Card>
@@ -150,10 +150,10 @@ export function CraftDashboard({ script, dashboardData }: CraftDashboardProps) {
                   {beatAnalysis.map((beat, index) => {
                     const getTimingIcon = (timing: string) => {
                       switch (timing) {
-                        case 'ON_TIME': return <CheckCircle className="w-4 h-4 text-success-600" />
-                        case 'EARLY': case 'LATE': return <AlertCircle className="w-4 h-4 text-warning-600" />
-                        case 'MISSING': return <XCircle className="w-4 h-4 text-danger-600" />
-                        default: return <AlertCircle className="w-4 h-4 text-gray-400" />
+                        case 'ON_TIME': return <CheckCircle className="w-4 h-4 text-success" />
+                        case 'EARLY': case 'LATE': return <AlertCircle className="w-4 h-4 text-warning" />
+                        case 'MISSING': return <XCircle className="w-4 h-4 text-destructive" />
+                        default: return <AlertCircle className="w-4 h-4 text-muted-foreground" />
                       }
                     }
 
@@ -162,10 +162,10 @@ export function CraftDashboard({ script, dashboardData }: CraftDashboardProps) {
                         <div className="flex items-center gap-3">
                           {getTimingIcon(beat.timing)}
                           <div>
-                            <p className="font-medium text-gray-900">
+                            <p className="font-medium text-foreground">
                               {beat.kind.replace('_', ' ')}
                             </p>
-                            <p className="text-sm text-gray-600">
+                            <p className="text-sm text-muted-foreground">
                               {beat.actual ? `Page ${beat.actual}` : 'Not found'}
                               {beat.timing !== 'MISSING' && ` (expected ~${beat.expected})`}
                             </p>
@@ -195,7 +195,7 @@ export function CraftDashboard({ script, dashboardData }: CraftDashboardProps) {
                       <XAxis dataKey="page" />
                       <YAxis />
                       <Tooltip />
-                      <Line type="monotone" dataKey="confidence" stroke="#8b5cf6" strokeWidth={2} />
+                      <Line type="monotone" dataKey="confidence" className="stroke-primary" strokeWidth={2} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -213,10 +213,10 @@ export function CraftDashboard({ script, dashboardData }: CraftDashboardProps) {
               <CardContent>
                 <div className="space-y-4">
                   {subplots.map((subplot: any, index: number) => (
-                    <div key={index} className="border-l-4 border-brand-200 pl-4 space-y-2">
-                      <h4 className="font-medium text-gray-900">{subplot.label}</h4>
+                    <div key={index} className="border-l-4 border-primary/20 pl-4 space-y-2">
+                      <h4 className="font-medium text-foreground">{subplot.label}</h4>
                       {subplot.description && (
-                        <p className="text-sm text-gray-600">{subplot.description}</p>
+                        <p className="text-sm text-muted-foreground">{subplot.description}</p>
                       )}
                     </div>
                   ))}
@@ -239,16 +239,16 @@ export function CraftDashboard({ script, dashboardData }: CraftDashboardProps) {
                   <div className="space-y-4">
                     {themeStatements.map((theme: any, index: number) => (
                       <div key={index} className="space-y-2">
-                        <p className="text-gray-900 leading-relaxed">"{theme.statement}"</p>
+                        <p className="text-foreground leading-relaxed">"{theme.statement}"</p>
                         <div className="flex items-center gap-2">
                           <Progress value={theme.confidence * 100} className="h-2 flex-1" />
-                          <span className="text-sm text-gray-600">{(theme.confidence * 100).toFixed(0)}%</span>
+                          <span className="text-sm text-muted-foreground">{(theme.confidence * 100).toFixed(0)}%</span>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-600 italic">No theme statements identified</p>
+                  <p className="text-muted-foreground italic">No theme statements identified</p>
                 )}
               </CardContent>
             </Card>
@@ -261,14 +261,14 @@ export function CraftDashboard({ script, dashboardData }: CraftDashboardProps) {
               <CardContent>
                 <div className="space-y-4">
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Theme Score</h4>
+                    <h4 className="font-medium text-foreground mb-2">Theme Score</h4>
                     <div className="flex items-center gap-3">
                       <Progress value={getScoreByCategory('THEME') * 10} className="flex-1" />
                       <span className="font-bold">{getScoreByCategory('THEME')}/10</span>
                     </div>
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Character Development</h4>
+                    <h4 className="font-medium text-foreground mb-2">Character Development</h4>
                     <div className="flex items-center gap-3">
                       <Progress value={getScoreByCategory('CHARACTER') * 10} className="flex-1" />
                       <span className="font-bold">{getScoreByCategory('CHARACTER')}/10</span>
@@ -288,18 +288,18 @@ export function CraftDashboard({ script, dashboardData }: CraftDashboardProps) {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="text-center">
-                  <p className="text-3xl font-bold text-gray-900">{getScoreByCategory('DIALOGUE')}</p>
-                  <p className="text-sm text-gray-600">Overall Score</p>
+                  <p className="text-3xl font-bold text-foreground">{getScoreByCategory('DIALOGUE')}</p>
+                  <p className="text-sm text-muted-foreground">Overall Score</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-3xl font-bold text-gray-900">{notesByArea.DIALOGUE || 0}</p>
-                  <p className="text-sm text-gray-600">Dialogue Notes</p>
+                  <p className="text-3xl font-bold text-foreground">{notesByArea.DIALOGUE || 0}</p>
+                  <p className="text-sm text-muted-foreground">Dialogue Notes</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-3xl font-bold text-gray-900">
+                  <p className="text-3xl font-bold text-foreground">
                     {notes.filter((n: any) => n.area === 'DIALOGUE' && n.severity === 'HIGH').length}
                   </p>
-                  <p className="text-sm text-gray-600">Critical Issues</p>
+                  <p className="text-sm text-muted-foreground">Critical Issues</p>
                 </div>
               </div>
             </CardContent>
@@ -314,15 +314,15 @@ export function CraftDashboard({ script, dashboardData }: CraftDashboardProps) {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Originality Score</h4>
+                  <h4 className="font-medium text-foreground mb-2">Originality Score</h4>
                   <div className="flex items-center gap-3">
                     <Progress value={getScoreByCategory('ORIGINALITY') * 10} className="flex-1" />
                     <span className="font-bold">{getScoreByCategory('ORIGINALITY')}/10</span>
                   </div>
                 </div>
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Logic Issues</h4>
-                  <p className="text-2xl font-bold text-gray-900">{notesByArea.LOGIC || 0}</p>
+                  <h4 className="font-medium text-foreground mb-2">Logic Issues</h4>
+                  <p className="text-2xl font-bold text-foreground">{notesByArea.LOGIC || 0}</p>
                 </div>
               </div>
             </CardContent>
@@ -337,14 +337,14 @@ export function CraftDashboard({ script, dashboardData }: CraftDashboardProps) {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Genre Fit Score</h4>
+                  <h4 className="font-medium text-foreground mb-2">Genre Fit Score</h4>
                   <div className="flex items-center gap-3">
                     <Progress value={getScoreByCategory('GENRE_FIT') * 10} className="flex-1" />
                     <span className="font-bold">{getScoreByCategory('GENRE_FIT')}/10</span>
                   </div>
                 </div>
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Primary Genre</h4>
+                  <h4 className="font-medium text-foreground mb-2">Primary Genre</h4>
                   <Badge variant="outline" className="text-base">{script.genreOverride || 'Unspecified'}</Badge>
                 </div>
               </div>
@@ -386,8 +386,8 @@ export function CraftDashboard({ script, dashboardData }: CraftDashboardProps) {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8 text-gray-600">
-                <Shield className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+              <div className="text-center py-8 text-muted-foreground">
+                <Shield className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                 <p>Sensitivity analysis is opt-in</p>
                 <p className="text-sm">Enable in project settings to see representation insights</p>
               </div>
@@ -410,31 +410,31 @@ export function CraftDashboard({ script, dashboardData }: CraftDashboardProps) {
               {riskFlags.length > 0 ? (
                 <div className="space-y-4">
                   {riskFlags.map((risk: any, index: number) => (
-                    <div key={index} className="border-l-4 border-danger-200 pl-4 space-y-2">
+                    <div key={index} className="border-l-4 border-destructive/20 pl-4 space-y-2">
                       <div className="flex items-center gap-2">
                         <Badge variant="destructive">{risk.kind.replace('_', ' ')}</Badge>
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm text-muted-foreground">
                           {risk.page && `Page ${risk.page}`}
                         </span>
                       </div>
                       {risk.snippet && (
-                        <p className="text-sm bg-gray-50 p-2 rounded italic">"{risk.snippet}"</p>
+                        <p className="text-sm bg-muted p-2 rounded italic">"{risk.snippet}"</p>
                       )}
                       {risk.notes && (
-                        <p className="text-sm text-gray-600">{risk.notes}</p>
+                        <p className="text-sm text-muted-foreground">{risk.notes}</p>
                       )}
                     </div>
                   ))}
-                  <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                    <p className="text-xs text-gray-600">
+                  <div className="mt-4 p-3 bg-muted rounded-lg">
+                    <p className="text-xs text-muted-foreground">
                       <strong>Disclaimer:</strong> This analysis does not constitute legal advice.
                       Consult qualified legal counsel for definitive guidance on content risks.
                     </p>
                   </div>
                 </div>
               ) : (
-                <div className="text-center py-8 text-gray-600">
-                  <CheckCircle className="w-12 h-12 mx-auto mb-4 text-success-600" />
+                <div className="text-center py-8 text-muted-foreground">
+                  <CheckCircle className="w-12 h-12 mx-auto mb-4 text-success" />
                   <p>No risk flags identified</p>
                   <p className="text-sm">Content appears clear of obvious legal-adjacent concerns</p>
                 </div>

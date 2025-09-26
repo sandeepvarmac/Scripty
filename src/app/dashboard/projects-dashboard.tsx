@@ -10,7 +10,9 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useToast } from '@/hooks/use-toast'
 import { DeleteProjectDialog } from '@/components/ui/delete-project-dialog'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { CreateProjectModal } from '@/components/ui/create-project-modal'
 import {
   DropdownMenu,
@@ -70,6 +72,7 @@ interface Script {
 
 export function ProjectsDashboard() {
   const router = useRouter()
+  const { toast } = useToast()
   const [projects, setProjects] = useState<Project[]>([])
   const [scripts, setScripts] = useState<Script[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -78,6 +81,10 @@ export function ProjectsDashboard() {
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null)
   const [isDeletingProject, setIsDeletingProject] = useState(false)
   const [showCreateProjectModal, setShowCreateProjectModal] = useState(false)
+  const [scriptDeleteConfirm, setScriptDeleteConfirm] = useState<{open: boolean, script?: Script}>({
+    open: false,
+    script: undefined
+  })
 
   useEffect(() => {
     const fetchData = async () => {
@@ -178,31 +185,36 @@ export function ProjectsDashboard() {
       }
 
       setProjectToDelete(null)
-      alert(`✅ ${result.message}`)
+      toast({
+        variant: "default",
+        title: "Project Deleted",
+        description: result.message
+      })
 
     } catch (error) {
       console.error('Delete project error:', error)
-      alert(`❌ Failed to delete project: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      toast({
+        variant: "destructive",
+        title: "Delete Failed",
+        description: `Failed to delete project: ${error instanceof Error ? error.message : 'Unknown error'}`
+      })
     } finally {
       setIsDeletingProject(false)
     }
   }
 
-  const handleDeleteScript = async (scriptId: string, scriptTitle: string) => {
-    const confirmMessage = `⚠️ Delete Script: "${scriptTitle}"\n\n` +
-      `This will permanently delete:\n` +
-      `• The screenplay file\n` +
-      `• All AI analyses and coverage reports\n` +
-      `• All scene and character data\n` +
-      `• All associated evidence and insights\n\n` +
-      `This action cannot be undone.\n\n` +
-      `Are you sure you want to proceed?`
+  const handleDeleteScript = (script: Script) => {
+    setScriptDeleteConfirm({ open: true, script })
+  }
 
-    if (!window.confirm(confirmMessage)) {
-      return
-    }
+  const confirmDeleteScript = async () => {
+    if (!scriptDeleteConfirm.script) return
+
+    const { id: scriptId, title, originalFilename } = scriptDeleteConfirm.script
+    const scriptTitle = title || originalFilename
 
     setDeletingScript(scriptId)
+    setScriptDeleteConfirm({ open: false, script: undefined })
 
     try {
       const response = await fetch(`/api/scripts/${scriptId}`, {
@@ -218,11 +230,19 @@ export function ProjectsDashboard() {
       // Remove script from local state
       setScripts(scripts.filter(s => s.id !== scriptId))
 
-      alert(`✅ Script "${scriptTitle}" has been successfully deleted.`)
+      toast({
+        variant: "default",
+        title: "Script Deleted",
+        description: `"${scriptTitle}" has been successfully deleted.`
+      })
 
     } catch (error) {
       console.error('Delete script error:', error)
-      alert(`❌ Failed to delete script: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      toast({
+        variant: "destructive",
+        title: "Delete Failed",
+        description: `Failed to delete script: ${error instanceof Error ? error.message : 'Unknown error'}`
+      })
     } finally {
       setDeletingScript(null)
     }
@@ -538,7 +558,7 @@ export function ProjectsDashboard() {
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => handleDeleteScript(script.id, script.title || script.originalFilename)}
+                                    onClick={() => handleDeleteScript(script)}
                                     disabled={deletingScript === script.id}
                                     className={deletingScript === script.id ? "text-gray-400 cursor-not-allowed" : "text-danger-600 hover:text-danger-700 border-danger-200 hover:border-danger-300"}
                                   >
@@ -620,7 +640,7 @@ export function ProjectsDashboard() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleDeleteScript(script.id, script.title || script.originalFilename)}
+                              onClick={() => handleDeleteScript(script)}
                               disabled={deletingScript === script.id}
                               className={deletingScript === script.id ? "text-gray-400 cursor-not-allowed" : "text-danger-600 hover:text-danger-700 border-danger-200 hover:border-danger-300"}
                             >
@@ -646,6 +666,18 @@ export function ProjectsDashboard() {
         onClose={() => setProjectToDelete(null)}
         onConfirm={handleDeleteProject}
         isDeleting={isDeletingProject}
+      />
+
+      {/* Script Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={scriptDeleteConfirm.open}
+        onOpenChange={(open) => setScriptDeleteConfirm({ open, script: undefined })}
+        title="Delete Script"
+        description={`Are you sure you want to delete "${scriptDeleteConfirm.script?.title || scriptDeleteConfirm.script?.originalFilename}"? This will permanently delete the screenplay file, all AI analyses and coverage reports, all scene and character data, and all associated evidence and insights. This action cannot be undone.`}
+        confirmText="Delete Script"
+        cancelText="Cancel"
+        variant="destructive"
+        onConfirm={confirmDeleteScript}
       />
 
       {/* Create Project Modal */}

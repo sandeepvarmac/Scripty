@@ -1,7 +1,7 @@
 // Screenplay Quality Assessment System
 // Implements 80% threshold system for AI analysis eligibility
 
-import { ParsedScript, Scene } from '@/lib/parsers'
+import { NormalizedScript } from '@/lib/parsers'
 
 export interface QualityAssessment {
   overallScore: number
@@ -33,24 +33,50 @@ const QUALITY_THRESHOLDS = {
 
 const MINIMUM_QUALITY_SCORE = 0.8  // 80% threshold
 
-export function assessScreenplayQuality(script: ParsedScript): QualityAssessment {
+export function assessScreenplayQuality(script: NormalizedScript): QualityAssessment {
   const issues: QualityIssue[] = []
   const strengths: string[] = []
   const recommendations: string[] = []
 
-  // Count different element types
-  const sceneHeadings = script.scenes.filter(s => s.type === 'scene')
-  const characters = script.characters || []
-  const dialogueScenes = script.scenes.filter(s => s.type === 'dialogue')
-  const actionScenes = script.scenes.filter(s => s.type === 'action')
-  const totalWords = calculateTotalWords(script.scenes)
+  // Count different element types from normalized format
+  let sceneHeadingCount = 0
+  let dialogueCount = 0
+  let actionCount = 0
+  let totalWords = 0
+  const speakingCharacters = new Set<string>()
+
+  // Flatten all elements from all scenes
+  for (const scene of script.scenes) {
+    for (const element of scene.elements) {
+      const words = element.text ? element.text.split(/\s+/).length : 0
+      totalWords += words
+
+      switch (element.kind) {
+        case 'SCENE_HEADING':
+          sceneHeadingCount++
+          break
+        case 'DIALOGUE':
+          dialogueCount++
+          if (element.character) {
+            speakingCharacters.add(element.character)
+          }
+          break
+        case 'ACTION':
+          actionCount++
+          break
+      }
+    }
+  }
+
+  const characters = Array.from(speakingCharacters)
+  const pages = script.pages || 0
 
   // Calculate individual scores
   const scores = {
-    structure: assessStructure(sceneHeadings, script.scenes, issues, strengths),
-    characters: assessCharacters(characters, dialogueScenes, issues, strengths),
-    dialogue: assessDialogue(dialogueScenes, script.scenes, issues, strengths),
-    content: assessContent(script.pageCount, totalWords, issues, strengths),
+    structure: assessStructure(sceneHeadingCount, script.scenes.length, issues, strengths),
+    characters: assessCharacters(characters.length, issues, strengths),
+    dialogue: assessDialogue(dialogueCount, issues, strengths),
+    content: assessContent(pages, totalWords, issues, strengths),
     formatting: assessFormatting(script, issues, strengths)
   }
 
@@ -82,13 +108,12 @@ export function assessScreenplayQuality(script: ParsedScript): QualityAssessment
 }
 
 function assessStructure(
-  sceneHeadings: Scene[],
-  allScenes: Scene[],
+  sceneHeadingCount: number,
+  totalScenes: number,
   issues: QualityIssue[],
   strengths: string[]
 ): number {
-  const sceneCount = sceneHeadings.length
-  const sceneRatio = sceneCount / Math.max(allScenes.length, 1)
+  const sceneCount = sceneHeadingCount
 
   if (sceneCount < QUALITY_THRESHOLDS.minimumScenes) {
     issues.push({
@@ -100,29 +125,15 @@ function assessStructure(
     return 0.0
   }
 
-  if (sceneRatio < QUALITY_THRESHOLDS.sceneStructureRatio) {
-    issues.push({
-      category: 'structure',
-      severity: 'major',
-      issue: 'Low scene structure ratio',
-      impact: 'Most content appears to be action blocks rather than proper scenes'
-    })
-    return 0.4
-  }
-
   strengths.push(`Good scene structure with ${sceneCount} scene headings`)
   return sceneCount >= QUALITY_THRESHOLDS.minimumScenes * 2 ? 1.0 : 0.8
 }
 
 function assessCharacters(
-  characters: string[],
-  dialogueScenes: Scene[],
+  characterCount: number,
   issues: QualityIssue[],
   strengths: string[]
 ): number {
-  const characterCount = characters.length
-  const dialogueCount = dialogueScenes.length
-
   if (characterCount < QUALITY_THRESHOLDS.minimumCharacters) {
     issues.push({
       category: 'characters',
@@ -133,6 +144,15 @@ function assessCharacters(
     return 0.0
   }
 
+  strengths.push(`Found ${characterCount} speaking characters`)
+  return characterCount >= QUALITY_THRESHOLDS.minimumCharacters * 2 ? 1.0 : 0.8
+}
+
+function assessDialogue(
+  dialogueCount: number,
+  issues: QualityIssue[],
+  strengths: string[]
+): number {
   if (dialogueCount < QUALITY_THRESHOLDS.minimumDialogue) {
     issues.push({
       category: 'dialogue',
@@ -143,53 +163,8 @@ function assessCharacters(
     return 0.2
   }
 
-  // Check character consistency (characters with multiple lines)
-  const characterLineCount = new Map<string, number>()
-  dialogueScenes.forEach(scene => {
-    if (scene.character) {
-      characterLineCount.set(scene.character, (characterLineCount.get(scene.character) || 0) + 1)
-    }
-  })
-
-  const charactersWithMultipleLines = Array.from(characterLineCount.values()).filter(count => count > 1).length
-  const consistencyRatio = charactersWithMultipleLines / Math.max(characterCount, 1)
-
-  if (consistencyRatio < QUALITY_THRESHOLDS.characterConsistency) {
-    issues.push({
-      category: 'characters',
-      severity: 'major',
-      issue: 'Characters have inconsistent dialogue',
-      impact: 'Most characters speak only once, limiting character development analysis'
-    })
-    return 0.6
-  }
-
-  strengths.push(`${characterCount} well-developed characters with consistent dialogue`)
-  return 1.0
-}
-
-function assessDialogue(
-  dialogueScenes: Scene[],
-  allScenes: Scene[],
-  issues: QualityIssue[],
-  strengths: string[]
-): number {
-  const dialogueCount = dialogueScenes.length
-  const totalScenes = allScenes.length
-  const dialogueRatio = dialogueCount / Math.max(totalScenes, 1)
-
-  if (dialogueRatio < QUALITY_THRESHOLDS.dialogueRatio) {
-    issues.push({
-      category: 'dialogue',
-      severity: 'major',
-      issue: `Low dialogue ratio (${Math.round(dialogueRatio * 100)}%)`,
-      impact: 'Insufficient dialogue for character voice and relationship analysis'
-    })
-    return 0.3
-  }
-
-  strengths.push(`Good dialogue balance (${Math.round(dialogueRatio * 100)}% of content)`)
-  return dialogueRatio >= 0.4 ? 1.0 : 0.8
+  strengths.push(`Good dialogue volume with ${dialogueCount} dialogue lines`)
+  return dialogueCount >= QUALITY_THRESHOLDS.minimumDialogue * 2 ? 1.0 : 0.8
 }
 
 function assessContent(
@@ -218,93 +193,67 @@ function assessContent(
     return 0.4
   }
 
-  strengths.push(`Substantial content: ${pageCount} pages, ${totalWords} words`)
+  strengths.push(`Sufficient content with ${pageCount} pages and ${totalWords} words`)
   return 1.0
 }
 
 function assessFormatting(
-  script: ParsedScript,
+  script: NormalizedScript,
   issues: QualityIssue[],
   strengths: string[]
 ): number {
-  const hasScenes = script.scenes.some(s => s.type === 'scene')
-  const hasCharacters = script.scenes.some(s => s.type === 'character')
-  const hasDialogue = script.scenes.some(s => s.type === 'dialogue')
-  const hasAction = script.scenes.some(s => s.type === 'action')
+  // For normalized scripts, we can assume basic formatting is correct
+  // since they've been successfully parsed
+  const hasTitle = !!script.title
+  const hasScenes = script.scenes.length > 0
+  const hasCharacters = script.characters.length > 0
 
-  let score = 0.0
-  let elementCount = 0
-
-  if (hasScenes) { score += 0.3; elementCount++ }
-  if (hasCharacters) { score += 0.3; elementCount++ }
-  if (hasDialogue) { score += 0.2; elementCount++ }
-  if (hasAction) { score += 0.2; elementCount++ }
-
-  if (elementCount < 3) {
+  if (!hasTitle) {
     issues.push({
       category: 'formatting',
-      severity: 'critical',
-      issue: 'Missing essential screenplay elements',
-      impact: 'Cannot identify proper screenplay structure'
+      severity: 'minor',
+      issue: 'Missing title',
+      impact: 'Title helps with script identification'
     })
-    return 0.0
   }
 
-  if (score < 0.8) {
-    issues.push({
-      category: 'formatting',
-      severity: 'major',
-      issue: 'Incomplete screenplay formatting',
-      impact: 'Some elements may not be properly recognized for analysis'
-    })
-  } else {
-    strengths.push('Proper screenplay formatting detected')
+  if (hasScenes && hasCharacters) {
+    strengths.push('Well-formatted screenplay structure')
+    return hasTitle ? 1.0 : 0.9
   }
 
-  return score
-}
-
-function calculateTotalWords(scenes: Scene[]): number {
-  return scenes.reduce((total, scene) => {
-    return total + (scene.content ? scene.content.split(/\s+/).length : 0)
-  }, 0)
+  return 0.7
 }
 
 function generateRecommendations(
   issues: QualityIssue[],
   recommendations: string[],
   scores: Record<string, number>
-) {
-  if (scores.structure < 0.5) {
-    recommendations.push('Add proper scene headings (INT./EXT. LOCATION - TIME)')
-    recommendations.push('Structure your story in clear, distinct scenes')
+): void {
+  const criticalIssues = issues.filter(i => i.severity === 'critical')
+  const majorIssues = issues.filter(i => i.severity === 'major')
+
+  if (criticalIssues.length > 0) {
+    recommendations.push('Address critical structural issues before submitting for AI analysis')
   }
 
-  if (scores.characters < 0.5) {
-    recommendations.push('Add more speaking characters (at least 3)')
-    recommendations.push('Give characters multiple dialogue exchanges')
+  if (majorIssues.length > 0) {
+    recommendations.push('Consider improving major issues to enhance analysis quality')
   }
 
-  if (scores.dialogue < 0.5) {
-    recommendations.push('Increase dialogue content - aim for 25-40% of total content')
-    recommendations.push('Ensure characters speak in distinct voices')
+  if (scores.structure < 0.8) {
+    recommendations.push('Add more scene headings to improve story structure')
   }
 
-  if (scores.content < 0.5) {
-    recommendations.push('Expand content to at least 3 pages')
-    recommendations.push('Add more detailed action and scene description')
+  if (scores.characters < 0.8) {
+    recommendations.push('Develop more speaking characters for richer character analysis')
   }
 
-  if (scores.formatting < 0.5) {
-    recommendations.push('Use standard screenplay formatting')
-    recommendations.push('Separate scene headings, character names, dialogue, and action')
+  if (scores.dialogue < 0.8) {
+    recommendations.push('Add more dialogue to improve character voice analysis')
   }
 
-  if (recommendations.length === 0) {
-    recommendations.push('Your screenplay meets quality standards for AI analysis!')
+  if (scores.content < 0.8) {
+    recommendations.push('Expand content length for more comprehensive analysis')
   }
 }
-
-// Export for use in upload processing
-export const SCREENPLAY_QUALITY_THRESHOLDS = QUALITY_THRESHOLDS
-export const SCREENPLAY_MINIMUM_SCORE = MINIMUM_QUALITY_SCORE

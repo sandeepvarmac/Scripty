@@ -1,5 +1,9 @@
 // Final Draft FDX format parser
-// FDX is an XML-based format used by Final Draft software
+// - Validates basic FDX structure
+// - Parses <Paragraph Type="..."> stream into a LINEAR list of Scene items
+// - Attributes Dialogue to the most recent Character cue
+// - Adds slugInfo + sceneNumber on scene headings
+// - Emits elementCounts + qualityIndicators for compliance gating
 
 import { ParsedScript, Scene, ParserResult } from './index'
 
@@ -9,22 +13,42 @@ export async function parseFdxFile(file: Buffer, filename: string): Promise<Pars
 
     // Basic XML validation
     if (!content.includes('<?xml') || !content.includes('<FinalDraft')) {
-      return {
-        success: false,
-        error: 'Invalid FDX file format'
-      }
+      return { success: false, error: 'Invalid FDX file format' }
     }
 
-    // Extract basic metadata
-    const title = extractXmlValue(content, 'Title') || extractXmlValue(content, 'TitlePage')
-    const author = extractXmlValue(content, 'Author') || extractXmlValue(content, 'WrittenBy')
+    // Extract basic metadata (best-effort)
+    const title = extractXmlValue(content, 'Title') || extractFromTitlePage(content, 'Title')
+    const author =
+      extractXmlValue(content, 'Author') ||
+      extractXmlValue(content, 'WrittenBy') ||
+      extractFromTitlePage(content, 'Author') ||
+      extractFromTitlePage(content, 'WrittenBy')
 
     // Parse scenes from FDX content
     const scenes = await parseFdxScenes(content)
+
+    // Character list from Character paragraphs
     const characters = extractCharactersFromFdx(content)
 
-    // Estimate page count (FDX doesn't always have explicit page numbers)
-    const pageCount = Math.max(1, Math.ceil(scenes.length / 50))
+    // --- elementCounts for compliance ---
+    const elementCounts = countElements(scenes)
+
+    // --- qualityIndicators for compliance ---
+    const hasScenes = elementCounts.sceneHeadings > 0
+    const hasChars = elementCounts.characterCues > 0
+    const hasDlg = elementCounts.dialogueLines > 0
+    const qualityIndicators = {
+      hasProperFormatting: hasScenes && hasChars && hasDlg,
+      hasStandardElements: hasScenes && (hasChars || hasDlg),
+      hasConsistentMargins: true // FDX abstracts layout; treat as OK for formatting gate
+      // ocrConfidence not applicable to FDX
+    }
+
+    // Estimate page count (FDX may not store explicit pagination)
+    // Rough proxy: ~50 elements per page, but prefer Scene headings if present (1 page ≈ ~1–3 scenes)
+    const approxByElements = Math.max(1, Math.ceil(scenes.length / 50))
+    const approxByScenes = Math.max(1, Math.ceil(elementCounts.sceneHeadings / 2))
+    const pageCount = hasScenes ? Math.max(approxByElements, approxByScenes) : approxByElements
 
     const result: ParsedScript = {
       title,
@@ -36,16 +60,17 @@ export async function parseFdxFile(file: Buffer, filename: string): Promise<Pars
       metadata: {
         parsedAt: new Date(),
         originalFilename: filename,
-        fileSize: file.length
+        fileSize: file.length,
+        elementCounts,      // used by compliance scorer
+        qualityIndicators   // used by compliance scorer
       }
     }
 
     return {
       success: true,
       data: result,
-      warnings: ['FDX parsing is basic - some formatting may be lost']
+      warnings: ['FDX parsing uses a lightweight XML pass; some fine formatting may be simplified']
     }
-
   } catch (error) {
     return {
       success: false,
@@ -54,50 +79,87 @@ export async function parseFdxFile(file: Buffer, filename: string): Promise<Pars
   }
 }
 
+// ------------------- Core FDX Parsing -------------------
+
+function resolveParagraphType(node: string): string {
+  const attrMatch = node.match(/\bType="([^"]*)"/i)
+  if (attrMatch?.[1]) return attrMatch[1].trim().toLowerCase()
+
+  const nestedMatch = node.match(/<Type[^>]*>([\s\S]*?)<\/Type>/i)
+  if (nestedMatch?.[1]) return nestedMatch[1].trim().toLowerCase()
+
+  return 'action'
+}
+
 async function parseFdxScenes(content: string): Promise<Scene[]> {
   const scenes: Scene[] = []
   let sceneId = 1
   let pageNumber = 1
   let lineNumber = 0
 
-  // Extract paragraph elements which contain the screenplay content
-  const paragraphMatches = content.matchAll(/<Paragraph[^>]*>(.*?)<\/Paragraph>/gs)
+  // Keep track of the most recent Character for Dialogue attribution
+  let lastCharacter: string | undefined
 
-  for (const match of paragraphMatches) {
+  // Capture explicit page breaks if present (rare)
+  const pageBreakIndices = new Set<number>()
+  const pageBreakRegex = /<PageBreak\s*\/>/gi
+  let pageBreakMatch
+  while ((pageBreakMatch = pageBreakRegex.exec(content)) !== null) {
+    // We don't have a direct mapping to a paragraph index here;
+    // practical approach: we will still use element-count pagination below.
+    // Keeping this placeholder in case you later wire explicit pagination.
+  }
+
+  // Iterate over all Paragraph nodes
+  const paragraphRegex = /<Paragraph\b[^>]*>([\s\S]*?)<\/Paragraph>/gi
+  let match: RegExpExecArray | null
+  let elementCounter = 0
+
+  while ((match = paragraphRegex.exec(content)) !== null) {
     lineNumber++
-    const paragraphContent = match[1]
+    const paragraphNode = match[0]
+    const paragraphInner = match[1]
 
-    // Extract the actual text content, removing XML tags
-    const textContent = extractTextFromFdxParagraph(paragraphContent)
-
+    const textContent = extractTextFromFdxParagraph(paragraphInner)
     if (!textContent.trim()) continue
 
-    // Determine element type based on FDX Type attribute
-    const typeMatch = match[0].match(/Type="([^"]*)"/)
-    const fdxType = typeMatch?.[1] || 'Action'
+    // Type attribute determines screenplay element
+    const typeKey = resolveParagraphType(paragraphNode)
+
+    // Map to our Scene['type']
+    const kind: Scene['type'] = mapFdxTypeToSceneType(typeKey)
 
     const scene: Scene = {
       id: `fdx-${sceneId++}`,
-      type: mapFdxTypeToSceneType(fdxType),
+      type: kind,
       content: textContent.trim(),
       pageNumber,
       lineNumber
     }
 
-    // Extract character name for dialogue
-    if (scene.type === 'character' || scene.type === 'dialogue') {
-      scene.character = extractCharacterFromFdxType(fdxType, textContent)
+    // Handle Character → Dialogue linkage
+    if (kind === 'character') {
+      // Clean character name (remove parentheticals/extensions)
+      const cleaned = textContent.replace(/\s*\(.*\)$/, '').trim()
+      scene.character = cleaned
+      lastCharacter = cleaned
+    } else if (kind === 'dialogue') {
+      scene.character = lastCharacter
     }
 
-    // Extract scene number for scene headers
-    if (scene.type === 'scene') {
-      scene.sceneNumber = extractSceneNumberFromFdx(textContent)
+    // Scene heading extras: sceneNumber + slugInfo
+    if (kind === 'scene') {
+      scene.sceneNumber = extractSceneNumberFromHeading(textContent)
+      scene.slugInfo = parseSceneSlug(textContent)
+      // Reset lastCharacter when a new scene begins
+      lastCharacter = undefined
     }
 
     scenes.push(scene)
 
-    // Estimate page breaks (roughly every 50 elements)
-    if (sceneId % 50 === 0) {
+    // Heuristic pagination: bump page roughly every ~50 elements
+    elementCounter++
+    if (elementCounter % 50 === 0) {
       pageNumber++
     }
   }
@@ -105,15 +167,49 @@ async function parseFdxScenes(content: string): Promise<Scene[]> {
   return scenes
 }
 
-function extractXmlValue(content: string, tagName: string): string | undefined {
-  const regex = new RegExp(`<${tagName}[^>]*>([^<]*)<\/${tagName}>`, 'i')
-  const match = content.match(regex)
-  return match?.[1]?.trim()
+// ------------------- Element Counting -------------------
+
+function countElements(scenes: Scene[]) {
+  const counts = {
+    sceneHeadings: 0,
+    actionBlocks: 0,
+    characterCues: 0,
+    dialogueLines: 0,
+    parentheticals: 0,
+    transitions: 0
+  }
+  for (const s of scenes) {
+    switch (s.type) {
+      case 'scene': counts.sceneHeadings++; break
+      case 'action': counts.actionBlocks++; break
+      case 'character': counts.characterCues++; break
+      case 'dialogue': counts.dialogueLines++; break
+      case 'parenthetical': counts.parentheticals++; break
+      case 'transition': counts.transitions++; break
+    }
+  }
+  return counts
 }
 
-function extractTextFromFdxParagraph(paragraphContent: string): string {
-  // Remove all XML tags and decode entities
-  return paragraphContent
+// ------------------- XML/Text Helpers -------------------
+
+function extractXmlValue(doc: string, tagName: string): string | undefined {
+  const re = new RegExp(`<${tagName}[^>]*>([\\s\\S]*?)<\\/${tagName}>`, 'i')
+  const m = doc.match(re)
+  return m?.[1]?.replace(/<[^>]*>/g, '').trim() || undefined
+}
+
+// Some FDX files carry Title Page info in an explicit TitlePage structure
+function extractFromTitlePage(doc: string, key: string): string | undefined {
+  // Extremely lightweight pass; expand if you need richer TitlePage parsing
+  const re = new RegExp(`<_${key}[^>]*>([\\s\\S]*?)<\\/_${key}>`, 'i')
+  const m = doc.match(re)
+  return m?.[1]?.replace(/<[^>]*>/g, '').trim() || undefined
+}
+
+function extractTextFromFdxParagraph(paragraphInnerXml: string): string {
+  // Remove nested tags (Text, DualDialogue, etc.) and decode common entities
+  return paragraphInnerXml
     .replace(/<[^>]*>/g, '')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
@@ -123,9 +219,11 @@ function extractTextFromFdxParagraph(paragraphContent: string): string {
     .trim()
 }
 
-function mapFdxTypeToSceneType(fdxType: string): Scene['type'] {
-  switch (fdxType.toLowerCase()) {
+function mapFdxTypeToSceneType(fdxTypeLower: string): Scene['type'] {
+  switch (fdxTypeLower) {
     case 'scene heading':
+    case 'scene_heading':
+    case 'sceneheading':
       return 'scene'
     case 'character':
       return 'character'
@@ -141,36 +239,45 @@ function mapFdxTypeToSceneType(fdxType: string): Scene['type'] {
   }
 }
 
-function extractCharacterFromFdxType(fdxType: string, content: string): string | undefined {
-  if (fdxType.toLowerCase() === 'character') {
-    // Remove parentheticals and clean up character name
-    return content.replace(/\s*\(.*\)$/, '').trim()
+function extractSceneNumberFromHeading(textContent: string): string | undefined {
+  const m = textContent.match(/^(\d+[A-Z]?)\s+/) || textContent.match(/\s+(\d+[A-Z]?)$/)
+  return m?.[1]
+}
+
+// Parse slug into INT/EXT, LOCATION, TOD
+function parseSceneSlug(line: string): { intExt?: string; location?: string; tod?: string } {
+  const clean = line.replace(/^\d+[A-Z]?\s*/, '')
+  const m = clean.match(/^(INT\.?|EXT\.?|INT\/EXT\.?|I\/E\.?)\s+(.+?)(?:\s*-\s*(.+))?$/i)
+  if (m) {
+    let intExt = m[1].replace('.', '').toUpperCase()
+    if (intExt === 'I/E') intExt = 'INT/EXT'
+    const location = m[2]?.trim()
+    const tod = m[3]?.trim()?.toUpperCase()
+    return { intExt, location, tod }
   }
-  return undefined
+  const simple = clean.match(/^(INT\.?|EXT\.?|INT\/EXT\.?|I\/E\.?)\s+(.+)$/i)
+  if (simple) {
+    let intExt = simple[1].replace('.', '').toUpperCase()
+    if (intExt === 'I/E') intExt = 'INT/EXT'
+    const location = simple[2]?.trim()
+    return { intExt, location }
+  }
+  return { location: clean.trim() }
 }
 
-function extractSceneNumberFromFdx(content: string): string | undefined {
-  // Look for scene numbers in the scene heading
-  const match = content.match(/^(\d+[A-Z]?)\s+/) || content.match(/\s+(\d+[A-Z]?)$/)
-  return match?.[1]
-}
-
+// Extract character names by scanning Character paragraphs
 function extractCharactersFromFdx(content: string): string[] {
-  const characters = new Set<string>()
+  const set = new Set<string>()
+  const paragraphRegex = /<Paragraph\b[^>]*>([\s\S]*?)<\/Paragraph>/gi
+  let match: RegExpExecArray | null
 
-  // Find all character paragraph types
-  const characterMatches = content.matchAll(/<Paragraph[^>]*Type="Character"[^>]*>(.*?)<\/Paragraph>/gs)
+  while ((match = paragraphRegex.exec(content)) !== null) {
+    const node = match[0]
+    if (resolveParagraphType(node) !== 'character') continue
 
-  for (const match of characterMatches) {
-    const characterName = extractTextFromFdxParagraph(match[1])
-    if (characterName) {
-      // Clean up character name (remove parentheticals)
-      const cleanName = characterName.replace(/\s*\(.*\)$/, '').trim()
-      if (cleanName) {
-        characters.add(cleanName)
-      }
-    }
+    const raw = extractTextFromFdxParagraph(match[1])
+    const clean = raw.replace(/\s*\(.*\)$/, '').trim()
+    if (clean) set.add(clean)
   }
-
-  return Array.from(characters)
+  return Array.from(set).sort()
 }

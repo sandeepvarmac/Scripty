@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { useToast } from '@/hooks/use-toast'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -62,6 +63,7 @@ export function ScriptChat({
   isCollapsed = false,
   onToggleCollapse
 }: ScriptChatProps) {
+  const { toast } = useToast()
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
@@ -146,11 +148,17 @@ export function ScriptChat({
     if (reference?.sceneId) {
       // This would typically scroll to or highlight the referenced scene
       console.log('Viewing scene reference:', reference)
-      alert(`Would navigate to Scene ${reference.sceneNumber || 'N/A'}, Line ${reference.lineNumber || 'N/A'}`)
+      toast({
+        title: "Navigation Coming Soon",
+        description: `Would navigate to Scene ${reference.sceneNumber || 'N/A'}, Line ${reference.lineNumber || 'N/A'}`
+      })
     } else if (reference?.analysisId) {
       // This would typically show the referenced analysis
       console.log('Viewing analysis reference:', reference)
-      alert(`Would show ${reference.analysisType || 'analysis'} results`)
+      toast({
+        title: "Analysis View Coming Soon",
+        description: `Would show ${reference.analysisType || 'analysis'} results`
+      })
     }
   }
 

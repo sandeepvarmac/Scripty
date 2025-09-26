@@ -121,40 +121,40 @@ export function PacingDashboard({ script, dashboardData }: PacingDashboardProps)
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <Clock className="w-8 h-8 text-brand-600" />
+            <Clock className="w-8 h-8 text-primary" />
             <div>
-              <p className="text-sm text-gray-600">Pacing Score</p>
-              <p className="text-2xl font-bold text-gray-900">{pacingScore.toFixed(1)}/10</p>
+              <p className="text-sm text-muted-foreground">Pacing Score</p>
+              <p className="text-2xl font-bold text-foreground">{pacingScore.toFixed(1)}/10</p>
             </div>
           </div>
         </Card>
 
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <Activity className="w-8 h-8 text-success-600" />
+            <Activity className="w-8 h-8 text-success" />
             <div>
-              <p className="text-sm text-gray-600">Avg Tension</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.avgTension}/10</p>
+              <p className="text-sm text-muted-foreground">Avg Tension</p>
+              <p className="text-2xl font-bold text-foreground">{stats.avgTension}/10</p>
             </div>
           </div>
         </Card>
 
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <BarChart3 className="w-8 h-8 text-warning-600" />
+            <BarChart3 className="w-8 h-8 text-warning" />
             <div>
-              <p className="text-sm text-gray-600">Scene Length</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.avgSceneLength}</p>
+              <p className="text-sm text-muted-foreground">Scene Length</p>
+              <p className="text-2xl font-bold text-foreground">{stats.avgSceneLength}</p>
             </div>
           </div>
         </Card>
 
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <Zap className="w-8 h-8 text-danger-600" />
+            <Zap className="w-8 h-8 text-destructive" />
             <div>
-              <p className="text-sm text-gray-600">Dialogue %</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.dialogueRatio}%</p>
+              <p className="text-sm text-muted-foreground">Dialogue %</p>
+              <p className="text-2xl font-bold text-foreground">{stats.dialogueRatio}%</p>
             </div>
           </div>
         </Card>
@@ -177,16 +177,16 @@ export function PacingDashboard({ script, dashboardData }: PacingDashboardProps)
                 <Area
                   type="monotone"
                   dataKey="complexity"
-                  fill="#8b5cf6"
+                  className="fill-primary"
                   fillOpacity={0.3}
-                  stroke="#8b5cf6"
+                  className="stroke-primary"
                   strokeWidth={2}
                   name="Complexity"
                 />
                 <Line
                   type="monotone"
                   dataKey="tension"
-                  stroke="#ef4444"
+                  className="stroke-destructive"
                   strokeWidth={3}
                   name="Tension"
                 />
@@ -209,13 +209,13 @@ export function PacingDashboard({ script, dashboardData }: PacingDashboardProps)
                 <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center gap-3">
                     <div className={`w-3 h-3 rounded-full ${
-                      beat.timing === 'ON_TIME' ? 'bg-success-500' :
-                      beat.timing === 'EARLY' || beat.timing === 'LATE' ? 'bg-warning-500' :
-                      'bg-danger-500'
+                      beat.timing === 'ON_TIME' ? 'bg-success' :
+                      beat.timing === 'EARLY' || beat.timing === 'LATE' ? 'bg-warning' :
+                      'bg-destructive'
                     }`}></div>
                     <div>
-                      <p className="font-medium text-gray-900">{beat.beat}</p>
-                      <p className="text-sm text-gray-600">
+                      <p className="font-medium text-foreground">{beat.beat}</p>
+                      <p className="text-sm text-muted-foreground">
                         Page {beat.actualPage} (expected ~{beat.expectedPage})
                       </p>
                     </div>
@@ -246,7 +246,7 @@ export function PacingDashboard({ script, dashboardData }: PacingDashboardProps)
                   <XAxis dataKey="range" />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="count" fill="#8b5cf6" />
+                  <Bar dataKey="count" className="fill-primary" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -268,7 +268,7 @@ export function PacingDashboard({ script, dashboardData }: PacingDashboardProps)
                 <XAxis dataKey="page" />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="pace" fill="#10b981" name="Pacing Score" />
+                <Bar dataKey="pace" className="fill-success" name="Pacing Score" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -293,8 +293,8 @@ export function PacingDashboard({ script, dashboardData }: PacingDashboardProps)
                   type="monotone"
                   dataKey="dialogueLines"
                   stackId="1"
-                  stroke="#06b6d4"
-                  fill="#06b6d4"
+                  className="stroke-chart-2"
+                  className="fill-chart-2"
                   fillOpacity={0.6}
                   name="Dialogue Lines"
                 />
@@ -302,8 +302,8 @@ export function PacingDashboard({ script, dashboardData }: PacingDashboardProps)
                   type="monotone"
                   dataKey="actionLines"
                   stackId="1"
-                  stroke="#8b5cf6"
-                  fill="#8b5cf6"
+                  className="stroke-primary"
+                  className="fill-primary"
                   fillOpacity={0.6}
                   name="Action Lines"
                 />
@@ -322,17 +322,17 @@ export function PacingDashboard({ script, dashboardData }: PacingDashboardProps)
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <h4 className="font-semibold text-gray-900">Rhythm Analysis</h4>
+              <h4 className="font-semibold text-foreground">Rhythm Analysis</h4>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Overall Pacing</span>
+                  <span className="text-sm text-muted-foreground">Overall Pacing</span>
                   <div className="flex items-center gap-2">
                     <Progress value={pacingScore * 10} className="w-20 h-2" />
                     <span className="text-sm font-medium">{pacingScore.toFixed(1)}/10</span>
                   </div>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Tension Variation</span>
+                  <span className="text-sm text-muted-foreground">Tension Variation</span>
                   <Badge variant="outline">
                     {tensionWaveform.length > 1 &&
                      Math.max(...tensionWaveform.map(t => t.tension)) - Math.min(...tensionWaveform.map(t => t.tension)) > 5
@@ -340,7 +340,7 @@ export function PacingDashboard({ script, dashboardData }: PacingDashboardProps)
                   </Badge>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Scene Variety</span>
+                  <span className="text-sm text-muted-foreground">Scene Variety</span>
                   <Badge variant="outline">
                     {sceneLengthDistribution.filter(b => b.count > 0).length >= 3 ? 'Varied' : 'Uniform'}
                   </Badge>
@@ -349,27 +349,27 @@ export function PacingDashboard({ script, dashboardData }: PacingDashboardProps)
             </div>
 
             <div className="space-y-4">
-              <h4 className="font-semibold text-gray-900">Recommendations</h4>
+              <h4 className="font-semibold text-foreground">Recommendations</h4>
               <div className="space-y-3 text-sm">
                 {pacingScore < 6 && (
-                  <div className="p-3 bg-warning-50 border border-warning-200 rounded-lg">
-                    <p className="text-warning-800">
+                  <div className="p-3 bg-warning/10 border border-warning/20 rounded-lg">
+                    <p className="text-warning">
                       <strong>Pacing Concern:</strong> Consider varying scene lengths and tension levels
                       to improve rhythm and reader engagement.
                     </p>
                   </div>
                 )}
                 {beatPacing.filter(b => b.timing !== 'ON_TIME').length > 2 && (
-                  <div className="p-3 bg-warning-50 border border-warning-200 rounded-lg">
-                    <p className="text-warning-800">
+                  <div className="p-3 bg-warning/10 border border-warning/20 rounded-lg">
+                    <p className="text-warning">
                       <strong>Structure Timing:</strong> Multiple story beats are off expected timing.
                       Consider restructuring for better pacing.
                     </p>
                   </div>
                 )}
                 {parseFloat(stats.dialogueRatio) > 70 && (
-                  <div className="p-3 bg-info-50 border border-info-200 rounded-lg">
-                    <p className="text-info-800">
+                  <div className="p-3 bg-muted border border-border rounded-lg">
+                    <p className="text-foreground">
                       <strong>Dialogue Heavy:</strong> High dialogue percentage. Consider adding
                       more action and visual storytelling.
                     </p>

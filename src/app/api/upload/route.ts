@@ -127,11 +127,23 @@ export async function POST(request: NextRequest) {
     // Use authenticated user ID
     const userId = user.id
 
+    // Debug log the parseResult structure
+    console.log('DEBUG: parseScript returned:', {
+      success: parseResult.success,
+      hasData: !!parseResult.data,
+      dataKeys: parseResult.data ? Object.keys(parseResult.data) : [],
+      hasScenes: parseResult.data?.scenes ? parseResult.data.scenes.length : 0,
+      hasCharacters: parseResult.data?.characters ? parseResult.data.characters.length : 0,
+      hasMeta: !!parseResult.data?.meta,
+      metaKeys: parseResult.data?.meta ? Object.keys(parseResult.data.meta) : [],
+      pages: parseResult.data?.pages
+    })
+
     // Save to evidence store
     const savedScript = await saveScriptToEvidenceStore({
       userId,
       projectId: projectId || null,
-      parsedScript: parseResult.data!
+      normalizedScript: parseResult.data!
     })
 
     // Return saved script data with quality assessment

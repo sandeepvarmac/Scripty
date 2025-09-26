@@ -13,6 +13,7 @@ import { Progress } from "@/components/ui/progress"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
+import { useToast } from "@/hooks/use-toast"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -177,6 +178,7 @@ function prepareRubricData(scores: Score[]) {
 }
 
 export function EnhancedTabbedAnalysis({ script, allVersions = [] }: EnhancedTabbedAnalysisProps) {
+  const { toast } = useToast()
   const [chatOpen, setChatOpen] = useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisProgress, setAnalysisProgress] = useState(0)
@@ -389,13 +391,21 @@ export function EnhancedTabbedAnalysis({ script, allVersions = [] }: EnhancedTab
         console.error('Analysis failed:', error)
         setIsAnalyzing(false)
         setAnalysisProgress(0)
-        alert('Analysis failed: ' + (error.error || 'Unknown error'))
+        toast({
+          variant: "destructive",
+          title: "Analysis Failed",
+          description: error.error || 'Unknown error occurred during analysis'
+        })
       }
     } catch (error) {
       console.error('Analysis error:', error)
       setIsAnalyzing(false)
       setAnalysisProgress(0)
-      alert('Analysis failed. Please try again.')
+      toast({
+        variant: "destructive",
+        title: "Analysis Failed",
+        description: "Analysis failed. Please try again."
+      })
     }
   }
 

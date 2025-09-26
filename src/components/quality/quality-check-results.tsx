@@ -52,9 +52,9 @@ export default function QualityCheckResults({
   }
 
   const getScoreBgColor = (score: number) => {
-    if (score >= 0.8) return 'bg-green-50 border-green-200'
-    if (score >= 0.6) return 'bg-yellow-50 border-yellow-200'
-    return 'bg-red-50 border-red-200'
+    if (score >= 0.8) return 'bg-success/10 border-success/20'
+    if (score >= 0.6) return 'bg-warning/10 border-warning/20'
+    return 'bg-destructive/10 border-destructive/20'
   }
 
   const getSeverityIcon = (severity: string) => {
@@ -133,7 +133,7 @@ export default function QualityCheckResults({
             <CardContent>
               <div className="space-y-3">
                 {qualityAssessment.issues.map((issue, index) => (
-                  <div key={index} className="flex items-start gap-3 p-3 border rounded-lg bg-red-50">
+                  <div key={index} className="flex items-start gap-3 p-3 border rounded-lg bg-destructive/10">
                     {getSeverityIcon(issue.severity)}
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
@@ -165,7 +165,7 @@ export default function QualityCheckResults({
             <CardContent>
               <div className="space-y-2">
                 {qualityAssessment.strengths.map((strength, index) => (
-                  <div key={index} className="flex items-start gap-2 p-2 bg-green-50 rounded">
+                  <div key={index} className="flex items-start gap-2 p-2 bg-success/10 rounded">
                     <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5" />
                     <span className="text-sm">{strength}</span>
                   </div>
@@ -227,7 +227,7 @@ export default function QualityCheckResults({
                 disabled
                 className="h-auto p-4 flex flex-col items-center gap-2 text-center w-full opacity-60"
               >
-                <Sparkles className="h-8 w-8 text-purple-600" />
+                <Sparkles className="h-8 w-8 text-primary" />
                 <div>
                   <div className="font-semibold">AI Format Conversion</div>
                   <div className="text-xs text-muted-foreground">
@@ -235,7 +235,7 @@ export default function QualityCheckResults({
                   </div>
                 </div>
               </Button>
-              <Badge className="absolute -top-2 -right-2 text-xs bg-purple-600">
+              <Badge className="absolute -top-2 -right-2 text-xs bg-primary">
                 Coming Soon
               </Badge>
             </div>
@@ -300,7 +300,7 @@ function AIConversionPlaceholder() {
           dialogue structure.
         </p>
 
-        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4 max-w-lg mx-auto">
+        <div className="bg-warning/10 border border-warning/20 rounded-md p-3 mb-4 max-w-lg mx-auto">
           <div className="flex items-start gap-2">
             <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5" />
             <div className="text-left">

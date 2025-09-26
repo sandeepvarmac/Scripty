@@ -2,12 +2,12 @@
 // Handles saving parsed scripts and creating scene-level evidence for analysis
 
 import { prisma } from '@/lib/prisma'
-import { ParsedScript, Scene as ParsedScene } from '@/lib/parsers'
+import { NormalizedScript } from '@/lib/parsers'
 
 export interface SaveScriptOptions {
   userId: string
   projectId: string | null
-  parsedScript: ParsedScript
+  normalizedScript: NormalizedScript
   fileUrl?: string // Optional file storage URL
 }
 
@@ -33,14 +33,32 @@ export interface SceneEvidence {
 export async function saveScriptToEvidenceStore(
   options: SaveScriptOptions
 ): Promise<SavedScript> {
-  const { userId, projectId, parsedScript, fileUrl } = options
+  const { userId, projectId, normalizedScript, fileUrl } = options
 
-
-  if (!parsedScript.scenes) {
-    throw new Error('Parsed script missing scenes array')
+  // Add comprehensive validation and error logging
+  if (!normalizedScript) {
+    console.error('SaveScriptToEvidenceStore: normalizedScript is null/undefined')
+    throw new Error('Normalized script is null or undefined')
   }
-  if (!parsedScript.characters) {
-    throw new Error('Parsed script missing characters array')
+  if (!normalizedScript.scenes) {
+    console.error('SaveScriptToEvidenceStore: missing scenes array', {
+      hasScenes: !!normalizedScript.scenes,
+      scriptKeys: Object.keys(normalizedScript)
+    })
+    throw new Error('Normalized script missing scenes array')
+  }
+  if (!normalizedScript.characters) {
+    console.error('SaveScriptToEvidenceStore: missing characters array', {
+      hasCharacters: !!normalizedScript.characters,
+      scriptKeys: Object.keys(normalizedScript)
+    })
+    throw new Error('Normalized script missing characters array')
+  }
+  if (!normalizedScript.meta) {
+    console.warn('SaveScriptToEvidenceStore: missing meta object, will use defaults', {
+      hasMeta: !!normalizedScript.meta,
+      scriptKeys: Object.keys(normalizedScript)
+    })
   }
 
   try {
@@ -51,38 +69,56 @@ export async function saveScriptToEvidenceStore(
         data: {
           userId,
           projectId,
-          originalFilename: parsedScript.metadata.originalFilename,
-          title: parsedScript.title,
-          author: parsedScript.author,
-          format: mapFormatToEnum(parsedScript.format),
-          fileSize: parsedScript.metadata.fileSize,
-          pageCount: parsedScript.pageCount,
-          totalScenes: parsedScript.scenes.length,
-          totalCharacters: parsedScript.characters.length,
+          originalFilename: normalizedScript.meta?.originalFilename || 'unknown_file',
+          title: normalizedScript.title,
+          author: normalizedScript.author,
+          format: mapFormatToEnum(normalizedScript.format),
+          fileSize: normalizedScript.meta?.bytes || 0,
+          pageCount: normalizedScript.pages || 0,
+          totalScenes: normalizedScript.scenes.length,
+          totalCharacters: normalizedScript.characters.length,
           status: 'COMPLETED',
           processedAt: new Date(),
           fileUrl
         }
       })
 
-      // 2. Save scenes in batches using createMany for better performance
-      const sceneData = parsedScript.scenes.map((scene, index) => ({
-        scriptId: script.id,
-        sceneNumber: scene.sceneNumber,
-        type: mapSceneTypeToEnum(scene.type),
-        content: scene.content,
-        pageNumber: scene.pageNumber,
-        lineNumber: scene.lineNumber,
-        character: scene.character,
-        orderIndex: index,
-        wordCount: scene.content ? scene.content.split(' ').length : 0,
-        // Enhanced scene information from slug parsing
-        intExt: scene.slugInfo?.intExt === 'INT' ? 'INT' :
-                scene.slugInfo?.intExt === 'EXT' ? 'EXT' :
-                scene.slugInfo?.intExt === 'INT/EXT' ? 'INT_EXT' : null,
-        location: scene.slugInfo?.location,
-        tod: scene.slugInfo?.tod
-      }))
+      // 2. Flatten normalized scenes into scene elements for database storage
+      const sceneData: any[] = []
+      let globalIndex = 0
+
+      for (const normalizedScene of normalizedScript.scenes) {
+        for (const element of normalizedScene.elements) {
+          const isSceneHeading = element.kind === 'SCENE_HEADING'
+          const isDialogue = element.kind === 'DIALOGUE' && 'character' in element
+
+          // Clean text to remove null bytes and other problematic characters
+          const cleanText = element.text ? element.text.replace(/[\0\x00]/g, '').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '').trim() : ''
+          const cleanCharacter = (isDialogue && element.character) ? element.character.replace(/[\0\x00]/g, '').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '').trim() : null
+          const cleanLocation = (isSceneHeading && normalizedScene.slug?.location) ? normalizedScene.slug.location.replace(/[\0\x00]/g, '').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '').trim() : null
+          const cleanTod = (isSceneHeading && normalizedScene.slug?.tod) ? normalizedScene.slug.tod.replace(/[\0\x00]/g, '').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '').trim() : null
+
+          sceneData.push({
+            scriptId: script.id,
+            sceneNumber: isSceneHeading ? normalizedScene.number?.toString() : null,
+            type: mapElementKindToSceneType(element.kind),
+            content: cleanText,
+            pageNumber: normalizedScene.pageStart || 0,
+            lineNumber: globalIndex + 1,
+            character: cleanCharacter,
+            orderIndex: globalIndex++,
+            wordCount: cleanText ? cleanText.split(' ').length : 0,
+            // Enhanced scene information - only for actual scene headings
+            intExt: isSceneHeading ? (
+              normalizedScene.slug?.intExt === 'INT' ? 'INT' :
+              normalizedScene.slug?.intExt === 'EXT' ? 'EXT' :
+              normalizedScene.slug?.intExt === 'INT/EXT' ? 'INT_EXT' : null
+            ) : null,
+            location: cleanLocation,
+            tod: cleanTod
+          })
+        }
+      }
 
       // Use createMany for much better performance
       await tx.scene.createMany({
@@ -95,11 +131,13 @@ export async function saveScriptToEvidenceStore(
         orderBy: { orderIndex: 'asc' }
       })
 
-      // 3. Save unique characters
+      // 3. Save unique characters from normalized data
       const characterMap = new Map<string, number>()
-      parsedScript.scenes.forEach((scene) => {
-        if (scene.character) {
-          characterMap.set(scene.character, (characterMap.get(scene.character) || 0) + 1)
+
+      // Count dialogue occurrences from the flattened scene data
+      sceneData.forEach((sceneElement) => {
+        if (sceneElement.character) {
+          characterMap.set(sceneElement.character, (characterMap.get(sceneElement.character) || 0) + 1)
         }
       })
 
@@ -108,7 +146,7 @@ export async function saveScriptToEvidenceStore(
         scriptId: script.id,
         name,
         dialogueCount,
-        firstAppearance: findFirstAppearance(parsedScript.scenes, name)
+        firstAppearance: findFirstAppearanceInNormalizedScenes(normalizedScript.scenes, name)
       }))
 
       await tx.character.createMany({
@@ -135,6 +173,9 @@ export async function saveScriptToEvidenceStore(
 
   } catch (error) {
     console.error('Error saving script to evidence store:', error)
+    console.error('Normalized script metadata:', JSON.stringify(normalizedScript.meta, null, 2))
+    console.error('User ID:', userId)
+    console.error('Project ID:', projectId)
     throw new Error(`Failed to save script: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
 }
@@ -360,14 +401,32 @@ function mapSceneTypeToEnum(type: string): 'SCENE_HEADING' | 'ACTION' | 'CHARACT
   }
 }
 
-function findFirstAppearance(scenes: ParsedScene[], characterName: string): number | null {
+function mapElementKindToSceneType(kind: string): 'SCENE_HEADING' | 'ACTION' | 'CHARACTER' | 'DIALOGUE' | 'PARENTHETICAL' | 'TRANSITION' {
+  switch (kind) {
+    case 'SCENE_HEADING': return 'SCENE_HEADING'
+    case 'ACTION': return 'ACTION'
+    case 'DIALOGUE': return 'DIALOGUE'
+    case 'PARENTHETICAL': return 'PARENTHETICAL'
+    case 'TRANSITION': return 'TRANSITION'
+    case 'SHOT': return 'ACTION' // Map SHOT to ACTION
+    default: return 'ACTION'
+  }
+}
+
+function findFirstAppearanceInNormalizedScenes(scenes: NormalizedScript['scenes'], characterName: string): number | null {
+  let lineNumber = 1
+
   for (const scene of scenes) {
-    if (scene.character === characterName) {
-      return scene.lineNumber
+    for (const element of scene.elements) {
+      if (element.kind === 'DIALOGUE' && 'character' in element && element.character === characterName) {
+        return lineNumber
+      }
+      lineNumber++
     }
   }
   return null
 }
+
 
 // Generate basic evidence from scenes in batches
 async function generateInitialEvidenceInBatches(tx: any, scriptId: string, scenes: any[]) {

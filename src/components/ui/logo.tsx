@@ -22,6 +22,7 @@ export function ScriptyBoyLogo({ size = "md", showWordmark = false, className }:
           src="/wordmark.png"
           alt="ScriptyBoy"
           fill
+          sizes="(max-width: 768px) 128px, 160px"
           className="object-contain"
         />
       </div>
@@ -34,6 +35,7 @@ export function ScriptyBoyLogo({ size = "md", showWordmark = false, className }:
         src="/logo.png"
         alt="ScriptyBoy"
         fill
+        sizes="(max-width: 768px) 32px, (max-width: 1200px) 40px, 48px"
         className="object-contain"
       />
     </div>

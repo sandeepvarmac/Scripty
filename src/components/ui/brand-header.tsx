@@ -30,6 +30,7 @@ export function BrandHeader({ size = "md", className }: BrandHeaderProps) {
           src="/logo.png"
           alt="ScriptyBoy Logo"
           fill
+          sizes="(max-width: 768px) 32px, (max-width: 1200px) 40px, 48px"
           className="object-contain"
         />
       </div>
