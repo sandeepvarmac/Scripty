@@ -1,0 +1,797 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FinalDraft DocumentType="Script" Template="No" Version="1">
+  <TitlePage>
+    <Content>
+      <TitlePageElement>
+        <Type>Title</Type>
+        <Text>DARK ECHO</Text>
+      </TitlePageElement>
+      <TitlePageElement>
+        <Type>Credit</Type>
+        <Text>Written by</Text>
+      </TitlePageElement>
+      <TitlePageElement>
+        <Type>Author</Type>
+        <Text>Sandeep Varma &amp; ChatGPT</Text>
+      </TitlePageElement>
+      <TitlePageElement>
+        <Type>Date</Type>
+        <Text>2025-09-25</Text>
+      </TitlePageElement>
+    </Content>
+  </TitlePage>
+  <Content>
+    <Paragraph>
+      <Type>Scene Heading</Type>
+      <Text>EXT. BACK ALLEY BEHIND APARTMENT – NIGHT</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>A narrow alley. Humming streetlights. A lone MOPED ticks as it cools.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>NISHA (hoodie up) drags a cracked CARDBOARD BOX from a dumpster.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>She freezes. A metallic RASP echoes -- a vent fan? Or a whisper?</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>NISHA</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Parenthetical</Type>
+      <Text>(to herself, barely audible)</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            Don’t look back.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>She folds the box, stuffs inside: a small DIGITAL RECORDER with red tape</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>across it: “D-ROOM.” Footsteps scrape nearby. Nisha bolts.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>A SHADOW crosses the brick wall — the silhouette looks like DEV.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Transition</Type>
+      <Text>CUT TO:</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Scene Heading</Type>
+      <Text>INT. APARTMENT 3B – NIGHT</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>Dark. The only light: a FISH TANK glow.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>NISHA locks the door. DEV sits at the table, fiddling with a ring of KEYS.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>DEV</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            Where were you? It’s past midnight.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>NISHA</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            I heard it again. In the vents. The voice that knows my name.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>DEV</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            We talked about this. The doctor said—</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>The bathroom fan kicks on by itself. Both turn. Silence.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>DEV (CONT’D)</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            I changed the locks. If someone has a spare key — that ends tonight.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>He lifts a small metal KEY labeled “D.” Nisha’s eyes fix on it.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>NISHA</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            That’s not ours.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>The fan stops. A muffled KNOCK from the ceiling. Three beats. Tap. Tap. Tap.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>NISHA (CONT’D)</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            That pattern. Same as the recording.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>DEV pockets the “D” key, uneasy.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Scene Heading</Type>
+      <Text>INT. STAIRWELL – NIGHT</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>Bare concrete. Emergency light flickers. NISHA hurries down. KIRAN, hoodie and</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>backpack, appears holding a TOOL ROLL and a tiny ENDOSCOPE camera.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>KIRAN</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            You texted? I brought the scope. We can check the vent chase.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>NISHA</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            If it’s a person, we call the cops. If it’s... something else—</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>KIRAN</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            Then we stop feeding it your fear.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>They pry open a VENT GRATE. Air hisses. A narrow, dark shaft.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>KIRAN (CONT’D)</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            Ready?</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>Nisha nods. He snakes the camera inside. On his phone: darkness—then a GLINT</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>of metal. A key ring. One key labeled “D.” Another labeled “R.”</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>NISHA</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            R... for Rhea.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>KIRAN</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            Your sister?</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>NISHA</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            She moved out months ago. Took her things. We haven’t spoken since.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>A distant metallic LAUGH trickles through the shaft — or just warped fan noise.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>KIRAN</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            That’s not just air.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>They kill the light; the phone screen shows a SMUDGE of a FACE for one frame—</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>then static. Nisha yanks the cable; the image freezes on a distorted grin.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Transition</Type>
+      <Text>CUT TO:</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Scene Heading</Type>
+      <Text>EXT. ROOFTOP – NIGHT</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>Wind. The city hums below. A humming VENT STACK rises center stage.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>DEV bursts from the door, finds NISHA already there, gripping the recorder.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>DEV</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            You shouldn’t be up here.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>NISHA</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            Neither should you. Why is your key in the vents? Why is there one</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            for Rhea? What did you two lock away?</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>The rooftop door creaks again. RHEA steps out, pale, guarded.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>RHEA</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            Because you asked us to.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>Nisha falters.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>RHEA (CONT’D)</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            The doctor said externalize the episodes. Lock the triggers. You said</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            you didn’t want to remember the D-ROOM. We hid the keys in the vents.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>DEV</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            We were trying to help you sleep.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>Nisha’s recorder — the one from the alley — BLIPS red. A distorted whisper</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>leaks out: NISHA’S OWN VOICE, low and predatory.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>                      RECORDER (NISHA’S VOICE)</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>            Don’t look back.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>A beam of light sweeps across them. OFFICER MALIK and MR. VARMA emerge</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>from the stair door.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>OFFICER MALIK</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            Evening. We got a call. Neighbors heard banging. Everyone step away</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            from the edge.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>MR. VARMA</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            I told you. Too much noise from 3B. Strange hours.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>NISHA</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            The vents are talking. The D-room is—</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>RHEA</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            Nisha, breathe. Look at me.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>Wind moans through the vent stack. Taps echo: Tap. Tap. Tap.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>DEV</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            It’s a broken damper. That’s all.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>The recorder clicks off. Darkness thickens. Nisha edges toward the vent.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>OFFICER MALIK</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            Ma’am—</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>Nisha holds the recorder over the vent. Listens. A hush. Then a soft,</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>childlike version of her voice: “I’m still here.”</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>NISHA</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            If you locked my fear away, why is it still inside the walls?</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>RHEA</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            Because the walls are you. That’s what the doctor said.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>A final COLD WIND surges, slamming the stair door shut. Everyone jumps.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Scene Heading</Type>
+      <Text>INT. APARTMENT 3B – DAY</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>An overcast morning. Quiet. NISHA sits at the table. No fish tank glow.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>The recorder rests between two keys: “D” and “R.”</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>RHEA pours tea. DEV stands by the window, tired.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>RHEA</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            We can bring the doctor back. Start again. No vents. No hiding.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            We keep the keys on the table.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>DEV</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            We change the locks again. New ones. No letters.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>Nisha studies the recorder, presses PLAY. Silence. She exhales.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Character</Type>
+      <Text>NISHA</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Dialogue</Type>
+      <Text>            Tonight I’ll sleep with the lights off.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>A soft, almost polite KNOCK comes from the ceiling.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>Tap. Tap. Tap.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>The morning light thins as a cloud crosses the sun.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Transition</Type>
+      <Text>FADE OUT.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text/>
+    </Paragraph>
+    <Paragraph>
+      <Type>Action</Type>
+      <Text>TITLE OVER BLACK: THE ECHO LIVES WHERE YOU HIDE IT.</Text>
+    </Paragraph>
+  </Content>
+</FinalDraft>

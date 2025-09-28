@@ -39,7 +39,10 @@ interface FeasibilityDashboardProps {
 }
 
 export function FeasibilityDashboard({ script, dashboardData }: FeasibilityDashboardProps) {
-  const {\n  feasibility = [],\n  scores = []\n} = dashboardData ?? {}
+  const {
+    feasibility = [],
+    scores = []
+  } = dashboardData ?? {}
 
   // Calculate feasibility metrics
   const feasibilityScore = scores.find((s: any) => s.category === 'FEASIBILITY')?.value || 0

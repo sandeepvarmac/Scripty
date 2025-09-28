@@ -1,0 +1,609 @@
+# Analysis Workspace – Engineering Spec (v1.0)
+
+**Product**: Code AI Screenplay Analyst
+**Scope**: Post-Upload workflow (Parse & Extract) → Analysis Workspace (Overview, Read, Analyze, Collaborate, Deliver)
+**Audience**: Frontend, Backend, QA, Design
+**Date**: 2025‑09‑27
+
+---
+
+## 1) Purpose & Principles
+
+This document specifies the end-to-end UX and engineering details to implement the Analysis Workspace. It converts the prior “giant static page” into a **hybrid workspace**: a persistent shell with **goal‑focused sub‑routes** to keep users oriented and reduce cognitive load. No analysis runs on Uploads. Users land on Overview after **Parse & Extract** and opt into analysis.
+
+**Design principles**
+
+* Progressive disclosure over information dumps.
+* Deep links everywhere; never lose context.
+* Fast first paint; heavy visuals lazy‑load.
+* Clear tier gating without dead‑ends.
+
+---
+
+## 2) Roles & Subscription Tiers
+
+**Tiers:** Free, Pro, Team, Enterprise (Ent).
+Gating is enforced via **feature flags** returned in the session/profile payload.
+
+High‑level capabilities per tier:
+
+* **Free**: Parse facts, basic reader & filters, Quick analysis (lite), basic charts, personal notes.
+* **Pro**: Comprehensive & Custom analyses, high‑res charts, Coverage, AI notes, exports, advanced metrics.
+* **Team**: Collaboration (assign/mention/resolve), presence, batch/scheduled exports, continuity tracker.
+* **Ent**: Compliance (watermarks, DLP, audit, custom templates/Webhooks, risk taxonomies, data residency).
+
+A full element‑to‑tier matrix appears in §10.
+
+---
+
+## 3) Preceding Screen: Uploads → Parse & Extract
+
+**Route:** `/uploads`
+
+**Primary CTA:** **Parse & Extract** (no analysis here)
+
+**On click**
+
+1. POST `/api/v1/uploads/:uploadId/parse` → creates **Script** record and persisted **ParsedBundle**.
+2. Redirect to `/scripts/:id/overview?state=parsed`.
+
+**Parsed data available**: format, pages, scenes (with headings), characters (names), INT/EXT, DAY/NIGHT, locations, basic runtime estimate, basic complexity index. No beats/notes/coverage yet.
+
+**Empty/First‑time copy (Overview)**: “Parsed successfully. Run **Quick Analysis** to populate insights.”
+
+---
+
+## 4) Information Architecture (Routes)
+
+```
+/scripts/:id/overview            # Digest → decide next action
+/scripts/:id/read                # Focused reader (scene rail + pages + inspector)
+/scripts/:id/analyze/craft       # Craft sub‑tabs
+/scripts/:id/analyze/pacing
+/scripts/:id/analyze/characters
+/scripts/:id/analyze/feasibility
+/scripts/:id/analyze/coverage
+/scripts/:id/collab/notes        # Triage & assignments
+/scripts/:id/deliver/exports     # Outputs & branding
+```
+
+**Persistent shell** (Overview + Read + all Analyze/Collaborate/Deliver):
+
+* Top app bar (breadcrumbs; mode switch; Chat trigger)
+* Optional **sticky analysis bar** (Run Quick/Comprehensive/Custom + progress)
+* Left **Scene Rail** (Read & Analyze only; collapsible on small screens)
+
+---
+
+## 5) Layout Shell & Navigation
+
+**Top App Bar**
+
+* Title (script.title or originalFilename) + project badge + description (“{format} · {pages}p”).
+* Compact **Status Chips** (9) with tooltips; runtime/confidence & complexity show “(estimated)” until analyses complete.
+* Header **Export** menu (teasers on Free) and **Chat** button.
+
+**Mode Switch** (segmented): Overview / Read / Analyze / Collaborate / Deliver
+Reflect active route; keyboard focus visible.
+
+**Scene Rail** (Read + Analyze): search, filters (INT/EXT, DAY/NIGHT, Issues*), scene list with pins.
+
+**Sticky Analysis Bar** (Overview + Analyze): Quick (Free), Comprehensive (Pro), Custom (per‑capability), progress stages.
+
+---
+
+## 6) Route Specs (UI, Interactions, States, Telemetry, A11y)
+
+> Each section includes: UI structure → Interactions → States → Feature flags → Telemetry → A11y → Perf.
+
+### 6.1 Overview — `/scripts/:id/overview`
+
+**UI**
+
+* Highlights grid (cards): Logline, Synopsis (1p/3p), Strengths, Areas to Improve, Scorecard.
+* Progress tracker (“Parse → Normalize → Taggers → Cross‑scene → Escalations → Scoring → Assets”).
+* Primary CTAs: **Run Quick**; secondary: **Go to Read**.
+
+**Interactions**
+
+* Each card has **“See details”** → deep‑links to relevant Analyze sub‑route or Read selection.
+* If state=parsed and no analysis, show coachmark pointing to **Run Quick**.
+
+**States**
+
+* Parsed only: Logline/Strengths/Areas show skeletons or lite placeholders; Synopsis/Scorecard are teasers.
+* Analyzing: cards display shimmering skeleton + sticky progress bar.
+* Complete: populated content; locks show Pro ribbons.
+
+**Feature flags**
+
+* `can.synopsis` (Pro), `can.scorecard` (Pro), `can.strengthsPro` (Pro), `can.areasPro` (Pro), `can.runtimePro`, `can.complexityPro`.
+
+**Telemetry**
+
+* `overview_viewed`, `analysis_quick_clicked`, `card_opened:name`, `deeplink_followed:dest`.
+
+**A11y**
+
+* Cards expose summaries as live regions after analysis completion; tooltips have aria‑describedby.
+
+**Perf**
+
+* Lazy‑load long Synopsis (3p) on expand; defer charts until visible.
+
+---
+
+### 6.2 Read — `/scripts/:id/read`
+
+**UI**
+
+* Left: Scene Rail (search, filters: INT/EXT, DAY/NIGHT; **Issues** filter if `can.filter.issues`).
+* Center: Page Viewer with Focus Mode toggle; Prev/Next scene; keyboard J/K.
+* Right: **Inspector Drawer** (collapsible): scene details, characters, pins, linked notes.
+
+**Scene Pins**
+
+* Note (Free), Beat (Pro), Pacing (Pro), Feasibility (Pro), Risk (Pro; Ent custom taxonomies).
+
+**Interactions**
+
+* Clicking a chart/table link opens Read with `?scene=42&pin=pacing` and inspector open.
+* Adding a note from viewer creates row in Notes table; optional @mention (Team).
+
+**States**
+
+* Parsed only: pins except Note are hidden; Issues filter disabled.
+* With analyses: pins visible; issues filter shows counts.
+
+**Feature flags**
+
+* `can.filter.issues` (Pro+), `can.pins.beat`, `can.pins.pacing`, `can.pins.feasibility`, `can.pins.risk`.
+
+**Telemetry**
+
+* `read_viewed`, `scene_selected:#`, `pin_clicked:type`, `note_created`, `focus_mode_toggled`.
+
+**A11y**
+
+* All scenes tabbable; announce scene changes; provide textual summaries for pins.
+
+**Perf**
+
+* Virtualize scene list; incremental page rendering; memoized inspector.
+
+---
+
+### 6.3 Analyze → Coverage — `/scripts/:id/analyze/coverage`
+
+**UI**
+
+* Header controls: Rating dropdown (Pass/Consider/Recommend); Export Coverage PDF.
+* Left: Comps (badges), Strengths, Risks.
+* Right: Beat Map (area chart) with tooltips and “Jump to scene”.
+
+**Interactions**
+
+* Changing rating persists immediately; export opens confirmation drawer (branding/watermark options by tier).
+
+**States**
+
+* Teaser on Free (sample preview) with upgrade CTA.
+
+**Feature flags**
+
+* `can.coverage.view` (Pro+), `can.coverage.export` (Pro+), `can.exports.branding` (Team+), `can.exports.templates`/`can.exports.webhooks` (Ent).
+
+**Telemetry**
+
+* `coverage_viewed`, `coverage_rating_set:value`, `coverage_export_clicked`.
+
+**A11y/Perf**
+
+* Chart has textual summary; heavy chart lazy‑load on view.
+
+---
+
+### 6.4 Analyze → Craft — `/scripts/:id/analyze/craft`
+
+**Sub‑tabs**
+
+* **Structure & Beats** (Pro): Beat Timeline (line), Subplot Swimlanes (status badges).
+* **Conflict & Theme** (Pro): Stakes Escalation (area) + flagged flat spots.
+* **Dialogue** (Pro): categories with counts; “View notes”.
+* **World & Logic** (Team): Continuity Tracker (Time/Place/Props/Tech/Jargon) with assignees and statuses.
+* **Genre & Market** (Pro): Convention coverage meter.
+* **Formatting** (Free): lints checklist with Add Note; (Pro) one‑click lint‑to‑note automation.
+* **Sensitivity** (Free lite): inclusive language flags; (Pro) suggested rewrites; (Ent) custom lexicons & approvals.
+* **Risk Flags** (Pro): risk table (Kind/Scene/Page/Excerpt); (Ent) custom taxonomies & export.
+
+**Interactions**
+
+* Each row/point offers “Review in Read” deep link.
+
+**States**
+
+* Teasers on Free (where applicable); empty states guide running analyses.
+
+**Feature flags**
+
+* `can.craft.beats`, `can.craft.subplots`, `can.craft.tension`, `can.craft.dialogue`, `can.craft.formatLintsPro`, `can.craft.continuityTeam`, `can.craft.sensitivityPro`, `can.craft.riskTable`, `can.craft.customTaxonomy`.
+
+**Telemetry**
+
+* `craft_viewed:subtab`, `craft_jump_to_read`, `lint_added_as_note`.
+
+**A11y/Perf**
+
+* Tab panels ARIA‑controlled; defer charts until active sub‑tab.
+
+---
+
+### 6.5 Analyze → Characters — `/scripts/:id/analyze/characters`
+
+**UI**
+
+* Header: character count. Grid of cards (responsive 1–2 columns).
+* Card: name, (Pro) dialogue count badge, description placeholder, first appearance.
+* Side panel on click: appearances timeline, dialogue share, related notes.
+
+**Feature flags**
+
+* `can.characters.dialogueCounts`, `can.characters.centrality`, `can.characters.teamThreads`.
+
+**Telemetry**
+
+* `characters_viewed`, `character_opened:name`, `character_notes_opened`.
+
+---
+
+### 6.6 Analyze → Pacing — `/scripts/:id/analyze/pacing`
+
+**UI**
+
+* Scene Length Histogram (basic → Pro zoom), Dialogue/Action Ratio, Tension Waveform (low‑res → Pro high‑res + anomalies panel).
+
+**Interactions**
+
+* Selecting a range provides **“Review in Read”** with `range=pageStart-pageEnd`.
+
+**Feature flags**
+
+* `can.pacing.highRes`, `can.pacing.zoom`.
+
+**Telemetry**
+
+* `pacing_viewed`, `pacing_anomaly_opened`, `pacing_jump_to_read`.
+
+---
+
+### 6.7 Analyze → Feasibility — `/scripts/:id/analyze/feasibility`
+
+**UI**
+
+* Metric tiles: INT/EXT, DAY/NIGHT, Unique Locations, Complexity Index (Free).
+* Additional callouts (Pro): Stunts, VFX/SFX, Crowd, Minors/Animals, Weapons/Vehicles, Special Props.
+* Complexity Heatmap (22‑col grid): Free up to 120 pages; Pro full length; Team department views.
+
+**Feature flags**
+
+* `can.feasibility.fullHeatmap`, `can.feasibility.deptViews`, `can.feasibility.policies`.
+
+**Telemetry**
+
+* `feasibility_viewed`, `dept_view_selected`, `heatmap_cell_opened`.
+
+---
+
+### 6.8 Collaborate → Notes — `/scripts/:id/collab/notes`
+
+**UI**
+
+* Filters: Area, Severity; table with columns: Severity, Area, Scene, Page, Excerpt, Suggestion.
+* Row drawer: full content, links to scenes, @mentions (Team), status (open/resolved).
+* Export CSV (Pro).
+
+**States**
+
+* Parsed only: empty state prompts: “Run Quick Analysis to generate feedback.”
+
+**Feature flags**
+
+* `can.notes.aiGenerated` (Pro), `can.notes.assign` (Team), `can.notes.exportCSV` (Pro), `can.notes.retention` (Ent).
+
+**Telemetry**
+
+* `notes_viewed`, `note_resolved`, `note_assigned`, `notes_export_clicked`.
+
+---
+
+### 6.9 Deliver → Exports — `/scripts/:id/deliver/exports`
+
+**UI**
+
+* Cards: Coverage PDF, Notes PDF, Notes CSV, JSON Bundle, FDX Change List.
+* Click → confirmation drawer (options vary by tier) → Generate.
+* Free shows teasers with clear benefits copy.
+
+**Feature flags**
+
+* `can.exports.pro` (Pro+), `can.exports.batch` (Team+), `can.exports.templates`/`can.exports.webhooks` (Ent).
+
+**Telemetry**
+
+* `exports_viewed`, `export_generated:type`, `export_failed:type`.
+
+---
+
+### 6.10 Global Chat Sheet
+
+**UI**
+
+* Side sheet: title, description, textarea, Ask button, response area.
+
+**Behavior**
+
+* Free: generic Q&A. Pro+: context‑aware answers linking to scenes/notes.
+
+**Feature flags**
+
+* `can.chat.contextAware` (Pro+), `can.chat.sharedHistory` (Team+), `can.chat.enterpriseControls` (Ent).
+
+**Telemetry**
+
+* `chat_opened`, `chat_asked`, `chat_link_clicked`.
+
+---
+
+## 7) URL & Deep‑Link Contract
+
+**Query params**
+
+* `scene` (number) — open scene in Read; inspector opens.
+* `range` (e.g., `58-63`) — Pacing selection; Read opens at first scene in range.
+* `tab` (craft sub‑tab key) — active Craft panel.
+* `pin` (beat|pacing|feasibility|risk|note) — preselect pin category.
+* `state` (parsed|analyzing|complete|error) — Overview banner state (non‑authoritative; UI hint only).
+
+**Examples**
+
+* `/scripts/123/read?scene=42&pin=pacing`
+* `/scripts/123/analyze/craft?tab=beats`
+* `/scripts/123/analyze/pacing?range=58-63`
+
+All deep‑links must be restorable via back/forward.
+
+---
+
+## 8) Data Contracts (conceptual; no code)
+
+### 8.1 Script (Parsed)
+
+* `id`, `title`, `originalFilename`, `format` (pdf/fdx/fountain), `pages` (int), `scenes` (array; `number`, `slugline`, `pageStart`, `pageEnd`, `location`, `interior` (bool), `timeOfDay`), `characters` (names), `locations` (unique), `ratios` (intExt, dayNight), `runtimeEstimate` (minutes, confidence?), `complexityIndex` (0–100 basic).
+
+### 8.2 Analysis Job
+
+* Request: `type` (quick|comprehensive|custom), `modules` (genre|structure|character|dialogue|pacing|theme), `scriptId`.
+* Status: `jobId`, `stage` (Parse|Normalize|Taggers|CrossScene|Escalations|Scoring|Assets), `progress` (0–100), `eta` (optional), `errors`.
+
+### 8.3 Results (selected)
+
+* **Beats**: `page`, `kind`, `confidence`, `subplotId?`.
+* **Pacing**: `page`, `sceneLength`, `dialogueLines`, `actionLines`, `tension` (0–1), `anomaly?`.
+* **Characters**: `name`, `dialogueCount`, `appearances` (scenes), `firstAppearance` (line?), `centrality?`.
+* **Notes**: `id`, `severity` (high|med|low), `area` (enum), `scene`, `page`, `excerpt`, `suggestion`, `source` (ai|user), `assignee?`, `status?`.
+* **Feasibility**: `intRatio`, `extRatio`, `dayRatio`, `nightRatio`, `uniqueLocations`, `complexityIndex`, `callouts` (stunts|vfx|crowd|minors|vehicles|props with counts), `heatmap` (page → complexity 0–100).
+* **Coverage**: `rating`, `comps` (titles), `strengths` (list), `risks` (list), `synopsis1p`, `synopsis3p`.
+* **Scorecard**: categories (1–10 grid) and totals.
+
+---
+
+## 9) API Endpoints (REST outline)
+
+* `POST /api/v1/uploads/:uploadId/parse` → { scriptId }
+* `GET  /api/v1/scripts/:id` → Script (parsed + latest analysis pointers)
+* `POST /api/v1/scripts/:id/analyze` → { jobId }
+* `GET  /api/v1/analysis/jobs/:jobId` → { stage, progress, errors }
+* `GET  /api/v1/scripts/:id/analysis/:module` → module result payloads (pacing, beats, feasibility, notes, coverage, etc.)
+* `POST /api/v1/scripts/:id/coverage/export` → file handle
+* `POST /api/v1/scripts/:id/exports` → type (notesCsv|notesPdf|jsonBundle|fdxChangeList), options
+
+> Authentication/authorization headers apply; tier flags included in profile.
+
+---
+
+## 10) Tier Matrix & Feature Flags
+
+| Area        | Element                                           |           Free          |                          Pro                          |        Team        |           Ent          | Flag                                                |
+| ----------- | ------------------------------------------------- | :---------------------: | :---------------------------------------------------: | :----------------: | :--------------------: | --------------------------------------------------- |
+| Header      | Status chips (9)                                  |            ✓            |            ✓* (runtime/complexity enhanced)           |          ✓         |            ✓           | `can.runtimePro`, `can.complexityPro`               |
+| Header      | Export menu                                       |          Teaser         |                           ✓                           | ✓ (batch/schedule) | ✓ (templates/webhooks) | `can.exports.*`                                     |
+| Control     | Quick/Comprehensive/Custom                        |          Quick          |               +Comp +Custom(Pro modules)              |   +Queue/history   |       +DLP/audit       | `can.comprehensiveAnalysis`, `can.customAnalyses.*` |
+| Read        | Filters (INT/EXT, DAY/NIGHT, Issues)              |    INT/EXT, DAY/NIGHT   |                        +Issues                        |          ✓         |            ✓           | `can.filter.issues`                                 |
+| Read        | Pins (note/beat/pacing/feasibility/risk)          |           Note          |                          +All                         |          ✓         |      +Custom tax.      | `can.pins.*`                                        |
+| Overview    | Logline/Synopsis/Scorecard                        |         Logline         |                  +Synopsis +Scorecard                 |          ✓         |      Custom rubric     | `can.synopsis`, `can.scorecard`                     |
+| Coverage    | View/Export                                       |          Teaser         |                           ✓                           |   +Brand/approve   |    +Templates/Audit    | `can.coverage.*`, `can.exports.*`                   |
+| Craft       | Beats/Conflict/Dialog/Sensitivity/Formatting/Risk | Formatting + Sens. Lite | +Beats/Conflict/Dialog + Lints Pro + Sens. Pro + Risk |     +Continuity    |    +Custom taxonomy    | `can.craft.*`                                       |
+| Characters  | Metrics                                           |          Basic          |              +Dialogue counts +Centrality             |      +Threads      |      Custom sheets     | `can.characters.*`                                  |
+| Pacing      | Charts                                            |          Basic          |                    +High‑res +Zoom                    |    Cross‑script    |            —           | `can.pacing.*`                                      |
+| Feasibility | Metrics/Heatmap                                   |       Core + 120p       |                    +Full +Callouts                    |     +Dept views    |        +Policies       | `can.feasibility.*`                                 |
+| Notes       | Table/Export/Assign                               |         Personal        |                      +AI +Export                      |   +Assign/Resolve  |    +Retention/Audit    | `can.notes.*`                                       |
+| Exports     | Deliverables                                      |          Teaser         |                           ✓                           |   +Batch/Schedule  |   +Templates/Webhooks  | `can.exports.*`                                     |
+| Chat        | Context links                                     |          Basic          |                     +Context‑aware                    |   +Shared history  |        +Controls       | `can.chat.*`                                        |
+
+---
+
+## 11) State & Error Handling
+
+**Global states**: parsed, analyzing, complete, partial, error.
+
+**Toasts**
+
+* Job started: “Comprehensive analysis started.”
+* Job complete: shortcuts: Open Overview / Pacing anomalies / Read first flagged scene.
+* Job failed: friendly message + primary fix button.
+
+**Error patterns**
+
+* Coverage export blocked → prompt to generate Synopsis first (button deep‑links to Overview → Generate Synopsis).
+* Missing module data → suggest running module via Custom analysis.
+
+---
+
+## 12) Accessibility (WCAG 2.1 AA)
+
+* Keyboard: J/K for scenes; F focus; G command palette; N add note.
+* ARIA: tabs, drawers, progress bar (live region), chart summaries beneath canvases.
+* Color: semantic only; ensure ≥ 4.5:1 for text.
+
+---
+
+## 13) Performance & Loading Strategy
+
+* Route‑level code‑splitting; lazy charts on intersection.
+* Virtualize scene list; memoize inspector; debounce search.
+* Skeletons mirror final layout; avoid layout shift.
+
+---
+
+## 14) Analytics Events (minimum set)
+
+* Navigation: `route_viewed:name` (overview/read/analyze‑subtab/notes/exports)
+* Actions: `analysis_quick_clicked`, `analysis_comprehensive_clicked`, `custom_module_run:module`
+* Content: `deeplink_followed:from→to`, `note_created`, `note_resolved`, `export_generated:type`
+* Upsell: `teaser_clicked:area`, `upgrade_prompt_shown:context`
+
+All events include `scriptId`, `tier`, `orgId?`, `timestamp`.
+
+---
+
+## 15) QA Acceptance Criteria (checklist)
+
+### Overview
+
+* [ ] After Parse, Overview shows parsed chips; Synopsis/Scorecard are teasers on Free.
+* [ ] Quick Analysis populates Logline/Strengths/Areas; Pro reveals Synopsis/Scorecard.
+* [ ] Deep‑links from cards navigate correctly.
+
+### Read
+
+* [ ] Scene rail search filters by slugline; INT/EXT & DAY/NIGHT filter correctly.
+* [ ] Pins reflect tier; clicking a pin opens inspector and highlights location in page.
+* [ ] Keyboard J/K navigates scenes; focus visible.
+
+### Coverage
+
+* [ ] Rating persists; Export generates file (Pro+). Free sees teaser only.
+
+### Craft
+
+* [ ] Beats timeline shows markers with tooltips; “Jump to scene” works.
+* [ ] Formatting lints can add a note; Pro can one‑click lint‑to‑note.
+
+### Characters
+
+* [ ] Dialogue counts visible on Pro; first appearance shows when available.
+
+### Pacing
+
+* [ ] Range selection offers “Review in Read” deep link.
+* [ ] Pro zoom unlocks without UI shift.
+
+### Feasibility
+
+* [ ] Heatmap shows first 120 pages on Free; full length on Pro.
+
+### Notes
+
+* [ ] AI notes (Pro) appear with severity badges; export CSV works.
+* [ ] Team can assign, mention, resolve; email digest scheduled.
+
+### Exports
+
+* [ ] All 5 deliverables generate with correct tier behavior; branding/templates by tier.
+
+---
+
+## 16) Rollout & Phasing
+
+**Phase 1**: Parse & Overview (Quick Analysis), Read, Pacing (basic), Notes (personal), Exports (teasers).
+**Phase 2**: Pro modules (Comprehensive, Craft basics, Coverage, AI notes, Exports), Pins.
+**Phase 3**: Team collaboration, Continuity, Batch/Scheduled exports.
+**Phase 4**: Enterprise controls (DLP, watermarking, templates/webhooks, audit, custom taxonomies).
+
+---
+
+## 17) Glossary
+
+* **ParsedBundle**: persisted output of Parse & Extract (no analysis).
+* **Pins**: per‑scene visual markers for notes/beat/pacing/feasibility/risk.
+* **Teaser**: visible, sample‑data preview for locked Pro/Team/Ent capabilities.
+
+---
+
+## 18) Open Questions (to resolve before build freeze)
+
+1. Exact rubric categories for Scorecard (studio variants?).
+2. Coverage PDF visual template approval.
+3. Heatmap max page support beyond 180 (performance budget).
+4. Command Palette scope (which commands v1?).
+
+---
+
+## 19) Appendix: Feature Flag Keys (canonical list)
+
+```
+can.runtimePro
+can.complexityPro
+can.comprehensiveAnalysis
+can.customAnalyses.genre
+can.customAnalyses.story
+can.customAnalyses.character
+can.customAnalyses.dialogue
+can.customAnalyses.pacing
+can.customAnalyses.theme
+can.filter.issues
+can.pins.note (always true)
+can.pins.beat
+can.pins.pacing
+can.pins.feasibility
+can.pins.risk
+can.synopsis
+can.scorecard
+can.strengthsPro
+can.areasPro
+can.coverage.view
+can.coverage.export
+can.exports.pro
+can.exports.batch
+can.exports.branding
+can.exports.templates
+can.exports.webhooks
+can.craft.beats
+can.craft.subplots
+can.craft.tension
+can.craft.dialogue
+can.craft.formatLintsPro
+can.craft.continuityTeam
+can.craft.sensitivityPro
+can.craft.riskTable
+can.craft.customTaxonomy
+can.characters.dialogueCounts
+can.characters.centrality
+can.characters.teamThreads
+can.pacing.highRes
+can.pacing.zoom
+can.feasibility.fullHeatmap
+can.feasibility.deptViews
+can.feasibility.policies
+can.notes.aiGenerated
+can.notes.assign
+can.notes.exportCSV
+can.notes.retention
+can.chat.contextAware
+can.chat.sharedHistory
+can.chat.enterpriseControls
+```
+
+---
+
+**End of Spec**

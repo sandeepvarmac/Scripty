@@ -141,13 +141,13 @@ export function ScriptAnalysisDashboard({ scriptId }: { scriptId: string }) {
   }
 
   // Calculate summary metrics
-  const avgScore = dashboardData.scores.length > 0
+  const avgScore = dashboardData?.scores?.length > 0
     ? dashboardData.scores.reduce((sum, score) => sum + score.value, 0) / dashboardData.scores.length
     : 0
 
-  const highSeverityNotes = dashboardData.notes.filter(note => note.severity === 'HIGH').length
-  const beatsFound = dashboardData.beats.length
-  const riskCount = dashboardData.riskFlags.length
+  const highSeverityNotes = dashboardData?.notes?.filter(note => note.severity === 'HIGH')?.length ?? 0
+  const beatsFound = dashboardData?.beats?.length ?? 0
+  const riskCount = dashboardData?.riskFlags?.length ?? 0
 
   return (
     <div className="space-y-6 p-6">

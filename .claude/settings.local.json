@@ -42,7 +42,14 @@
       "Bash(npx next dev:*)",
       "Bash(del test-script.txt poor-script.txt)",
       "Bash(del test-script.fountain)",
-      "Bash(del NUL)"
+      "Bash(del NUL)",
+      "Bash(move srccomponentsanalysisoption1-multi-page-dashboard.tsx archivecomponentsanalysis )",
+      "Bash(move srccomponentsanalysisoption2-progressive-workflow.tsx archivecomponentsanalysis )",
+      "Bash(move srccomponentsanalysisoption3-contextual-dashboard.tsx archivecomponentsanalysis )",
+      "Bash(move srccomponentsanalysisenhanced-analysis-page.tsx archivecomponentsanalysis )",
+      "Bash(move srccomponentsanalysisclean-analysis-page.tsx archivecomponentsanalysis )",
+      "Bash(move srccomponentsanalysiscomprehensive-analysis-updated.tsx archivecomponentsanalysis )",
+      "Bash(move srccomponentsanalysistabbed-analysis.tsx archivecomponentsanalysis)"
     ],
     "deny": [],
     "ask": []

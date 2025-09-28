@@ -40,7 +40,14 @@ interface CraftDashboardProps {
 }
 
 export function CraftDashboard({ script, dashboardData }: CraftDashboardProps) {
-  const {\n  beats = [],\n  scores = [],\n  notes = [],\n  subplots = [],\n  themeStatements = [],\n  riskFlags = []\n} = dashboardData ?? {}
+  const {
+    beats = [],
+    scores = [],
+    notes = [],
+    subplots = [],
+    themeStatements = [],
+    riskFlags = []
+  } = dashboardData ?? {}
 
   // Get scores by category
   const getScoreByCategory = (category: string) => {

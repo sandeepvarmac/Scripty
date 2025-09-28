@@ -558,6 +558,7 @@ export default function UploadPage() {
         // Create form data
         const formData = new FormData()
         formData.append('file', file)
+        formData.append('mode', 'parse') // Use parse-only mode for Phase 1
         if (selectedProject) {
           formData.append('projectId', selectedProject)
         }
@@ -633,7 +634,7 @@ export default function UploadPage() {
 
         // Stage 4: Finalizing (75-100%)
         setUploadProgress(75)
-        setCurrentStage('Preparing analysis dashboard...')
+        setCurrentStage('Preparing script overview...')
 
         if (!result?.data) {
           throw new Error('Upload succeeded but response payload was empty')
@@ -646,7 +647,7 @@ export default function UploadPage() {
 
         // Complete progress
         setUploadProgress(100)
-        setCurrentStage('Complete! Redirecting to analysis...')
+        setCurrentStage('Complete! Redirecting to script overview...')
 
         // Brief pause to show completion
         await new Promise(resolve => setTimeout(resolve, 1000))
@@ -654,10 +655,10 @@ export default function UploadPage() {
         toast({
           variant: "default",
           title: "🎬 Upload Complete!",
-          description: `${parsedScript.title || savedScript.title || 'Unknown'} successfully uploaded with ${parsedScript.scenes.length} scenes and ${parsedScript.characters.length} characters. Redirecting to analysis dashboard...`
+          description: `${parsedScript.title || savedScript.title || 'Unknown'} successfully parsed with ${parsedScript.scenes.length} scenes and ${parsedScript.characters.length} characters. Redirecting to script overview...`
         })
 
-        router.push(`/analysis/${savedScript.id}`)
+        router.push(`/scripts/${savedScript.id}/overview?state=parsed`)
       }
 
     } catch (error) {
@@ -1225,7 +1226,7 @@ export default function UploadPage() {
                       onClick={handleUpload}
                       disabled={uploading || files.length === 0}
                     >
-{uploading ? 'Processing...' : 'Parse & Extract Metadata'}
+                      {uploading ? 'Processing...' : 'Parse & Extract Screenplay'}
                     </Button>
                   </div>
                 </div>

@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData()
     const file = formData.get('file') as File
     const projectId = formData.get('projectId') as string
+    const mode = formData.get('mode') as string || 'analyze' // Default to full analysis
 
     if (!file) {
       return NextResponse.json(
@@ -121,11 +122,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Assess screenplay quality
-    const qualityAssessment = assessScreenplayQuality(parseResult.data!)
-
     // Use authenticated user ID
     const userId = user.id
+
+    // Assess screenplay quality only in analyze mode
+    let qualityAssessment = null
+    if (mode === 'analyze') {
+      qualityAssessment = assessScreenplayQuality(parseResult.data!)
+    }
 
     // Debug log the parseResult structure
     console.log('DEBUG: parseScript returned:', {
@@ -146,9 +150,10 @@ export async function POST(request: NextRequest) {
       normalizedScript: parseResult.data!
     })
 
-    // Return saved script data with quality assessment
+    // Return saved script data with mode-specific response
     return NextResponse.json({
       success: true,
+      mode: mode,
       data: {
         script: savedScript,
         parsed: parseResult.data,

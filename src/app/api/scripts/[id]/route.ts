@@ -1,9 +1,68 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { RealAuthService } from '@/lib/auth/real-auth-service'
 import { prisma } from '@/lib/prisma'
+import { getScriptWithEnhancedData } from '@/lib/evidence-store'
 
 interface RouteParams {
   params: { id: string }
+}
+
+// Get script with enhanced data
+export async function GET(request: NextRequest, { params }: RouteParams) {
+  try {
+    // Get auth token from cookie
+    const token = request.cookies.get('auth-token')?.value
+
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      )
+    }
+
+    // Verify token and get user
+    const payload = await RealAuthService.verifyToken(token)
+    if (!payload) {
+      return NextResponse.json(
+        { error: 'Invalid authentication token' },
+        { status: 401 }
+      )
+    }
+
+    const user = await RealAuthService.getUserById(payload.userId)
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      )
+    }
+
+    // Get script with enhanced data
+    const script = await getScriptWithEnhancedData(params.id, user.id)
+
+    if (!script) {
+      return NextResponse.json(
+        { error: 'Script not found or access denied' },
+        { status: 404 }
+      )
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: { script }
+    })
+
+  } catch (error) {
+    console.error('Get script error:', error)
+
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : 'Failed to get script',
+        details: error instanceof Error ? error.stack : undefined
+      },
+      { status: 500 }
+    )
+  }
 }
 
 // Delete script with soft delete approach

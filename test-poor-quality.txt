@@ -1,0 +1,11 @@
+This is just a plain text document.
+
+It has no screenplay formatting whatsoever.
+
+No scene headings like INT. or EXT.
+No character names in ALL CAPS.
+No proper dialogue formatting.
+
+Just regular paragraphs of text that look like a book or essay.
+
+This should definitely be blocked by the quality validation system because it has no screenplay elements that would allow meaningful AI analysis of cinematic structure, character development, or story pacing.
